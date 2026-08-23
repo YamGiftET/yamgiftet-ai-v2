@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>YamGiftET AI v2</title>
+
+<link
+rel="stylesheet"
+href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+
+<h1>
+🎁 YamGiftET AI
+</h1>
+
+<p>
+Made with ❤️ in Ethiopia
+</p>
+
+</div>
+
+<nav>
+        <a href="self-products.html" class="nav-self-products">
+            🛍️ የራሴ ምርቶች
+        </a>
+    
+
+<a href="#">Home</a>
+
+<a href="#">Products</a>
+
+<a href="#">AI</a>
+
+<a href="#">Customers</a>
+
+<a href="#">Appointments</a>
+
+<a href="#">Dashboard</a>
+
+<a href="#">Contact</a>
+
+</nav>
+
+</header>
+
+<section class="hero">
+
+<h2>
+
+ልዩ ስጦታዎች
+በ AI ኃይል
+
+</h2>
+
+<p>
+
+Epoxy Frame •
+Custom Gift •
+AI Assistant •
+Business Manager
+
+</p>
+
+<button id="startBtn">
+
+🚀 ጀምር
+
+</button>
+
+</section>
+
+<section class="features">
+
+<div class="card">
+
+<h3>🤖 AI Assistant</h3>
+
+<p>
+
+ለደንበኞች
+ፈጣን መልስ
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>🎁 Products</h3>
+
+<p>
+
+የሁሉንም
+Gift ምርቶች
+ማሳየት
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>👥 Customers</h3>
+
+<p>
+
+የደንበኛ
+አስተዳደር
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>📅 Appointments</h3>
+
+<p>
+
+ቀጠሮ
+ማስተዳደር
+
+</p>
+
+</div>
+
+<div class="card dashboard-main-card">
+
+<h3>📊 Dashboard</h3>
+
+<p>የYamGiftET AI የቢዝነስ ማጠቃለያ</p>
+
+<div class="dashboard-stats">
+
+    <div class="dashboard-stat">
+        <span>📦</span>
+        <strong id="dashboardOrders">0</strong>
+        <small>ጠቅላላ ትዕዛዞች</small>
+    </div>
+
+    <div class="dashboard-stat">
+        <span>👥</span>
+        <strong id="dashboardCustomers">0</strong>
+        <small>ደንበኞች</small>
+    </div>
+
+    <div class="dashboard-stat">
+        <span>💰</span>
+        <strong id="dashboardIncome">0 ብር</strong>
+        <small>ጠቅላላ ገቢ</small>
+    </div>
+
+    <div class="dashboard-stat">
+        <span>💵</span>
+        <strong id="dashboardDeposit">0 ብር</strong>
+        <small>የተከፈለ</small>
+    </div>
+
+    <div class="dashboard-stat">
+        <span>⏳</span>
+        <strong id="dashboardRemaining">0 ብር</strong>
+        <small>ቀሪ ክፍያ</small>
+    </div>
+
+    <div class="dashboard-stat">
+        <span>🛠️</span>
+        <strong id="dashboardCost">0 ብር</strong>
+        <small>የስራ ወጪ</small>
+    </div>
+
+    <div class="dashboard-stat">
+        <span>📈</span>
+        <strong id="dashboardProfit">0 ብር</strong>
+        <small>ትርፍ</small>
+    </div>
+
+</div>
+
+<div class="dashboard-orders-section">
+
+    <h3>📦 የቅርብ ትዕዛዞች</h3>
+
+    <div class="dashboard-table-wrapper">
+
+        <table class="dashboard-orders-table">
+
+            <thead>
+
+                <tr>
+                    <th>ደንበኛ</th>
+                    <th>ስልክ</th>
+                    <th>ምርት</th>
+                    <th>የትዕዛዝ ቀን</th>
+                    <th>የመረከቢያ ቀን</th>
+                    <th>ጠቅላላ</th>
+                    <th>ተከፍሏል</th>
+                    <th>ቀሪ</th>
+                    <th>ትርፍ</th>
+                    <th>ሁኔታ</th>
+                    <th>📸 ፎቶ</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="dashboardOrdersBody">
+
+                <tr>
+                    <td colspan="11">
+                        ትዕዛዞች እየተጫኑ ነው...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>🔥 Firebase</h3>
+
+<p>
+
+Cloud Database
+
+</p>
+
+</div>
+
+</section>
+<!-- ==========================
+AI Chat
+========================== -->
+
+<section class="ai-chat">
+
+<h2>🤖 YamGiftET AI Assistant</h2>
+
+<div id="chatBox" class="chat-box">
+
+<p>
+🤖 ሰላም! ወደ YamGiftET AI እንኳን በደህና መጡ።
+</p>
+
+</div>
+
+<div class="chat-input">
+
+<input
+type="text"
+id="userInput"
+placeholder="ጥያቄዎን ይጻፉ...">
+
+<button id="sendBtn">
+
+ላክ
+
+</button>
+
+</div>
+
+</section>
+<footer>
+
+<p>
+
+© 2026
+YamGiftET AI v2
+
+</p>
+
+</footer>
+
+<script src="script.js"></script>
+<script src="js/products.js"></script>
+<script src="js/ai.js?v=2"></script>
+<script src="js/firebase.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/yam-final-fix.js"></script>
+
+
+
+
+
+<!-- =====================================
+     YamGiftET NEW ORDER SYSTEM
+     ===================================== -->
+<section id="orders-section" class="orders-section">
+    <div class="orders-header">
+        <h2>🧾 የትዕዛዝ መመዝገቢያ</h2>
+        <p>የአዲሱ YamGiftET Order System</p>
+    </div>
+
+    <iframe
+        src="orders.html"
+        title="YamGiftET Order System"
+        style="
+            width:100%;
+            min-height:1100px;
+            border:0;
+            border-radius:16px;
+            background:#fff;
+        "
+        loading="lazy">
+    </iframe>
+</section>
+
+</body>
+</html>

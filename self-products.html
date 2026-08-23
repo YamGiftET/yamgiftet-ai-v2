@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>YamGiftET AI | የራሳችን ምርቶች</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .self-products-page {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .self-products-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.08);
+            margin-bottom: 25px;
+        }
+
+        .self-products-card h2 {
+            margin-top: 0;
+        }
+
+        .product-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .product-form .full {
+            grid-column: 1 / -1;
+        }
+
+        .product-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .product-form input,
+        .product-form textarea,
+        .product-form select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .product-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .product-submit {
+            grid-column: 1 / -1;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            background: #0f3d2e;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .product-submit:hover {
+            opacity: .9;
+        }
+
+        .product-preview {
+            margin-top: 10px;
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .calculation-box {
+            grid-column: 1 / -1;
+            background: #f7f7f7;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .calculation-box div {
+            margin: 6px 0;
+        }
+
+        @media (max-width: 700px) {
+            .product-form {
+                grid-template-columns: 1fr;
+            }
+
+            .product-form .full,
+            .product-submit,
+            .calculation-box {
+                grid-column: auto;
+            }
+        }
+    
+/* =========================================================
+   SELF PRODUCT SALES MODAL
+   ========================================================= */
+
+.sales-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.sales-modal.active {
+    display: flex;
+}
+
+.sales-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    backdrop-filter: blur(4px);
+}
+
+.sales-modal-box {
+    position: relative;
+    z-index: 2;
+    width: min(520px, 100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: salesModalIn .2s ease-out;
+}
+
+@keyframes salesModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.sales-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: #f3f3f3;
+    color: #555;
+    font-size: 27px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.sales-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-right: 40px;
+    margin-bottom: 18px;
+}
+
+.sales-modal-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: #e8f5e9;
+    font-size: 28px;
+}
+
+.sales-modal-header h2 {
+    margin: 0 0 4px;
+    color: #0f3d2e;
+}
+
+.sales-modal-header p {
+    margin: 0;
+    color: #666;
+    font-weight: 600;
+}
+
+.sales-stock-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 15px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    background: #f4f8f6;
+}
+
+.sales-stock-info strong {
+    color: #0f3d2e;
+    font-size: 20px;
+}
+
+.sales-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.sales-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.sales-field label {
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.sales-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.sales-field input:focus {
+    outline: none;
+    border-color: #0f3d2e;
+    box-shadow: 0 0 0 3px rgba(15,61,46,.08);
+}
+
+.sales-field small {
+    margin-top: 5px;
+    color: #777;
+}
+
+.sales-calculation {
+    margin-top: 18px;
+    padding: 15px;
+    border-radius: 15px;
+    background: #f7f7f7;
+}
+
+.sales-calculation div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.sales-calculation div:last-child {
+    border-bottom: none;
+}
+
+.sales-calculation strong {
+    text-align: right;
+}
+
+.sales-profit {
+    color: #176b2c;
+    font-size: 17px;
+}
+
+.sales-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.sales-modal-actions button {
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sales-cancel-btn {
+    background: #f1f1f1;
+    color: #555;
+}
+
+.sales-confirm-btn {
+    background: #0f3d2e;
+    color: #fff;
+}
+
+.sales-confirm-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .sales-modal {
+        padding: 10px;
+    }
+
+    .sales-modal-box {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .sales-form {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-modal-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   SALES HISTORY MODAL DESIGN
+   ========================================================= */
+
+.history-modal-box {
+    max-height: 90vh;
+}
+
+.history-summary {
+    margin-bottom: 18px;
+}
+
+.history-summary-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f3d2e;
+    margin-bottom: 10px;
+}
+
+.history-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.history-summary-item {
+    background: #f4f8f6;
+    border-radius: 14px;
+    padding: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.history-summary-item span {
+    font-size: 13px;
+    color: #666;
+}
+
+.history-summary-item strong {
+    font-size: 17px;
+    color: #0f3d2e;
+}
+
+.history-summary-item.profit {
+    background: #e8f5e9;
+}
+
+.history-summary-item.profit strong {
+    color: #16803a;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.history-sale-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.07);
+}
+
+.history-sale-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.history-sale-number {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8f5e9;
+    color: #0f3d2e;
+    font-weight: 800;
+}
+
+.history-sale-date {
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+}
+
+.history-sale-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+}
+
+.history-sale-details > div {
+    background: #f8f8f8;
+    border-radius: 11px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.history-sale-details span {
+    font-size: 12px;
+    color: #777;
+}
+
+.history-sale-details strong {
+    font-size: 15px;
+    color: #333;
+}
+
+.history-sale-details .history-profit {
+    background: #e8f5e9;
+}
+
+.history-sale-details .history-profit strong {
+    color: #16803a;
+}
+
+@media (max-width: 600px) {
+
+    .history-summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .history-sale-details {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .history-sale-date {
+        font-size: 12px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="self-products-page">
+
+    <div class="self-products-card">
+
+        <h2>🎁 የራሳችን ምርት መመዝገቢያ</h2>
+
+        <p>
+            እኛ ራሳችን የሰራነውን ምርት እና stock ለመመዝገብ
+        </p>
+
+        <form
+            id="selfProductForm"
+            class="product-form"
+        >
+
+            <div>
+                <label for="productName">
+                    🏷️ የምርት ስም
+                </label>
+
+                <input
+                    id="productName"
+                    type="text"
+                    placeholder="ለምሳሌ Epoxy Frame"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="productType">
+                    📦 የምርት አይነት
+                </label>
+
+                <select id="productType">
+                    <option value="Epoxy Frame">
+                        Epoxy Frame
+                    </option>
+
+                    <option value="Gift Box">
+                        Gift Box
+                    </option>
+
+                    <option value="Key Holder">
+                        Key Holder
+                    </option>
+
+                    <option value="Custom Gift">
+                        Custom Gift
+                    </option>
+
+                    <option value="Other">
+                        ሌላ
+                    </option>
+                </select>
+            </div>
+
+            <div class="full">
+                <label for="productDescription">
+                    📝 መግለጫ
+                </label>
+
+                <textarea
+                    id="productDescription"
+                    placeholder="ስለ ምርቱ አጭር መግለጫ..."
+                ></textarea>
+            </div>
+
+            <div>
+                <label for="productQuantity">
+                    🔢 የተመረተ ብዛት
+                </label>
+
+                <input
+                    id="productQuantity"
+                    type="number"
+                    min="0"
+                    value="1"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="productStock">
+                    📦 በStock ላይ ያለ
+                </label>
+
+                <input
+                    id="productStock"
+                    type="number"
+                    min="0"
+                    value="1"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="productSellPrice">
+                    💰 የመሸጫ ዋጋ
+                </label>
+
+                <input
+                    id="productSellPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="productUnitCost">
+                    🛠️ የአንዱ ምርት ወጪ
+                </label>
+
+                <input
+                    id="productUnitCost"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="productDate">
+                    📅 የተመረተበት ቀን
+                </label>
+
+                <input
+                    id="productDate"
+                    type="date"
+                    required
+                >
+            </div>
+
+            <div>
+                <label for="productPhoto">
+                    📸 የምርት ፎቶ
+                </label>
+
+                <input
+                    id="productPhoto"
+                    type="file"
+                    accept="image/*"
+                >
+
+                <img
+                    id="productPhotoPreview"
+                    class="product-preview"
+                    alt="የምርት ፎቶ"
+                >
+            </div>
+
+            <div class="calculation-box">
+
+                <strong>📊 ራስ-ሰር ሂሳብ</strong>
+
+                <div>
+                    የአንዱ ምርት ትርፍ:
+                    <strong id="unitProfit">
+                        0 ብር
+                    </strong>
+                </div>
+
+                <div>
+                    ጠቅላላ የምርት ዋጋ:
+                    <strong id="totalSales">
+                        0 ብር
+                    </strong>
+                </div>
+
+                <div>
+                    ጠቅላላ የምርት ወጪ:
+                    <strong id="totalCost">
+                        0 ብር
+                    </strong>
+                </div>
+
+                <div>
+                    ጠቅላላ ትርፍ:
+                    <strong id="totalProfit">
+                        0 ብር
+                    </strong>
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="product-submit"
+            >
+                💾 ምርቱን አስቀምጥ
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     SELF PRODUCT SALES MODAL
+     ========================================================= -->
+
+<div id="salesModal" class="sales-modal" aria-hidden="true">
+    <div class="sales-modal-overlay" onclick="closeSalesModal()"></div>
+
+    <div class="sales-modal-box">
+
+        <button
+            type="button"
+            class="sales-modal-close"
+            onclick="closeSalesModal()"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+        <div class="sales-modal-header">
+            <div class="sales-modal-icon">🛒</div>
+
+            <div>
+                <h2>የሽያጭ መመዝገቢያ</h2>
+                <p id="salesModalProductName">
+                    ምርት
+                </p>
+            </div>
+        </div>
+
+        <div class="sales-stock-info">
+            <span>📦 ያለው Stock</span>
+            <strong id="salesModalStock">0</strong>
+        </div>
+
+        <div class="sales-form">
+
+            <div class="sales-field">
+                <label for="salesModalDate">
+                    📅 የተሸጠበት ቀን
+                </label>
+
+                <input
+                    id="salesModalDate"
+                    type="date"
+                >
+
+                <small id="salesModalDateEth">
+                    -
+                </small>
+            </div>
+
+            <div class="sales-field">
+                <label for="salesModalQuantity">
+                    🔢 የተሸጠው ብዛት
+                </label>
+
+                <input
+                    id="salesModalQuantity"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value="1"
+                >
+            </div>
+
+            <div class="sales-field">
+                <label for="salesModalPrice">
+                    💰 የአንዱ የሽያጭ ዋጋ
+                </label>
+
+                <input
+                    id="salesModalPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                >
+            </div>
+
+        </div>
+
+        <div class="sales-calculation">
+
+            <div>
+                <span>💵 ጠቅላላ ሽያጭ</span>
+                <strong id="salesModalTotalSales">
+                    0 ብር
+                </strong>
+            </div>
+
+            <div>
+                <span>🛠️ ጠቅላላ ወጪ</span>
+                <strong id="salesModalTotalCost">
+                    0 ብር
+                </strong>
+            </div>
+
+            <div class="sales-profit">
+                <span>📈 ትርፍ</span>
+                <strong id="salesModalProfit">
+                    0 ብር
+                </strong>
+            </div>
+
+            <div>
+                <span>📦 ከሽያጭ በኋላ Stock</span>
+                <strong id="salesModalRemainingStock">
+                    0
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="sales-modal-actions">
+
+            <button
+                type="button"
+                class="sales-cancel-btn"
+                onclick="closeSalesModal()"
+            >
+                ✖️ ሰርዝ
+            </button>
+
+            <button
+                type="button"
+                class="sales-confirm-btn"
+                id="salesModalConfirm"
+                onclick="confirmSelfProductSale()"
+            >
+                🛒 ሽያጩን መዝግብ
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<script src="js/self-products.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+.env
+firebase-service-account.json
+node_modules/
+uploads/
+*.log
+*.backup
+*.backup-*
+*.before-*
+*.broken
+
+# Project backup folders
+yamgiftet-ai-v2-backup-*/

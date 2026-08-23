@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>YamGiftET — ትዕዛዞች</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+     YamGiftET Order Form
+===================================== -->
+
+<section id="orders-section" class="orders-section">
+
+    <div class="orders-header">
+        <h2>🧾 የትዕዛዝ መመዝገቢያ</h2>
+        <p>የደንበኛን እና የትዕዛዝ መረጃ ይመዝግቡ</p>
+    </div>
+
+    <form id="orderForm" class="order-form">
+
+        <div class="form-group">
+            <label>የደንበኛ ስም</label>
+            <input
+                type="text"
+                id="orderCustomerName"
+                required
+                placeholder="ሙሉ ስም"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>ስልክ ቁጥር</label>
+            <input
+                type="tel"
+                id="orderPhone"
+                required
+                placeholder="09xxxxxxxx"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>የታዘዘው ምርት</label>
+            <input
+                type="text"
+                id="orderProductName"
+                required
+                placeholder="ለምሳሌ ኢፖክሲ ፍሬም"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>የትዕዛዝ መረጃ</label>
+            <textarea
+                id="orderInfo"
+                placeholder="የደንበኛው ልዩ ፍላጎት..."
+            ></textarea>
+        </div>
+
+        
+        <div class="form-group">
+
+            <label>📅 የታዘዘበት ቀን 🇪🇹</label>
+
+            <div class="ethiopian-date">
+
+                <select id="orderDateYear"></select>
+
+                <select id="orderDateMonth"></select>
+
+                <select id="orderDateDay"></select>
+
+            </div>
+
+            <small>በኢትዮጵያ አቆጣጠር</small>
+
+        </div>
+
+<div class="form-group">
+            <label>የተስማማንበት ዋጋ</label>
+            <input
+                type="number"
+                id="orderTotalAmount"
+                min="0"
+                required
+                placeholder="0"
+                oninput="calculateOrderAmounts()"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>የተከፈለ ቀብድ</label>
+            <input
+                type="number"
+                id="orderDeposit"
+                min="0"
+                value="0"
+                oninput="calculateOrderAmounts()"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>ቀሪ ክፍያ</label>
+            <input
+                type="number"
+                id="orderRemaining"
+                readonly
+                value="0"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>የሥራ ወጪ</label>
+            <input
+                type="number"
+                id="orderWorkCost"
+                min="0"
+                value="0"
+                oninput="calculateOrderAmounts()"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>ትርፍ</label>
+            <input
+                type="number"
+                id="orderProfit"
+                readonly
+                value="0"
+            >
+        </div>
+
+        
+        <div class="form-group">
+
+            <label>📦 የመውሰጃ ቀን 🇪🇹</label>
+
+            <div class="ethiopian-date">
+
+                <select id="pickupDateYear"></select>
+
+                <select id="pickupDateMonth"></select>
+
+                <select id="pickupDateDay"></select>
+
+            </div>
+
+            <small>በኢትዮጵያ አቆጣጠር</small>
+
+        </div>
+
+        <div class="form-group">
+            <label>የትዕዛዝ ሁኔታ</label>
+            <select id="orderStatus">
+
+                <option value="አዲስ">አዲስ</option>
+
+                <option value="በሥራ ላይ">
+                    በሥራ ላይ
+                </option>
+
+                <option value="ተጠናቋል">
+                    ተጠናቋል
+                </option>
+
+                <option value="ተሰጥቷል">
+                    ተሰጥቷል
+                </option>
+
+                <option value="ተሰርዟል">
+                    ተሰርዟል
+                </option>
+
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>ማስታወሻ</label>
+
+            <textarea
+                id="orderNotes"
+                placeholder="ተጨማሪ መረጃ..."
+            ></textarea>
+
+        </div>
+
+        <div class="form-group">
+            <label>📸 የደንበኛ ፎቶ / የትዕዛዝ ፎቶ</label>
+            <input
+                type="file"
+                id="orderPhoto"
+                accept="image/*"
+            >
+            <small>ፎቶ ከGallery ይምረጡ</small>
+            <img
+                id="orderPhotoPreview"
+                alt="የፎቶ Preview"
+                style="display:none; max-width:100%; margin-top:10px; border-radius:10px;"
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="order-submit"
+        >
+            💾 ትዕዛዙን አስቀምጥ
+        </button>
+
+    </form>
+
+</section>
+
+
+<script src="js/ethiopian-calendar.js"></script>
+<script src="js/orders.js"></script>
+
+</body>
+</html>

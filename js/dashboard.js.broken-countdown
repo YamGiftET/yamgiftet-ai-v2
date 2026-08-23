@@ -1,0 +1,1173 @@
+// =====================================
+// YamGiftET AI v2
+// Firebase Business Dashboard
+// =====================================
+
+const dashboard = {
+
+    orders: [],
+
+    // =====================================
+    // Firebase ላይ ያሉ ትዕዛዞችን አምጣ
+    // =====================================
+
+    async loadOrders() {
+
+        try {
+
+            const response =
+                await fetch("/api/orders");
+
+            const data =
+                await response.json();
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.error ||
+                    "ትዕዛዞችን ማምጣት አልተቻለም።"
+                );
+
+            }
+
+            this.orders =
+                data.orders || [];
+
+            this.update();
+
+            return this.orders;
+
+        } catch (error) {
+
+            console.error(
+                "❌ Dashboard Orders Error:",
+                error
+            );
+
+            this.orders = [];
+
+            this.update();
+
+            return [];
+
+        }
+
+    },
+
+
+    // =====================================
+    // Dashboard አሀዞች
+    // =====================================
+
+    calculate() {
+
+        const orders =
+            this.orders || [];
+
+
+        const totalOrders =
+            orders.length;
+
+
+        const totalIncome =
+            orders.reduce(
+                (sum, order) =>
+                    sum +
+                    Number(order.totalAmount || 0),
+                0
+            );
+
+
+        const totalDeposit =
+            orders.reduce(
+                (sum, order) =>
+                    sum +
+                    Number(order.deposit || 0),
+                0
+            );
+
+
+        const totalRemaining =
+            orders.reduce(
+                (sum, order) =>
+                    sum +
+                    Number(order.remaining || 0),
+                0
+            );
+
+
+        const totalWorkCost =
+            orders.reduce(
+                (sum, order) =>
+                    sum +
+                    Number(order.workCost || 0),
+                0
+            );
+
+
+        const totalProfit =
+            orders.reduce(
+                (sum, order) =>
+                    sum +
+                    Number(order.profit || 0),
+                0
+            );
+
+
+        const customers =
+            new Set(
+                orders
+                    .map(order => order.phone)
+                    .filter(Boolean)
+            );
+
+
+        return {
+
+            totalOrders,
+
+            totalCustomers:
+                customers.size,
+
+            totalIncome,
+
+            totalDeposit,
+
+            totalRemaining,
+
+            totalWorkCost,
+
+            totalProfit
+
+        };
+
+    },
+
+
+    // =====================================
+    // Dashboard UI Update
+    // =====================================
+
+    update() {
+
+        const data =
+            this.calculate();
+
+
+        setDashboardValue(
+            "dashboardOrders",
+            data.totalOrders
+        );
+
+
+        setDashboardValue(
+            "dashboardCustomers",
+            data.totalCustomers
+        );
+
+
+        setDashboardValue(
+            "dashboardIncome",
+            formatBirr(data.totalIncome)
+        );
+
+
+        setDashboardValue(
+            "dashboardDeposit",
+            formatBirr(data.totalDeposit)
+        );
+
+
+        setDashboardValue(
+            "dashboardRemaining",
+            formatBirr(data.totalRemaining)
+        );
+
+
+        setDashboardValue(
+            "dashboardCost",
+            formatBirr(data.totalWorkCost)
+        );
+
+
+        setDashboardValue(
+            "dashboardProfit",
+            formatBirr(data.totalProfit)
+        );
+
+
+        renderOrdersTable(
+            this.orders
+        );
+
+    }
+
+};
+
+
+
+// =====================================
+// 📅 Order Delivery Countdown
+// =====================================
+
+function getDeliveryCountdown(pickupDate) {
+
+    if (!pickupDate) {
+        return {
+            text: "—",
+            days: null,
+            className: "delivery-unknown"
+        };
+    }
+
+    const target = new Date(pickupDate);
+
+    if (Number.isNaN(target.getTime())) {
+        return {
+            text: "—",
+            days: null,
+            className: "delivery-unknown"
+        };
+    }
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
+
+    const difference =
+        target.getTime() - today.getTime();
+
+    const days =
+        Math.ceil(
+            difference / (1000 * 60 * 60 * 24)
+        );
+
+    if (days > 1) {
+        return {
+            text: "🟢 " + days + " ቀን ቀረ",
+            days,
+            className: "delivery-safe"
+        };
+    }
+
+    if (days === 1) {
+        return {
+            text: "🟡 1 ቀን ቀረ",
+            days,
+            className: "delivery-warning"
+        };
+    }
+
+    if (days === 0) {
+        return {
+            text: "🔴 ዛሬ መረከብ አለበት",
+            days,
+            className: "delivery-today"
+        };
+    }
+
+    return {
+        text:
+            "⚠️ " +
+            Math.abs(days) +
+            " ቀን አልፏል",
+        days,
+        className: "delivery-overdue"
+    };
+}
+
+\n// =====================================
+// Dashboard Value Helper
+// =====================================
+
+function setDashboardValue(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+
+        element.textContent =
+            value;
+
+    }
+
+}
+
+
+// =====================================
+// Birr Formatter
+// =====================================
+
+function formatBirr(
+    amount
+) {
+
+    return (
+        Number(amount || 0)
+            .toLocaleString("en-US") +
+        " ብር"
+    );
+
+}
+
+
+// =====================================
+// Orders Table
+// =====================================
+
+function renderOrdersTable(
+    orders
+) {
+
+    const tbody =
+        document.getElementById(
+            "dashboardOrdersBody"
+        );
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    if (!orders.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="12">
+                    ምንም ትዕዛዝ አልተገኘም።
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    orders.forEach(
+        order => {
+
+            const row =
+                document.createElement("tr");
+
+            // ================================
+            // 📅 Delivery Countdown
+            // ================================
+
+            const countdown =
+                getDeliveryCountdown(
+                    order.pickupDateGregorian ||
+                    order.pickupDate ||
+                    ""
+                );
+
+            row.innerHTML = `
+
+                <td>
+                    ${escapeHTML(
+                        order.customerName || ""
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        order.phone || ""
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        order.productName || ""
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        order.orderDate || ""
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        order.pickupDate || ""
+                    )}
+                </td>
+
+                <td>
+                    <span
+                        class="delivery-countdown ${countdown.className}"
+                    >
+                        ${countdown.text}
+                    </span>
+                </td>
+
+                <td>
+                    ${formatBirr(
+                        order.totalAmount
+                    )}
+                </td>
+
+                <td>
+                    ${formatBirr(
+                        order.deposit
+                    )}
+                </td>
+
+                <td>
+                    ${formatBirr(
+                        order.remaining
+                    )}
+                </td>
+
+                <td>
+                    ${formatBirr(
+                        order.profit
+                    )}
+                </td>
+
+                <td>
+                    <span class="order-status">
+                        ${escapeHTML(
+                            order.status || ""
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${order.photoUrl
+                        ? '<img src="' +
+                          escapeHTML(order.photoUrl) +
+                          '" class="dashboard-order-photo" alt="የትዕዛዝ ፎቶ" onclick="openOrderPhoto(\\'' +
+                          escapeHTML(order.photoUrl) +
+                          '\\')">'
+                        : "—"}
+                </td>
+
+            `;
+
+            tbody.appendChild(row);
+
+        }
+    );
+
+}
+
+// =====================================
+// HTML Security
+// =====================================
+
+function escapeHTML(
+    value
+) {
+
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+// =====================================
+// Dashboard ሲጀምር
+// =====================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        console.log(
+            "📊 YamGiftET Firebase Dashboard ተጀምሯል።"
+        );
+
+
+        dashboard.loadOrders();
+
+
+        // 30 seconds በኋላ እንደገና refresh
+        setInterval(
+            () => dashboard.loadOrders(),
+            30000
+        );
+
+    }
+);
+
+
+// =====================================
+// AI Business Tips
+// =====================================
+
+const businessTips = [
+
+    "📈 ዛሬ Facebook ላይ አዲስ ምርት ለጥፍ።",
+
+    "🎥 TikTok ቪዲዮ በየቀኑ አውጣ።",
+
+    "💬 የቆዩ ደንበኞችህን እንደገና አነጋግር።",
+
+    "🎁 የቅናሽ ፕሮግራም ጀምር።",
+
+    "⭐ ከተጠናቀቀ ትዕዛዝ በኋላ የደንበኛ አስተያየት ጠይቅ።"
+
+];
+
+
+function showBusinessTip() {
+
+    const random =
+        Math.floor(
+            Math.random() *
+            businessTips.length
+        );
+
+
+    console.log(
+        "🤖 AI Business Tip:"
+    );
+
+    console.log(
+        businessTips[random]
+    );
+
+}
+
+function showBusinessTipOnPage() {
+
+    const element =
+        document.getElementById("dashboardTip");
+
+    if (!element) {
+        return;
+    }
+
+    const random =
+        Math.floor(
+            Math.random() *
+            businessTips.length
+        );
+
+    element.textContent =
+        businessTips[random];
+
+}
+
+const oldShowBusinessTip =
+    showBusinessTip;
+
+showBusinessTip = function() {
+
+    oldShowBusinessTip();
+
+    showBusinessTipOnPage();
+
+};
+
+
+
+function openOrderPhoto(url) {
+
+    if (!url) return;
+
+    let modal =
+        document.getElementById("orderPhotoModal");
+
+    if (!modal) {
+
+        modal =
+            document.createElement("div");
+
+        modal.id =
+            "orderPhotoModal";
+
+        modal.className =
+            "order-photo-modal-backdrop";
+
+        modal.innerHTML =
+            '<div class="order-photo-modal-content">' +
+            '<button type="button" class="order-photo-modal-close" onclick="closeOrderPhoto()">✕</button>' +
+            '<img id="orderPhotoModalImage" src="" alt="የትዕዛዝ ፎቶ">' +
+            '</div>';
+
+        document.body.appendChild(modal);
+
+        modal.addEventListener(
+            "click",
+            function(event) {
+
+                if (event.target === modal) {
+                    closeOrderPhoto();
+                }
+
+            }
+        );
+
+    }
+
+    const image =
+        document.getElementById(
+            "orderPhotoModalImage"
+        );
+
+    if (image) {
+        image.src = url;
+    }
+
+    modal.style.display = "flex";
+
+}
+
+
+function closeOrderPhoto() {
+
+    const modal =
+        document.getElementById(
+            "orderPhotoModal"
+        );
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+}
+
+
+
+// =====================================
+// 👥 Customers Management
+// =====================================
+
+let customersData = [];
+let currentCustomerOrders = [];
+
+
+// =====================================
+// 👥 Customers ከ Orders መፍጠር
+// =====================================
+
+function buildCustomers(orders) {
+
+    const customers = new Map();
+
+    (orders || []).forEach(order => {
+
+        const phone =
+            String(order.phone || "").trim();
+
+        const name =
+            String(order.customerName || "").trim();
+
+        if (!phone && !name) {
+            return;
+        }
+
+        const key =
+            phone || name.toLowerCase();
+
+        if (!customers.has(key)) {
+
+            customers.set(key, {
+                name: name || "ያልተጠቀሰ",
+                phone: phone || "-",
+                orders: [],
+                totalIncome: 0,
+                totalRemaining: 0
+            });
+
+        }
+
+        const customer =
+            customers.get(key);
+
+        customer.orders.push(order);
+
+        customer.totalIncome +=
+            Number(order.totalAmount || 0);
+
+        customer.totalRemaining +=
+            Number(order.remaining || 0);
+
+        if (
+            name &&
+            customer.name === "ያልተጠቀሰ"
+        ) {
+            customer.name = name;
+        }
+
+    });
+
+    return Array.from(customers.values());
+
+}
+
+
+// =====================================
+// 👥 Customers Table
+// =====================================
+
+function renderCustomers(customers) {
+
+    const tbody =
+        document.getElementById(
+            "customersBody"
+        );
+
+    const totalElement =
+        document.getElementById(
+            "customersTotal"
+        );
+
+    if (!tbody) {
+        return;
+    }
+
+    if (totalElement) {
+        totalElement.textContent =
+            customers.length;
+    }
+
+    tbody.innerHTML = "";
+
+    if (!customers.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    ምንም ደንበኛ አልተገኘም።
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    customers.forEach(customer => {
+
+        const row =
+            document.createElement("tr");
+
+        const lastOrder =
+            customer.orders.length
+                ? customer.orders[0]
+                : null;
+
+        const lastDate =
+            lastOrder
+                ? (
+                    lastOrder.orderDate ||
+                    lastOrder.createdAt ||
+                    "-"
+                )
+                : "-";
+
+
+        row.innerHTML = `
+
+            <td>
+                <strong>
+                    ${escapeHTML(customer.name)}
+                </strong>
+            </td>
+
+            <td>
+                ${escapeHTML(customer.phone)}
+            </td>
+
+            <td>
+                ${customer.orders.length}
+            </td>
+
+            <td>
+                ${formatBirr(
+                    customer.totalIncome
+                )}
+            </td>
+
+            <td>
+                ${escapeHTML(lastDate)}
+            </td>
+
+            <td>
+
+                <button
+                    type="button"
+                    class="customer-view-btn"
+                    onclick='openCustomerDetails(
+                        ${JSON.stringify(customer.phone)}
+                    )'
+                >
+                    👁️ ዝርዝር
+                </button>
+
+            </td>
+
+        `;
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+// =====================================
+// 🔎 Customer Search
+// =====================================
+
+function filterCustomers() {
+
+    const input =
+        document.getElementById(
+            "customerSearch"
+        );
+
+    const search =
+        String(input?.value || "")
+            .trim()
+            .toLowerCase();
+
+
+    if (!search) {
+
+        renderCustomers(
+            customersData
+        );
+
+        return;
+
+    }
+
+
+    const filtered =
+        customersData.filter(customer => {
+
+            const name =
+                String(customer.name || "")
+                    .toLowerCase();
+
+            const phone =
+                String(customer.phone || "")
+                    .toLowerCase();
+
+            return (
+                name.includes(search) ||
+                phone.includes(search)
+            );
+
+        });
+
+
+    renderCustomers(filtered);
+
+}
+
+
+// =====================================
+// 👤 Customer Details
+// =====================================
+
+function openCustomerDetails(phone) {
+
+    const customer =
+        customersData.find(
+            item =>
+                String(item.phone) ===
+                String(phone)
+        );
+
+
+    if (!customer) {
+
+        alert(
+            "❌ ደንበኛው አልተገኘም።"
+        );
+
+        return;
+
+    }
+
+
+    currentCustomerOrders =
+        customer.orders || [];
+
+
+    const modal =
+        document.getElementById(
+            "customerDetailsModal"
+        );
+
+
+    const nameElement =
+        document.getElementById(
+            "customerDetailsName"
+        );
+
+    const phoneElement =
+        document.getElementById(
+            "customerDetailsPhone"
+        );
+
+    const ordersElement =
+        document.getElementById(
+            "customerDetailsOrders"
+        );
+
+    const incomeElement =
+        document.getElementById(
+            "customerDetailsIncome"
+        );
+
+    const remainingElement =
+        document.getElementById(
+            "customerDetailsRemaining"
+        );
+
+
+    if (nameElement) {
+        nameElement.textContent =
+            "👤 " + customer.name;
+    }
+
+    if (phoneElement) {
+        phoneElement.textContent =
+            "📞 " + customer.phone;
+    }
+
+    if (ordersElement) {
+        ordersElement.textContent =
+            customer.orders.length;
+    }
+
+    if (incomeElement) {
+        incomeElement.textContent =
+            formatBirr(
+                customer.totalIncome
+            );
+    }
+
+    if (remainingElement) {
+        remainingElement.textContent =
+            formatBirr(
+                customer.totalRemaining
+            );
+    }
+
+
+    renderCustomerHistory(
+        customer.orders
+    );
+
+
+    if (modal) {
+
+        modal.style.display =
+            "flex";
+
+    }
+
+}
+
+
+// =====================================
+// 📦 Customer Order History
+// =====================================
+
+function renderCustomerHistory(orders) {
+
+    const tbody =
+        document.getElementById(
+            "customerHistoryBody"
+        );
+
+
+    if (!tbody) {
+        return;
+    }
+
+
+    tbody.innerHTML = "";
+
+
+    if (!orders || !orders.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    የትዕዛዝ ታሪክ የለም።
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    orders.forEach(order => {
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                ${escapeHTML(
+                    order.productName || "-"
+                )}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    order.orderDate ||
+                    order.createdAt ||
+                    "-"
+                )}
+            </td>
+
+            <td>
+                ${formatBirr(
+                    order.totalAmount
+                )}
+            </td>
+
+            <td>
+                ${formatBirr(
+                    order.remaining
+                )}
+            </td>
+
+            <td>
+                <span class="order-status">
+                    ${escapeHTML(
+                        order.status || "አዲስ"
+                    )}
+                </span>
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+// =====================================
+// ❌ Close Customer Details
+// =====================================
+
+function closeCustomerDetails() {
+
+    const modal =
+        document.getElementById(
+            "customerDetailsModal"
+        );
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+
+    }
+
+}
+
+
+// =====================================
+// 🖱️ Modal ውጭ ሲጫን
+// =====================================
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const modal =
+            document.getElementById(
+                "customerDetailsModal"
+            );
+
+        if (
+            modal &&
+            event.target === modal
+        ) {
+
+            closeCustomerDetails();
+
+        }
+
+    }
+);
+
+
+// =====================================
+// 🔎 Search Event
+// =====================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const search =
+            document.getElementById(
+                "customerSearch"
+            );
+
+        if (search) {
+
+            search.addEventListener(
+                "input",
+                filterCustomers
+            );
+
+        }
+
+    }
+);
+
+
+// =====================================
+// 🔄 Update Customers
+// =====================================
+
+function updateCustomersFromOrders() {
+
+    customersData =
+        buildCustomers(
+            dashboard.orders || []
+        );
+
+    renderCustomers(
+        customersData
+    );
+
+}
+
+
+// =====================================
+// 🔗 Dashboard Update ላይ Customers
+// =====================================
+
+const originalDashboardUpdate =
+    dashboard.update.bind(dashboard);
+
+
+dashboard.update =
+    function() {
+
+        originalDashboardUpdate();
+
+        updateCustomersFromOrders();
+
+    };
+
+
