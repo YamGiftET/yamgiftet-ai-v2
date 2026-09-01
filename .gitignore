@@ -18,3 +18,16 @@ backup-*/
 *.final-backup
 *.before-*
 *.broken
+
+# YamGiftET generated/local backups and audit artifacts
+backup-before-*
+dashboard-before-*
+dashboard-js-before-*
+style-before-*
+audit-before-*
+*-before-*
+*.final-backup
+*.backup
+*.backup-*
+*.broken
+backups/
