@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YamGiftET AI — Customers</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <h1>🎁 YamGiftET AI</h1>
+    <p>Made with ❤️ in Ethiopia</p>
+  </div>
+
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="products.html">📦 Products</a>
+    <a href="self-products.html">🛍️ የራሴ ምርቶች</a>
+    <a href="orders.html">🧾 Orders</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="appointments.html">📅 Appointments</a>
+    <a href="notes.html">📝 Notes</a>
+    <a href="quote-library.html">💬 Quote Library</a>
+    <a href="ai.html">🤖 AI</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="contact.html">📞 Contact</a>
+  </nav>
+</header>
+
+<main style="padding:24px;">
+
+<section>
+  <h2>👥 የደንበኞች ማዕከል</h2>
+  <p>ከትዕዛዞች የተሰበሰቡ የደንበኞች መረጃ</p>
+
+  <input
+    type="search"
+    id="customerSearch"
+    placeholder="🔎 በስም ወይም በስልክ ፈልግ..."
+    style="width:100%;max-width:500px;padding:12px;margin:15px 0;"
+  >
+
+  <p>👥 ጠቅላላ ደንበኞች፦ <strong id="customersTotal">0</strong></p>
+
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>ስም</th>
+          <th>ስልክ</th>
+          <th>ትዕዛዞች</th>
+          <th>ገቢ</th>
+          <th>የመጨረሻ ቀን</th>
+          <th>ዝርዝር</th>
+        </tr>
+      </thead>
+      <tbody id="customersBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<div
+  id="customerDetailsModal"
+  style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;"
+>
+  <div style="background:white;width:100%;max-width:900px;max-height:90vh;overflow:auto;border-radius:16px;padding:20px;">
+
+    <button
+      type="button"
+      onclick="document.getElementById('customerDetailsModal').style.display='none'"
+      style="float:right;"
+    >
+      ✖️ ዝጋ
+    </button>
+
+    <h2 id="customerDetailsName">👤</h2>
+    <p id="customerDetailsPhone">📞</p>
+
+    <div>
+      <p>🧾 ትዕዛዞች፦ <strong id="customerDetailsOrders">0</strong></p>
+      <p>💰 ጠቅላላ ገቢ፦ <strong id="customerDetailsIncome">0 ብር</strong></p>
+      <p>💳 የሚቀረው፦ <strong id="customerDetailsRemaining">0 ብር</strong></p>
+    </div>
+
+    <h3>📦 የትዕዛዝ ታሪክ</h3>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ምርት</th>
+            <th>ቀን</th>
+            <th>ጠቅላላ</th><th>የተከፈለ</th>
+            <th>ቀሪ</th><th>ትርፍ</th>
+            <th>ሁኔታ</th>
+          </tr>
+        </thead>
+        <tbody id="customerHistoryBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script src="js/dashboard.js"></script>
+<script src="js/customer.js"></script>
+
+</body>
+</html>

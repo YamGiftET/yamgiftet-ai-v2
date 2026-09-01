@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YamGiftET AI | አስተዳደር ማዕከል</title>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial,"Noto Sans Ethiopic",sans-serif;
+      background:#f5f7fb;
+      color:#172033;
+    }
+    .page{
+      max-width:1100px;
+      margin:auto;
+      padding:18px;
+    }
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .back{
+      border:0;
+      border-radius:10px;
+      padding:10px 14px;
+      background:#172033;
+      color:white;
+      cursor:pointer;
+    }
+    .hero{
+      background:white;
+      border-radius:18px;
+      padding:22px;
+      box-shadow:0 5px 20px rgba(0,0,0,.07);
+      margin-bottom:16px;
+    }
+    .hero h1{margin:0 0 7px}
+    .hero p{margin:0;color:#667085}
+    .status{
+      margin-top:15px;
+      padding:11px 14px;
+      border-radius:10px;
+      background:#eef2f7;
+      font-weight:bold;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+      gap:14px;
+    }
+    .card{
+      background:white;
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
+    }
+    .card .icon{font-size:28px}
+    .card h3{margin:8px 0}
+    .card p{margin:0;color:#667085;line-height:1.6}
+    .section{
+      background:white;
+      border-radius:16px;
+      padding:18px;
+      margin-top:16px;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
+    }
+    .section h2{margin-top:0}
+    .management-advice-list{
+      display:grid;
+      gap:10px;
+    }
+    .management-advice-item{
+      display:flex;
+      gap:10px;
+      padding:12px;
+      border-radius:10px;
+      background:#f7f8fa;
+    }
+    .management-advice-item span{font-size:20px}
+    .management-advice-item p{margin:0;line-height:1.6}
+    .finance-empty-state{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:14px;
+      background:#f7f8fa;
+      border-radius:10px;
+    }
+    .finance-empty-state p{margin:0}
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+    .action{
+      border:0;
+      border-radius:10px;
+      padding:11px 15px;
+      cursor:pointer;
+      background:#e9edf5;
+      color:#172033;
+      font-weight:bold;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+
+    <div class="top">
+      <strong>🛡️ YamGiftET AI v2</strong>
+      <button class="back" onclick="window.location.href='dashboard.html'">
+        ← Dashboard
+      </button>
+    </div>
+
+    <section class="hero">
+      <h1>🛡️ የአስተዳደር ማዕከል</h1>
+      <p>የንግዱን ዋና ክፍሎች ሁኔታ፣ ፋይናንስ፣ ስቶክ እና የሂሳብ ስህተቶች ይመርምሩ።</p>
+      <div id="managementSystemStatus" class="status">
+        መረጃ እየተሰበሰበ ነው...
+      </div>
+    </section>
+
+    <section class="grid">
+
+      <div class="card">
+        <div class="icon">💰</div>
+        <h3>ፋይናንስ</h3>
+        <p id="managementFinanceStatus">እየተመረመረ ነው</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">📦</div>
+        <h3>ስቶክ</h3>
+        <p id="managementStockStatus">እየተመረመረ ነው</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🧱</div>
+        <h3>ጥሬ እቃ</h3>
+        <p id="managementMaterialStatus">እየተመረመረ ነው</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🧾</div>
+        <h3>ትዕዛዞች</h3>
+        <p id="managementOrdersStatus">እየተመረመረ ነው</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">👥</div>
+        <h3>ደንበኞች</h3>
+        <p id="managementCustomersStatus">እየተመረመረ ነው</p>
+      </div>
+
+    </section>
+
+    <section class="section">
+      <h2>💡 የቢዝነስ ምክር</h2>
+      <div id="managementAdviceList" class="management-advice-list">
+        <div class="finance-empty-state">
+          <span>🔎</span>
+          <p>ምክር እየተዘጋጀ ነው...</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>🚨 የሂሳብ ስህተት ማስጠንቀቂያ</h2>
+      <span id="financeErrorCount" hidden>0</span>
+
+      <div id="financeErrorList">
+        <div class="finance-empty-state">
+          <span>🔎</span>
+          <p>የሂሳብ መረጃ እየተመረመረ ነው...</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="action" onclick="window.location.href='finance.html'">
+        💰 Finance
+      </button>
+      <button class="action" onclick="window.location.href='business-health.html'">
+        📊 Business Health
+      </button>
+      <button class="action" onclick="window.location.href='raw-material-expense.html'">
+        🧱 ጥሬ እቃ እና ወጪ
+      </button>
+      <button class="action" onclick="window.location.href='trash.html'">
+        🗑️ Universal Trash
+      </button>
+    </div>
+
+  </main>
+
+  <script src="js/management-controller.js"></script>
+</body>
+</html>

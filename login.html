@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YamGiftET AI — Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f3d2e, #123f35, #d4af37);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 430px;
+      padding: 30px;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      color: #0f3d2e;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      text-align: center;
+      color: #666;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 7px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #0f3d2e;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #signupBtn {
+      background: #d4af37;
+      color: #111;
+    }
+
+    #message {
+      min-height: 24px;
+      margin-top: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="auth-card">
+    <h1>🎁 YamGiftET AI</h1>
+    <div class="subtitle">የአስተዳደር መግቢያ</div>
+
+    <label for="email">ኢሜይል</label>
+    <input
+      id="email"
+      type="email"
+      autocomplete="email"
+      placeholder="example@email.com"
+    >
+
+    <label for="password">የይለፍ ቃል</label>
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      placeholder="የይለፍ ቃል"
+    >
+
+    <button id="loginBtn">🔐 ግባ</button>
+    <button id="signupBtn">📝 አዲስ መለያ ፍጠር</button>
+
+    <div id="message"></div>
+  </main>
+
+  <script type="module" src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
+
+  <script>
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const message = document.getElementById('message');
+
+    function showMessage(text) {
+      message.textContent = text;
+    }
+
+    window.addEventListener('yamAuthStateChanged', (event) => {
+      if (event.detail.user) {
+        showMessage('✅ በትክክል ገብተዋል።');
+setTimeout(() => {          window.location.href = 'dashboard.html';        }, 700);
+      }
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        showMessage('⚠️ ኢሜይል እና የይለፍ ቃል ያስገቡ።');
+        return;
+      }
+
+      try {
+        showMessage('⏳ እየገባ ነው...');
+
+        await window.yamAuth.signIn(
+          window.yamFirebaseAuth,
+          email,
+          password
+        );
+
+        showMessage('✅ Login ተሳክቷል።');
+      } catch (error) {
+        console.error('Login error:', error);
+        showMessage('❌ Login አልተሳካም። ' + error.code);
+      }
+    });
+
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        showMessage('⚠️ ኢሜይል እና የይለፍ ቃል ያስገቡ።');
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage('⚠️ የይለፍ ቃሉ ቢያንስ 6 ፊደል/ቁጥር ይኑረው።');
+        return;
+      }
+
+      try {
+        showMessage('⏳ መለያ እየተፈጠረ ነው...');
+
+        await window.yamAuth.signUp(
+          window.yamFirebaseAuth,
+          email,
+          password
+        );
+
+        showMessage('✅ መለያው ተፈጥሯል።');
+      } catch (error) {
+        console.error('Signup error:', error);
+        showMessage('❌ Signup አልተሳካም። ' + error.code);
+      }
+    });
+  </script>
+
+</body>
+</html>

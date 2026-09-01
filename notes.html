@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YamGiftET — Notes & Records</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="notes.css">
+</head>
+<body>
+
+<section class="notes-section">
+
+    <div class="notes-header">
+        <h2>📝 Notes & Records</h2>
+        <p>የYamGiftET ማስታወሻዎችን እና መዝገቦችን ያስተዳድሩ</p>
+    </div>
+
+    <form id="noteForm" class="notes-form">
+
+        <input type="hidden" id="noteId">
+
+        <div class="form-group">
+            <label>📝 ርዕስ</label>
+            <input
+                type="text"
+                id="noteTitle"
+                placeholder="የማስታወሻው ርዕስ"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>📂 የመዝገብ አይነት</label>
+            <select id="noteCategory">
+                <option value="ሀሳብ">💡 ሀሳብ</option>
+                <option value="ቢዝነስ">💼 ቢዝነስ</option>
+                <option value="ደንበኛ">👤 ደንበኛ</option>
+                <option value="ክፍያ">💰 ክፍያ</option>
+                <option value="ደረሰኝ">🧾 ደረሰኝ</option>
+                <option value="ሌላ">📌 ሌላ</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>📄 ሙሉ መረጃ</label>
+            <textarea
+                id="noteContent"
+                rows="7"
+                placeholder="ማስታወሻዎን እዚህ ይጻፉ..."
+            ></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>📷 ፎቶ / ደረሰኝ</label>
+            <input
+                type="file"
+                id="notePhoto"
+                accept="image/*"
+            >
+        </div>
+
+        <div class="notes-actions">
+            <button type="submit" id="saveNoteBtn">
+                💾 አስቀምጥ
+            </button>
+
+            <button type="button" id="cancelEditBtn" hidden>
+                ✖️ ሰርዝ
+            </button>
+        </div>
+
+    </form>
+
+    <div class="notes-toolbar">
+
+        <input
+            type="search"
+            id="notesSearch"
+            placeholder="🔎 Notes ፈልግ..."
+        >
+
+        <select id="notesFilter">
+            <option value="">📋 ሁሉም</option>
+            <option value="ሀሳብ">💡 ሀሳብ</option>
+            <option value="ቢዝነስ">💼 ቢዝነስ</option>
+            <option value="ደንበኛ">👤 ደንበኛ</option>
+            <option value="ክፍያ">💰 ክፍያ</option>
+            <option value="ደረሰኝ">🧾 ደረሰኝ</option>
+            <option value="ሌላ">📌 ሌላ</option>
+        </select>
+
+    </div>
+
+    <div id="notesMessage" class="notes-message"></div>
+<div class="notes-ai-panel">
+    <div class="notes-ai-header">
+        <h3>🤖 Notes AI Assistant</h3>
+        <p>የንግድ ሀሳብ፣ ማስታወሻ፣ ሂሳብ፣ የስጦታ ሀሳብ ወይም ሌላ ጥያቄ ጠይቀው።</p>
+    </div>
+
+    <textarea id="notesAiQuestion"
+        placeholder="🤖 AIን ምን መጠየቅ ይፈልጋሉ?"></textarea>
+
+    <div class="notes-ai-actions">
+        <button type="button" id="askNotesAiBtn">🤖 AIን ጠይቅ</button>
+        <button type="button" id="clearNotesAiBtn">🧹 አጽዳ</button>
+    </div>
+
+    <div id="notesAiStatus" class="notes-ai-status"></div>
+
+    <div class="notes-ai-result">
+        <div id="notesAiReply" class="notes-ai-answer">
+            <div class="notes-ai-empty">💡 የAI ምክርህ እዚህ ይታያል።</div>
+        </div>
+    </div>
+</div>
+
+
+    <div id="notesList" class="notes-list"></div>
+
+</section>
+
+<script src="js/ethiopian-calendar.js"></script>
+<script src="js/notes.js"></script>
+
+</body>
+</html>

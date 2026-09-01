@@ -490,6 +490,15 @@
                     Number(product.sellPrice || 0);
             }
 
+            const receivedEl =
+                document.getElementById("salesModalReceived");
+
+            if (receivedEl) {
+                receivedEl.value =
+                    Number(product.sellPrice || 0) *
+                    Number(quantityEl?.value || 1);
+            }
+
             updateSalesModalCalculation();
 
             modal.setAttribute("aria-hidden", "false");
@@ -532,6 +541,15 @@
         const profitEl =
             document.getElementById("salesModalProfit");
 
+        const receivedEl =
+            document.getElementById("salesModalReceived");
+
+        const receivedDisplayEl =
+            document.getElementById("salesModalReceivedDisplay");
+
+        const receivableEl =
+            document.getElementById("salesModalReceivable");
+
         const remainingStockEl =
             document.getElementById("salesModalRemainingStock");
 
@@ -562,6 +580,18 @@
         const totalProfit =
             totalSales - totalCost;
 
+        const received =
+            Math.min(
+                totalSales,
+                Math.max(
+                    0,
+                    Number(receivedEl?.value || 0)
+                )
+            );
+
+        const receivable =
+            totalSales - received;
+
         const remainingStock =
             stock - quantity;
 
@@ -573,6 +603,16 @@
         if (totalCostEl) {
             totalCostEl.textContent =
                 money(totalCost);
+        }
+
+        if (receivedDisplayEl) {
+            receivedDisplayEl.textContent =
+                money(received);
+        }
+
+        if (receivableEl) {
+            receivableEl.textContent =
+                money(receivable);
         }
 
         if (profitEl) {
@@ -618,7 +658,7 @@
         if (!modal) return;
 
         modal.setAttribute("aria-hidden", "true");
-        modal.classList.remove("open");
+        modal.classList.remove("active");
 
         window.currentSellingProductId = null;
         window.currentSellingProduct = null;
@@ -701,6 +741,25 @@
             const totalProfit =
                 totalSales - totalCost;
 
+            const receivedEl =
+                document.getElementById("salesModalReceived");
+
+            const received =
+                Math.max(
+                    0,
+                    Number(receivedEl?.value || 0)
+                );
+
+            if (received > totalSales) {
+                alert(
+                    "❌ የተቀበለው ክፍያ ከጠቅላላ ሽያጭ መብለጥ አይችልም።"
+                );
+                return;
+            }
+
+            const receivable =
+                totalSales - received;
+
             const confirmButton =
                 document.getElementById(
                     "salesModalConfirm"
@@ -725,7 +784,8 @@
                         saleDate,
                         quantity,
                         salePrice,
-                        unitCost
+                        unitCost,
+                        received
                     })
                 }
             );
@@ -761,6 +821,12 @@
                 "\\n" +
                 "📈 ትርፍ: " +
                 money(totalProfit) +
+                "\\n" +
+                "💵 የተቀበለ: " +
+                money(received) +
+                "\\n" +
+                "💳 ቀሪ: " +
+                money(receivable) +
                 "\\n" +
                 "📦 የቀረ Stock: " +
                 data.stock.remaining
@@ -812,6 +878,16 @@
 
         if (priceEl) {
             priceEl.addEventListener(
+                "input",
+                updateSalesModalCalculation
+            );
+        }
+
+        const receivedEl =
+            document.getElementById("salesModalReceived");
+
+        if (receivedEl) {
+            receivedEl.addEventListener(
                 "input",
                 updateSalesModalCalculation
             );

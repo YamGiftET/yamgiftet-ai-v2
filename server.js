@@ -6,6 +6,13 @@ const { db } = require("./firebase");
 const ordersRoutes = require("./orders-routes");
 const selfProductsRoutes = require("./self-products-routes");
 const deliveredRoutes = require("./delivered-routes");
+const rawMaterialExpenseRoutes = require("./raw-material-expense-routes");
+const financeRoutes = require("./finance-routes");
+const trashRoutes = require("./trash-routes");
+const notesRoutes = require("./notes-routes");
+const quoteAssistantRoutes = require("./quote-assistant-routes");
+const appointmentsRoutes = require("./appointments-routes");
+const contactsRoutes = require("./contacts-routes");
 
 const app = express();
 
@@ -16,6 +23,13 @@ app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use("/api", ordersRoutes);
 app.use("/api", selfProductsRoutes);
 app.use("/api", deliveredRoutes);
+app.use("/api", notesRoutes);
+app.use("/api", quoteAssistantRoutes);
+app.use("/api", appointmentsRoutes);
+app.use("/api", contactsRoutes.router);
+app.use("/api", financeRoutes);
+app.use("/api", rawMaterialExpenseRoutes);
+app.use("/api", trashRoutes);
 
 const PORT = process.env.PORT || 3000;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -50,7 +64,7 @@ app.get("/api/status", (req, res) => {
     res.json({
         success: true,
         openrouterKey: !!OPENROUTER_API_KEY,
-        model: "google/gemma-4-26b-a4b-it:free"
+        model: "openrouter/free"
     });
 });
 
@@ -100,7 +114,7 @@ app.post("/api/chat", async (req, res) => {
                 body: JSON.stringify({
 
                     model:
-                        "google/gemma-4-26b-a4b-it:free",
+                        "openrouter/free",
 
                     messages: [
 
@@ -109,57 +123,15 @@ app.post("/api/chat", async (req, res) => {
 
                             content:
 
-                                "አንተ YamGiftET AI ነህ። " +
+                                
+                                                      "አንተ YamGiftET AI ነህ። " +
+                                                      "ሁለገብ የAI ረዳት ነህ፤ በንግድ ብቻ አትገደብ። " +
+                                                      "ስለ እውቀት፣ ትምህርት፣ ሳይንስ፣ ቴክኖሎጂ፣ ፕሮግራሚንግ፣ ሂሳብ፣ ትርጉም፣ ጽሁፍ ማሻሻያ፣ ፈጠራ፣ ንግድ፣ የስጦታ ሀሳብ እና አጠቃላይ ጥያቄዎች ላይ እገዛ አድርግ። " +
+                                                      "ተጠቃሚው በሚጠይቀው ቋንቋ ግልጽ፣ ተፈጥሯዊ እና ትክክለኛ መልስ ስጥ። " +
+                                                      "አማርኛ ከሆነ በጥሩ እና በተፈጥሯዊ አማርኛ መልስ። " +
+                                                      "ጥያቄው ሂሳብ ከሆነ ስሌቱን በትክክል አድርግ። " +
+                                                      "የማታውቀውን ነገር እንደምታውቀው አትናገር።"
 
-                                "የYamGiftET የግል የስጦታ እና የንግድ ረዳት ነህ። " +
-
-                                "በተፈጥሯዊ፣ ቆንጆ፣ ግልጽ እና ሙያዊ አማርኛ መልስ። " +
-
-                                "ያለአስፈላጊ እንግሊዝኛ ቃላትን አትቀላቅል። " +
-                                "አማርኛን በንጹህ መልኩ ተጠቀም። የሌሎች ቋንቋዎች ቃላት፣ ፊደላት ወይም ምልክቶች በአማርኛ መልስ ውስጥ በድንገት እንዳይገቡ አረጋግጥ። ከተጠቀምክበት የእንግሊዝኛ ቃል በስተቀር ሌላ ቋንቋ አትጠቀም። " +
-                                "የጥቅስ ዝርዝር ሲሰጥ እያንዳንዱ ጥቅስ በአዲስ መስመር ይጀምር። ከአንድ ጥቅስ በኋላ ቀጣዩን ጥቅስ በዚያው መስመር አትጀምር። " +
-
-                                "YamGiftET ዋና ዓላማ ደንበኛው የሚወደውን፣ ለስጦታ የሚስማማውን እና ለመግዛት የሚያነሳሳውን ምርጫ ማግኘት ነው። " +
-
-                                "ጥቅስ ሲጠየቅ የ10/10 ጥራት መስፈርት ተጠቀም። " +
-
-                                "ጥቅሶቹ ስሜታዊ፣ ልዩ፣ የማይረሱ፣ በተፈጥሯዊ አማርኛ የተጻፉ እና በቀጥታ በEpoxy Frame፣ Gift Card፣ የስጦታ ማስታወሻ ወይም በማስታወቂያ ላይ ሊጠቀሙባቸው የሚችሉ ይሁኑ። " +
-
-                                "ጥቅስ ሲጠየቅ 3 ብቻ አትስጥ። በአጠቃላይ ቢያንስ 25 ጥቅሶችን አዘጋጅ። " +
-
-                                "ጥቅሶቹን ከላይ ወደታች በተራ ቁጥር 1፣ 2፣ 3፣ 4… 25 ብለህ በአንድ ከሌላው በታች አስቀምጥ። " +
-
-                                "እንደ ስድ ጽሑፍ ወይም እንደ አንድ ረጅም አንቀጽ አታደራጃቸው። " +
-
-                                "እያንዳንዱ ጥቅስ በራሱ መስመር ይጀምር። " +
-
-                                "እያንዳንዱ ጥቅስ ከሚገልጸው ስሜት፣ አጋጣሚ እና ግንኙነት ጋር የሚስማማ 1 ወይም 2 ተስማሚ ኢሞጂ ይኑረው። " +
-
-                                "ኢሞጂዎችን አትደጋግም፣ ከልክ በላይም አትጠቀም። " +
-
-                                "ጥቅሶቹን ከመስጠትህ በፊት በውስጥህ ገምግመህ አሻሽላቸው። " +
-
-                                "ደካማ፣ የተደጋገመ፣ ሰው ሰራሽ የሚመስል፣ በቃላት የተጨናነቀ ወይም ለስጦታ የማይመች ጥቅስ አትስጥ። " +
-
-                                "ፍቅር፣ ስሜት፣ ተፈጥሯዊ አማርኛ፣ ልዩነት፣ የሚታወስ መሆን እና የስጦታ ተስማሚነት አረጋግጥ። " +
-
-                                "ጥቅሱ ለማን እንደሆነ፣ የስጦታው አጋጣሚ፣ የሰዎቹ ግንኙነት እና የስጦታው ዓይነት ካለ አስብ። " +
-
-                                "ለእናት፣ ለአባት፣ ለፍቅረኛ፣ ለባል፣ ለሚስት፣ ለልጅ፣ ለጓደኛ እና ለሌሎች ሰዎች ተመሳሳይ ቃላትን አትጠቀም። " +
-
-                                "የመጽሐፍ ቅዱስ ጥቅስ ከተጠየቀ እውነተኛ የመጽሐፍ ቅዱስ ጥቅስ ብቻ አቅርብ። " +
-
-                                "የራስህን ጽሑፍ እንደ Bible verse አታቅርብ። " +
-
-                                "በምታውቀው መጠን መጽሐፍ፣ ምዕራፍ እና ቁጥር ጨምር። " +
-
-                                "የመጽሐፍ ቅዱስ ጥቅሶችንም በተራ ቁጥር ከላይ ወደታች አደራጅ። " +
-
-                                "የኢትዮጵያን ወቅታዊ የበዓል ሁኔታ አስብ። " +
-
-                                "በዓሉ ከጥቅሱ ወይም ከስጦታው ጋር ተያያዥ ከሆነ በተፈጥሯዊ መንገድ አካትተው። " +
-
-                                "የስጦታ ምክር፣ Epoxy Frame ዲዛይን፣ የደንበኛ አገልግሎት፣ የንግድ ምክር፣ ደንበኞች፣ ቀጠሮዎች እና የYamGiftET ንግድ አስተዳደር ላይ እገዛ።"
                         },
 
                         {
@@ -226,6 +198,184 @@ app.post("/api/chat", async (req, res) => {
 
     }
 
+});
+
+// =====================================
+ // Notes AI — Free OpenRouter AI
+ // =====================================
+
+app.post("/api/notes-ai", async (req, res) => {
+  try {
+    const question = String(req.body?.question || "").trim();
+
+    if (!question) {
+      return res.status(400).json({
+        success: false,
+        error: "የሚጠይቁትን ጥያቄ ያስገቡ።"
+      });
+    }
+
+    if (!OPENROUTER_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "OpenRouter API key is missing"
+      });
+    }
+
+    const response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "http://localhost:3000",
+          "X-Title": "YamGiftET Notes AI"
+        },
+        body: JSON.stringify({
+          model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          messages: [
+            {
+              role: "system",
+              content:
+                "አንተ YamGiftET AI ነህ። " +
+                "በNotes & Records ክፍል ውስጥ ለተጠቃሚው የግል እውቀት፣ የንግድ ምክር፣ የስጦታ ሀሳብ፣ የጽሑፍ ማሻሻያ፣ ትርጉም፣ ሂሳብ እና አጠቃላይ ጥያቄዎች ላይ እገዛ ታደርጋለህ። " +
+                "በተፈጥሯዊ እና ግልጽ አማርኛ መልስ። " +
+                "ጥያቄው ሂሳብ ከሆነ ስሌቱን በትክክል አድርገህ መልስ። " +
+                "የማታውቀውን ነገር እንደምታውቀው አትናገር።"
+            },
+            {
+              role: "user",
+              content: question
+            }
+          ]
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error(
+        "Notes AI OpenRouter Error:",
+        JSON.stringify(data, null, 2)
+      );
+
+      return res.status(response.status).json({
+        success: false,
+        error: data?.error?.message || "Notes AI request failed"
+      });
+    }
+
+    const reply = data?.choices?.[0]?.message?.content;
+
+    if (!reply) {
+      return res.status(500).json({
+        success: false,
+        error: "AI returned no response"
+      });
+    }
+
+    res.json({
+      success: true,
+      reply
+    });
+
+  } catch (error) {
+    console.error("Notes AI Error:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Notes AI request failed"
+    });
+  }
+});
+
+// =====================================
+// Management AI — YamGiftET Business Analysis
+// =====================================
+
+app.post("/api/management-ai", async (req, res) => {
+    try {
+        if (!OPENROUTER_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: "OpenRouter API key is missing"
+            });
+        }
+
+        const body = req.body || {};
+
+        const response = await fetch(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "http://localhost:3000",
+                    "X-Title": "YamGiftET Management AI"
+                },
+                body: JSON.stringify({
+                    model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+                    messages: [
+                        {
+                            role: "system",
+                            content:
+                                "አንተ YamGiftET AI የንግድ አስተዳደር ረዳት ነህ። " +
+                                "የተሰጠህን የንግድ መረጃ በጥንቃቄ ተንትን። " +
+                                "የፋይናንስ፣ የትዕዛዝ፣ የምርት፣ የጥሬ እቃ፣ የወጪ እና የNotes መረጃን አገናኝ። " +
+                                "በተፈጥሯዊ እና ግልጽ አማርኛ መልስ። " +
+                                "ችግሮችን፣ እድሎችን እና ቀጣይ እርምጃዎችን ለይ። " +
+                                "ያልተሰጠ መረጃ እንዳለ አትገምት።"
+                        },
+                        {
+                            role: "user",
+                            content:
+                                "የYamGiftET የንግድ መረጃ እነሆ፣ ተንትነው የአስተዳደር ምክር ስጠኝ።\n\n" +
+                                JSON.stringify(body, null, 2)
+                        }
+                    ]
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error(
+                "Management AI OpenRouter Error:",
+                JSON.stringify(data, null, 2)
+            );
+
+            return res.status(response.status).json({
+                success: false,
+                error: data?.error?.message || "Management AI request failed"
+            });
+        }
+
+        const reply = data?.choices?.[0]?.message?.content;
+
+        if (!reply) {
+            return res.status(500).json({
+                success: false,
+                error: "AI returned no response"
+            });
+        }
+
+        res.json({
+            success: true,
+            reply
+        });
+
+    } catch (error) {
+        console.error("Management AI Error:", error);
+
+        res.status(500).json({
+            success: false,
+            error: "Management AI request failed"
+        });
+    }
 });
 
 // =====================================

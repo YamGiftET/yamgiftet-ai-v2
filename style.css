@@ -11,7 +11,7 @@
 
 body {
   
-  font-family: Arial, sans-serif;
+  font-family: "Noto Sans Ethiopic", "Abyssinica SIL", Arial, sans-serif;
   
   background: #f8f9fa;
   
@@ -1067,3 +1067,2330 @@ footer {
 
 }
 
+
+/* =========================================
+   YamGiftET AI v2 — Full Width Dashboard
+   Modern Vertical Layout
+   ========================================= */
+
+.dashboard-main-card,
+.business-dashboard,
+.customers-section,
+.yam-raw-expense-dashboard,
+.orders-section {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+.features {
+    width: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 28px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.features > .card {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.dashboard-main-card {
+    padding: 28px;
+}
+
+.dashboard-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.dashboard-stat {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.dashboard-orders-section {
+    width: 100%;
+    margin-top: 28px;
+}
+
+.dashboard-table-wrapper,
+.dashboard-orders-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dashboard-orders-table {
+    width: 100%;
+    min-width: 1050px;
+}
+
+@media (max-width: 1000px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .features {
+        padding: 12px;
+        gap: 20px;
+    }
+
+    .dashboard-main-card {
+        padding: 18px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
+
+/* =========================================
+   🛡️ Management Center
+   ========================================= */
+
+.dashboard-management-center {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 30px;
+    margin: 0;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #102d27, #173f35);
+    color: #fff;
+    box-shadow: 0 18px 45px rgba(0,0,0,.14);
+}
+
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.management-kicker {
+    color: #d4af37;
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.management-header h2 {
+    margin: 7px 0;
+    font-size: 1.7rem;
+}
+
+.management-header p {
+    margin: 0;
+    color: rgba(255,255,255,.72);
+}
+
+.management-status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 15px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    white-space: nowrap;
+}
+
+.management-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #42d392;
+    box-shadow: 0 0 12px rgba(66,211,146,.8);
+}
+
+.management-overview {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0,1fr));
+    gap: 14px;
+    margin: 24px 0;
+}
+
+.management-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 18px;
+    border-radius: 17px;
+    background: rgba(255,255,255,.075);
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.management-item > span {
+    font-size: 1.6rem;
+}
+
+.management-item strong,
+.management-item small {
+    display: block;
+}
+
+.management-item small {
+    margin-top: 4px;
+    color: rgba(255,255,255,.62);
+}
+
+.finance-error-panel,
+.management-advice {
+    margin-top: 18px;
+    padding: 22px;
+    border-radius: 19px;
+    background: rgba(255,255,255,.96);
+    color: #18231f;
+}
+
+.finance-error-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.finance-error-header > div {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.finance-error-header h3,
+.management-advice h3 {
+    margin: 0;
+}
+
+.finance-error-header p,
+.management-advice-title p {
+    margin: 5px 0 0;
+    color: #68736e;
+}
+
+.finance-error-count {
+    min-width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f3e3e3;
+    color: #b42318;
+    font-weight: 800;
+}
+
+.finance-error-list,
+.management-advice-list {
+    margin-top: 17px;
+}
+
+.finance-empty-state {
+    padding: 18px;
+    border-radius: 14px;
+    background: #f1faf5;
+    color: #26734d;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.finance-empty-state p {
+    margin: 0;
+}
+
+.management-advice-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.management-advice-title > span {
+    font-size: 1.7rem;
+}
+
+.management-advice-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 13px;
+    background: #faf8f1;
+    border-left: 4px solid #d4af37;
+}
+
+.management-advice-item p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+    .management-overview {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-management-center {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .management-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .management-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .management-status {
+        white-space: normal;
+    }
+
+    .finance-error-panel,
+    .management-advice {
+        padding: 16px;
+    }
+}
+
+
+/* 👤 Customer Details — Modern UI */
+.customer-details-modal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(15,23,42,.68);
+  backdrop-filter:blur(5px);
+}
+
+.customer-details-card{
+  width:100%;
+  max-width:900px;
+  max-height:90vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  padding:0;
+}
+
+.customer-details-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px;
+  background:linear-gradient(135deg,#0f3d2e,#176b50);
+  color:#fff;
+}
+
+.customer-details-title{
+  font-size:20px;
+  font-weight:700;
+}
+
+.customer-details-phone{
+  margin-top:4px;
+  opacity:.9;
+  font-size:14px;
+}
+
+.customer-details-close{
+  border:0;
+  background:rgba(255,255,255,.15);
+  color:#fff;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.customer-details-profile{
+  padding:20px;
+}
+
+.customer-details-profile h2{
+  margin:0 0 18px;
+  font-size:24px;
+}
+
+.customer-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.customer-stats > div{
+  padding:16px;
+  border-radius:16px;
+  background:#f7f8f6;
+  border:1px solid #e7ebe8;
+}
+
+.customer-stats span{
+  display:block;
+  font-size:22px;
+  margin-bottom:6px;
+}
+
+.customer-stats small{
+  display:block;
+  color:#64748b;
+  margin-bottom:5px;
+}
+
+.customer-stats strong{
+  font-size:17px;
+  color:#0f3d2e;
+}
+
+.customer-history-title{
+  margin:0;
+  padding:0 20px 14px;
+  font-size:18px;
+}
+
+.customer-history-wrap{
+  overflow-x:auto;
+  padding:0 20px 20px;
+}
+
+.customer-history-wrap table{
+  width:100%;
+  min-width:650px;
+  border-collapse:collapse;
+}
+
+.customer-history-wrap th,
+.customer-history-wrap td{
+  padding:12px 10px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
+}
+
+.customer-history-wrap th{
+  background:#f1f5f3;
+  color:#0f3d2e;
+  font-weight:700;
+}
+
+@media(max-width:600px){
+  .customer-details-modal{
+    padding:8px;
+  }
+
+  .customer-details-card{
+    max-height:94vh;
+    border-radius:18px;
+  }
+
+  .customer-details-title{
+    font-size:17px;
+  }
+
+  .customer-details-profile{
+    padding:16px;
+  }
+
+  .customer-stats{
+    grid-template-columns:1fr;
+  }
+
+  .customer-history-wrap{
+    padding:0 12px 16px;
+  }
+}
+
+
+/* 👤 Contact Details — Modern UI */
+.contact-details-modal{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(15,23,42,.68);
+  backdrop-filter:blur(5px);
+  opacity:0;
+  transition:opacity .2s ease;
+}
+
+.contact-details-modal.show{
+  opacity:1;
+}
+
+.contact-details-card{
+  width:100%;
+  max-width:600px;
+  background:#fff;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  transform:translateY(12px);
+  transition:transform .2s ease;
+}
+
+.contact-details-modal.show .contact-details-card{
+  transform:translateY(0);
+}
+
+.contact-details-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px;
+  background:linear-gradient(135deg,#0f3d2e,#176b50);
+  color:#fff;
+}
+
+.contact-details-title{
+  font-size:20px;
+  font-weight:700;
+}
+
+.contact-details-subtitle{
+  margin-top:4px;
+  font-size:14px;
+  opacity:.9;
+}
+
+.contact-details-close{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.15);
+  color:#fff;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.contact-details-body{
+  padding:24px 20px;
+}
+
+.contact-profile{
+  text-align:center;
+}
+
+.contact-avatar{
+  width:200px;
+  height:200px;
+  margin:0 auto 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:#f1f5f3;
+  font-size:34px;
+}
+
+.contact-profile h2{
+  margin:0 0 6px;
+  color:#0f3d2e;
+  font-size:24px;
+}
+
+.contact-profile p{
+  margin:0;
+  color:#64748b;
+}
+
+.contact-info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:24px;
+}
+
+.contact-info-box{
+  padding:16px;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  background:#f8faf9;
+}
+
+.contact-info-box span{
+  display:block;
+  font-size:22px;
+  margin-bottom:8px;
+}
+
+.contact-info-box small{
+  display:block;
+  color:#64748b;
+  margin-bottom:5px;
+}
+
+.contact-info-box strong{
+  display:block;
+  color:#0f3d2e;
+  font-size:14px;
+}
+
+@media(max-width:600px){
+  .contact-details-modal{
+    padding:8px;
+  }
+
+  .contact-details-card{
+    border-radius:18px;
+  }
+
+  .contact-details-title{
+    font-size:17px;
+  }
+
+  .contact-info-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* 👥 Customers — Wide & Spacious UI */
+main{
+  width:100%;
+  box-sizing:border-box;
+}
+
+main > section{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
+  box-sizing:border-box;
+}
+
+main table{
+  width:100%;
+  min-width:850px;
+}
+
+main th,
+main td{
+  padding:14px 18px;
+  white-space:nowrap;
+}
+
+/* 👁️ Customer Details — Wide */
+.contact-details-card{
+  max-width:900px !important;
+}
+
+#customerDetailsModal > div{
+  width:100% !important;
+  max-width:1100px !important;
+  box-sizing:border-box;
+}
+
+/* 📦 History scroll */
+#customerDetailsModal .contact-details-body{
+  overflow-x:auto;
+}
+
+#customerDetailsModal table{
+  width:100%;
+  min-width:850px;
+}
+
+#customerDetailsModal th,
+#customerDetailsModal td{
+  padding:14px 18px;
+  white-space:nowrap;
+}
+
+@media(max-width:700px){
+  main{
+    padding:16px !important;
+  }
+
+  main table{
+    min-width:850px;
+  }
+
+  #customerDetailsModal{
+    padding:8px !important;
+  }
+
+  #customerDetailsModal > div{
+    max-width:none !important;
+    max-height:94vh !important;
+    padding:16px !important;
+  }
+}
+
+
+/* 👥 Customers — Balanced Width */
+main > section{
+  max-width:1180px;
+}
+
+/* 📋 Customer table — comfortable spacing */
+main > section table{
+  min-width:760px;
+}
+
+main > section th,
+main > section td{
+  padding:12px 14px;
+}
+
+/* 👥 Customers heading */
+main > section > h2{
+  margin-bottom:6px;
+  font-size:24px;
+}
+
+main > section > p{
+  margin-top:4px;
+  margin-bottom:12px;
+}
+
+/* 👁️ Customer Details — Balanced */
+#customerDetailsModal > div{
+  max-width:900px !important;
+  max-height:88vh !important;
+  padding:22px !important;
+}
+
+/* 📦 Details history */
+#customerDetailsModal table{
+  min-width:760px;
+}
+
+#customerDetailsModal th,
+#customerDetailsModal td{
+  padding:12px 14px;
+}
+
+/* 📱 Mobile */
+@media(max-width:700px){
+  main > section{
+    max-width:100%;
+  }
+
+  main > section > h2{
+    font-size:21px;
+  }
+
+  #customerDetailsModal > div{
+    width:calc(100% - 16px) !important;
+    max-height:92vh !important;
+    padding:16px !important;
+  }
+}
+
+\n
+/* 📦 Contact Details — Order History */
+.contact-orders-section{
+  margin-top:20px;
+  padding:18px;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+}
+.contact-orders-section h3{
+  margin:0 0 14px;
+  font-size:18px;
+}
+.contact-orders-body{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.contact-order-item{
+  display:grid;
+  grid-template-columns:1.4fr repeat(6,minmax(100px,1fr));
+  gap:10px;
+  align-items:center;
+  padding:14px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  overflow-x:auto;
+}
+.contact-order-item span,
+.contact-order-item strong{
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  .contact-orders-section{
+    padding:12px;
+  }
+  .contact-order-item{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+}
+
+
+/* 📊 Customer 360° Summary */
+.contact-360-summary{
+  margin-top:20px;
+  padding:18px;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+}
+
+.contact-360-summary h3{
+  margin:0 0 14px;
+  font-size:18px;
+}
+
+.contact-360-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.contact-360-box{
+  padding:15px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  text-align:center;
+}
+
+.contact-360-box span{
+  display:block;
+  font-size:24px;
+  margin-bottom:6px;
+}
+
+.contact-360-box small{
+  display:block;
+  color:#64748b;
+  margin-bottom:5px;
+}
+
+.contact-360-box strong{
+  display:block;
+  color:#0f3d2e;
+  font-size:18px;
+}
+
+/* 🕒 Customer Timeline */
+.contact-timeline-section{
+  margin-top:20px;
+  padding:18px;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+}
+
+.contact-timeline-section h3{
+  margin:0 0 14px;
+  font-size:18px;
+}
+
+.contact-timeline-body{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.contact-timeline-item{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+}
+
+.contact-timeline-dot{
+  flex:0 0 auto;
+  font-size:14px;
+  color:#176b50;
+  padding-top:3px;
+}
+
+.contact-timeline-content{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.contact-timeline-content strong{
+  font-size:15px;
+  color:#0f3d2e;
+}
+
+.contact-timeline-content span{
+  font-size:12px;
+  color:#64748b;
+}
+
+.contact-timeline-content p{
+  margin:2px 0 0;
+  color:#334155;
+}
+
+@media(max-width:700px){
+  .contact-360-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .contact-360-box{
+    padding:12px 8px;
+  }
+
+  .contact-timeline-section{
+    padding:12px;
+  }
+}
+
+@media(max-width:420px){
+  .contact-360-grid{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .contact-360-box strong{
+    font-size:15px;
+  }
+}
+
+/* =====================================
+   📸 Contact Profile Photo
+   ===================================== */
+
+.contact-avatar-img{
+  width:100%;
+  height:100%;
+  display:block;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+
+/* =====================================
+   📜 Contact Details — Mobile Scroll Fix
+   ===================================== */
+
+.contact-details-modal{
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  align-items:flex-start;
+}
+
+.contact-details-card{
+  margin:16px auto;
+  max-height:calc(100vh - 32px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+
+/* =====================================
+   📞 Contact Call + 💬 Message Actions
+   ===================================== */
+
+.contact-quick-actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:14px auto 18px;
+  flex-wrap:wrap;
+}
+
+.contact-quick-actions a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:125px;
+  min-height:44px;
+  padding:10px 16px;
+  border-radius:12px;
+  text-decoration:none;
+  font-weight:700;
+  font-size:15px;
+  box-sizing:border-box;
+  transition:transform .15s ease, opacity .15s ease;
+}
+
+.contact-quick-actions a:active{
+  transform:scale(.96);
+  opacity:.85;
+}
+
+.contact-call-btn{
+  background:#0f9d58;
+  color:#fff;
+}
+
+.contact-message-btn{
+  background:#2563eb;
+  color:#fff;
+}
+
+.contact-phone-display{
+  margin:0;
+  color:#64748b;
+  font-weight:600;
+}
+
+@media (max-width:600px){
+  .contact-quick-actions{
+    width:100%;
+  }
+
+  .contact-quick-actions a{
+    flex:1 1 140px;
+    min-height:48px;
+  }
+}
+
+
+/* =====================================
+   CONTACT RECORDINGS — MODERN BOX
+   ===================================== */
+
+.contact-recordings-section {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,.07);
+}
+
+.contact-recordings-section h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.contact-recording-upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f7f7f7;
+}
+
+.contact-recording-upload input[type="text"] {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+}
+
+.contact-audio-picker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: #f1b400;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.contact-audio-picker input {
+  display: none;
+}
+
+.contact-recording-upload button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 15px;
+  background: #222;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.contact-recordings-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.contact-recording-item {
+  padding: 13px;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.contact-recording-item audio {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.contact-recording-name-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+.contact-recording-item small {
+  display: block;
+  color: #777;
+}
+
+@media (max-width: 600px) {
+  .contact-recording-upload {
+    flex-direction: column;
+  }
+
+  .contact-audio-picker,
+  .contact-recording-upload button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+
+/* =====================================
+   CONTACT RECORDINGS — SCROLL BOX
+   ===================================== */
+
+.contact-recordings-body {
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px;
+  margin-top: 14px;
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  background: #f8f8f8;
+  box-sizing: border-box;
+}
+
+.contact-recordings-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+.contact-recordings-body::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 10px;
+}
+
+.contact-recordings-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.contact-recording-item {
+  margin-bottom: 10px;
+}
+
+.contact-recording-item:last-child {
+  margin-bottom: 0;
+}
+
+.contact-recording-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.contact-recording-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.contact-recording-save,
+.contact-recording-delete {
+  border: 0;
+  border-radius: 9px;
+  padding: 8px 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.contact-recording-save {
+  background: #222;
+  color: #fff;
+}
+
+.contact-recording-delete {
+  background: #d9534f;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .contact-recordings-body {
+    max-height: 300px;
+  }
+
+  .contact-recording-meta {
+    align-items: stretch;
+  }
+
+  .contact-recording-actions {
+    width: 100%;
+  }
+
+  .contact-recording-save,
+  .contact-recording-delete {
+    flex: 1;
+  }
+}
+
+
+/* =========================================
+   💰 UNIVERSAL FINANCE MODULE CARD
+   ========================================= */
+
+.dashboard-module-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 18px 0 24px;
+    padding: 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fffaf0, #ffffff);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-module-icon {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: #fff1b8;
+    font-size: 30px;
+}
+
+.dashboard-module-content {
+    flex: 1;
+}
+
+.dashboard-module-content h3 {
+    margin: 0 0 5px;
+    font-size: 20px;
+}
+
+.dashboard-module-content p {
+    margin: 0 0 7px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.dashboard-module-content span {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .dashboard-module-card {
+        padding: 16px;
+        gap: 13px;
+    }
+
+    .dashboard-module-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 25px;
+    }
+
+    .dashboard-module-content h3 {
+        font-size: 17px;
+    }
+}
+
+
+/* =========================================================
+   UNIVERSAL FINANCE SOURCES
+   ========================================================= */
+
+.yam-re-finance-sources {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 18px 0;
+}
+
+.yam-re-finance-source-card {
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.yam-re-finance-source-card span {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 8px;
+    opacity: 0.85;
+}
+
+.yam-re-finance-source-card strong {
+    display: block;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.yam-re-finance-source-card small {
+    display: block;
+    margin-top: 6px;
+    opacity: 0.75;
+}
+
+@media (max-width: 700px) {
+    .yam-re-finance-sources {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   UNIVERSAL FINANCE — EXPANDABLE CARDS
+   ========================================================= */
+
+.yam-re-financial-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.yam-re-money-card.finance-expand-card {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-height: 155px;
+    padding: 22px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 20px;
+    background: rgba(255,255,255,.07);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+.yam-re-money-card.finance-expand-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,.14);
+}
+
+.yam-re-money-card.finance-expand-card:active {
+    transform: scale(.985);
+}
+
+.finance-card-title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.finance-card-value {
+    display: block;
+    font-size: 1.65rem;
+    line-height: 1.3;
+    margin: 2px 0;
+}
+
+.finance-card-hint {
+    display: block;
+    margin-top: auto;
+    font-size: .82rem;
+    opacity: .65;
+    line-height: 1.5;
+}
+
+.finance-card-detail {
+    display: none;
+    margin-top: 8px;
+    padding-top: 13px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    font-size: .92rem;
+    line-height: 1.9;
+}
+
+.finance-card-detail > div {
+    padding: 4px 0;
+}
+
+.finance-expand-card.is-expanded {
+    min-height: 190px;
+    border-color: rgba(255,255,255,.28);
+}
+
+.finance-expand-card.is-expanded .finance-card-detail {
+    display: block;
+}
+
+.finance-expand-card.is-expanded .finance-card-hint {
+    opacity: .8;
+}
+
+.yam-re-finance-sources {
+    width: 100%;
+    margin: 20px 0;
+}
+
+@media (max-width: 600px) {
+    .yam-re-financial-cards {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .yam-re-money-card.finance-expand-card {
+        min-height: 145px;
+        padding: 19px;
+        border-radius: 18px;
+    }
+
+    .finance-card-value {
+        font-size: 1.45rem;
+    }
+}
+
+
+/* =========================================================
+   FINANCE HISTORY — EXPANDABLE CARDS
+   ========================================================= */
+
+.yam-re-finance-history-card {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 12px 0;
+    padding: 18px 20px;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(0,0,0,.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    cursor: pointer;
+    transition: .25s ease;
+}
+
+.yam-re-finance-history-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.11);
+}
+
+.yam-re-finance-history-card > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.yam-re-finance-history-card > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 150px;
+    text-align: right;
+}
+
+.yam-re-finance-history-card strong {
+    display: block;
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.yam-re-finance-history-card small {
+    display: block;
+    margin: 4px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.yam-re-finance-history-card::after {
+    content: "▾";
+    font-size: 18px;
+    opacity: .55;
+    transition: transform .25s ease;
+}
+
+.yam-re-finance-history-card.is-expanded::after {
+    transform: rotate(180deg);
+}
+
+@media (max-width: 700px) {
+    .yam-re-finance-history-card {
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px;
+    }
+
+    .yam-re-finance-history-card > div:last-child {
+        width: 100%;
+        text-align: left;
+    }
+
+    .yam-re-finance-history-card::after {
+        position: absolute;
+        right: 18px;
+    }
+}
+
+
+/* =========================================================
+   FINANCE HISTORY — WIDE EXPANDABLE CARDS
+   ========================================================= */
+
+#financeHistory {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.yam-re-finance-history-card {
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e4e8ef;
+    border-radius: 18px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.yam-re-finance-history-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.finance-history-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.finance-history-main {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px 14px;
+}
+
+.finance-history-type {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.finance-history-title {
+    font-size: 17px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.finance-history-date,
+.finance-history-customer {
+    font-size: 14px;
+    opacity: 0.75;
+}
+
+.finance-history-arrow {
+    flex: 0 0 auto;
+    font-size: 22px;
+    transition: transform 0.25s ease;
+}
+
+.finance-history-expand-card.is-expanded .finance-history-arrow {
+    transform: rotate(180deg);
+}
+
+.finance-history-details {
+    display: none;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #edf0f4;
+}
+
+.finance-history-expand-card.is-expanded .finance-history-details {
+    display: block;
+}
+
+.finance-history-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.finance-history-detail-grid > div {
+    min-width: 0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #f7f9fc;
+    border: 1px solid #edf0f4;
+}
+
+.finance-history-detail-grid span {
+    display: block;
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+}
+
+.finance-history-detail-grid strong {
+    display: block;
+    font-size: 16px;
+    word-break: break-word;
+}
+
+.finance-history-source {
+    margin-top: 14px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: #f4f6f9;
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+@media (max-width: 650px) {
+    .yam-re-finance-history-card {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .finance-history-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-history-title {
+        font-size: 16px;
+    }
+
+    .finance-history-main {
+        gap: 7px 10px;
+    }
+}
+
+
+/* =========================================================
+   FINANCE HISTORY — MAIN WRAPPER
+   ========================================================= */
+
+.yam-re-finance-history-section {
+    width: 100%;
+    margin-top: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #e8ebf0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+
+.yam-re-finance-history-section .yam-re-finance-history-card {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 14px 0;
+}
+
+.yam-re-finance-history-section .yam-re-finance-history-card:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+    .yam-re-finance-history-section {
+        padding: 12px;
+        border-radius: 16px;
+    }
+}
+
+
+/* =========================================================
+   TWO-LEVEL FINANCE HISTORY
+   ========================================================= */
+
+.yam-re-finance-history-section {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.yam-re-finance-history-section .finance-history-box-header {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid #e8edf3;
+    box-shadow: 0 6px 20px rgba(0,0,0,.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.finance-history-box-arrow {
+    font-size: 22px;
+    transition: transform .25s ease;
+}
+
+.finance-history-list {
+    display: none;
+    margin-top: 12px;
+}
+
+.yam-re-finance-history-section.history-is-expanded .finance-history-list {
+    display: block;
+}
+
+.yam-re-finance-history-section.history-is-expanded
+.finance-history-box-arrow {
+    transform: rotate(180deg);
+}
+
+.finance-history-expand-card {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid #e8edf3;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
+    cursor: pointer;
+}
+
+.finance-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.finance-history-main {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+
+.finance-history-type {
+    font-size: 15px;
+}
+
+.finance-history-title {
+    font-size: 16px;
+}
+
+.finance-history-date,
+.finance-history-customer {
+    font-size: 13px;
+    opacity: .8;
+}
+
+.finance-history-arrow {
+    flex-shrink: 0;
+    font-size: 22px;
+    transition: transform .25s ease;
+}
+
+.finance-history-expand-card.is-expanded .finance-history-arrow {
+    transform: rotate(180deg);
+}
+
+.finance-history-details {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0f4;
+}
+
+.finance-history-expand-card.is-expanded .finance-history-details {
+    display: block;
+}
+
+.finance-history-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.finance-history-detail-grid > div {
+    padding: 12px;
+    border-radius: 12px;
+    background: #f7f9fb;
+}
+
+.finance-history-detail-grid span {
+    display: block;
+    font-size: 12px;
+    opacity: .75;
+    margin-bottom: 5px;
+}
+
+.finance-history-detail-grid strong {
+    display: block;
+    font-size: 15px;
+}
+
+.finance-history-source {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed #dfe4ea;
+    font-size: 13px;
+    opacity: .75;
+}
+
+@media (max-width: 600px) {
+    .finance-history-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-history-main {
+        display: grid;
+        gap: 4px;
+    }
+}
+
+
+/* FINAL FIX — FINANCE SUMMARY DETAILS */
+.yam-re-money-card.finance-expand-card {
+    overflow: visible !important;
+}
+
+.yam-re-money-card.finance-expand-card .finance-card-detail {
+    display: none !important;
+}
+
+.yam-re-money-card.finance-expand-card.is-expanded .finance-card-detail {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.yam-re-money-card.finance-expand-card.is-expanded {
+    height: auto !important;
+    min-height: 190px !important;
+}
+
+/* FINANCE HISTORY TEXT VISIBILITY FIX */
+.yam-re-finance-history-section .finance-history-detail-grid,
+.yam-re-finance-history-section .finance-history-detail-grid > div,
+.yam-re-finance-history-section .finance-history-detail-grid span,
+.yam-re-finance-history-section .finance-history-detail-grid strong,
+.yam-re-finance-history-section .finance-history-source {
+    color: #1f2937 !important;
+}
+
+.yam-re-finance-history-section .finance-history-detail-grid strong {
+    font-weight: 800;
+}
+
+
+/* FINANCE HISTORY — COLLAPSED DETAILS */
+.yam-re-finance-history-section .finance-history-expand-card .finance-history-details {
+    display: none !important;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded .finance-history-details {
+    display: block !important;
+}
+
+/* History name/header remains visible */
+.yam-re-finance-history-section .finance-history-header {
+    cursor: pointer;
+    min-height: 44px;
+}
+
+/* Keep the card compact when closed */
+.yam-re-finance-history-section .finance-history-expand-card {
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded {
+    height: auto !important;
+}
+
+
+/* FINANCE HISTORY HEADER TEXT VISIBILITY */
+.yam-re-finance-history-section .finance-history-header,
+.yam-re-finance-history-section .finance-history-header *,
+.yam-re-finance-history-section .finance-history-type,
+.yam-re-finance-history-section .finance-history-title,
+.yam-re-finance-history-section .finance-history-date,
+.yam-re-finance-history-section .finance-history-customer {
+    color: #1f2937 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* FINANCE HISTORY — EXPANDED CARD VISUAL STATE */
+.yam-re-finance-history-section .finance-history-expand-card {
+    transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded {
+    background: #eef6ff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 6px 18px rgba(59,130,246,.16) !important;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded
+.finance-history-header {
+    color: #1d4ed8 !important;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded
+.finance-history-arrow {
+    color: #1d4ed8 !important;
+}
+
+
+/* FINANCE HISTORY — BRIGHT GREEN EXPANDED STATE */
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded {
+    background: #e8f8ee !important;
+    border-color: #16a34a !important;
+    box-shadow: 0 8px 22px rgba(22,163,74,.22) !important;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded
+.finance-history-header,
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded
+.finance-history-header * {
+    color: #15803d !important;
+}
+
+.yam-re-finance-history-section .finance-history-expand-card.is-expanded
+.finance-history-arrow {
+    color: #16a34a !important;
+}
+
+
+/* FINANCE 7 SUMMARY CARDS — WATER BLUE WHEN EXPANDED */
+.yam-re-money-card.finance-expand-card.is-expanded {
+    background: #dff6ff !important;
+    border-color: #00a9e8 !important;
+    box-shadow: 0 8px 24px rgba(0,169,232,.25) !important;
+}
+
+.yam-re-money-card.finance-expand-card.is-expanded
+.finance-card-title,
+.yam-re-money-card.finance-expand-card.is-expanded
+.finance-card-value,
+.yam-re-money-card.finance-expand-card.is-expanded
+.finance-card-hint,
+.yam-re-money-card.finance-expand-card.is-expanded
+.finance-card-detail {
+    color: #006b99 !important;
+}
+
+.yam-re-money-card.finance-expand-card.is-expanded
+.finance-card-detail {
+    border-top-color: rgba(0,169,232,.25) !important;
+}
+
+
+/* =========================================================
+   FINANCE CALCULATION CONTROL ALARM
+   ========================================================= */
+
+.finance-calculation-alarm {
+    width: 100%;
+    margin: 12px 0 18px;
+}
+
+.finance-calculation-ok,
+.finance-calculation-error {
+    border-radius: 14px;
+    padding: 14px 16px;
+    box-sizing: border-box;
+}
+
+.finance-calculation-ok {
+    border: 1px solid #35a853;
+    background: rgba(53, 168, 83, 0.10);
+}
+
+.finance-calculation-error {
+    border: 1px solid #d93025;
+    background: rgba(217, 48, 37, 0.08);
+}
+
+.finance-alarm-title {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.finance-alarm-item {
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(217, 48, 37, 0.25);
+    line-height: 1.7;
+}
+
+.finance-alarm-item strong {
+    font-weight: 800;
+}
+
+@media (max-width: 600px) {
+    .finance-calculation-ok,
+    .finance-calculation-error {
+        padding: 12px;
+    }
+
+    .finance-alarm-item {
+        font-size: 14px;
+    }
+}
+
+
+/* =====================================
+   🧮 Universal Calculator UI
+   ===================================== */
+
+.universal-calculator-section {
+    width: 100%;
+    padding: 30px 16px;
+}
+
+.universal-calculator {
+    width: min(100%, 430px);
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 12px 35px rgba(0,0,0,.12);
+}
+
+.calculator-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.calculator-header > span {
+    font-size: 32px;
+}
+
+.calculator-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.calculator-header p {
+    margin: 3px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.calculator-display {
+    width: 100%;
+    height: 75px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    border: 0;
+    border-radius: 16px;
+    background: #f1f3f5;
+    color: #111;
+    font-size: 30px;
+    font-weight: bold;
+    text-align: right;
+    outline: none;
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.calculator-buttons button {
+    min-height: 62px;
+    border: 0;
+    border-radius: 16px;
+    background: #f1f3f5;
+    color: #222;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .1s ease, opacity .1s ease;
+}
+
+.calculator-buttons button:active {
+    transform: scale(.94);
+    opacity: .75;
+}
+
+.calculator-zero {
+    grid-column: span 2;
+}
+
+.calculator-equals {
+    background: #0d6efd !important;
+    color: #fff !important;
+}
+
+@media (max-width: 480px) {
+    .universal-calculator-section {
+        padding: 20px 10px;
+    }
+
+    .universal-calculator {
+        padding: 16px;
+        border-radius: 20px;
+    }
+
+    .calculator-buttons {
+        gap: 8px;
+    }
+
+    .calculator-buttons button {
+        min-height: 58px;
+    }
+
+    .calculator-display {
+        height: 68px;
+        font-size: 26px;
+    }
+}
+
+
+/* =========================================
+   📱 YAMGIFTet AI — MOBILE APP DASHBOARD
+   ========================================= */
+
+.yam-dashboard-launcher {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 22px;
+    margin: 0 0 24px;
+}
+
+.yam-launcher-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+    padding: 18px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #102d27, #1d5144);
+    color: #fff;
+    box-shadow: 0 14px 35px rgba(0,0,0,.12);
+}
+
+.yam-launcher-title > span {
+    font-size: 2.2rem;
+}
+
+.yam-launcher-title h2 {
+    margin: 0;
+    font-size: 1.55rem;
+}
+
+.yam-launcher-title p {
+    margin: 4px 0 0;
+    color: rgba(255,255,255,.72);
+    font-size: .88rem;
+}
+
+.yam-launcher-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.yam-app-card {
+    width: 100%;
+    min-height: 105px;
+    border: 1px solid rgba(16,45,39,.10);
+    border-radius: 22px;
+    padding: 18px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    align-items: center;
+    text-align: left;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 9px 25px rgba(0,0,0,.08);
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+    font-family: inherit;
+}
+
+.yam-app-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0,0,0,.13);
+}
+
+.yam-app-card:active {
+    transform: scale(.98);
+}
+
+.yam-app-icon {
+    grid-row: 1 / span 2;
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: #f4f0df;
+    font-size: 1.8rem;
+}
+
+.yam-app-card strong {
+    font-size: 1rem;
+    color: #17231f;
+}
+
+.yam-app-card small {
+    margin-top: 3px;
+    color: #68736e;
+    font-size: .78rem;
+}
+
+.yam-card-main {
+    border: 2px solid #d4af37;
+    background: linear-gradient(135deg, #fffdf5, #f8f3df);
+}
+
+.yam-card-main .yam-app-icon {
+    background: #d4af37;
+}
+
+/* 📱 Portrait: one card per row */
+@media (max-width: 700px) {
+    .yam-dashboard-launcher {
+        padding: 14px 10px;
+    }
+
+    .yam-launcher-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 📱 Landscape / wider phone: two cards per row */
+@media (min-width: 701px) {
+    .yam-launcher-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* =========================================
+   🌟 YAM DASHBOARD BOX ANIMATION
+   ========================================= */
+
+.yam-launcher-grid {
+    position: relative;
+}
+
+.yam-app-card {
+    transition:
+        opacity .4s ease,
+        transform .45s cubic-bezier(.2,.8,.2,1),
+        box-shadow .25s ease;
+}
+
+/* ያም ሳጥኑ ሲዘጋ — ሌሎቹ ካርዶች ወደ ያም ይጠጋሉ */
+body.yam-dashboard-closed .yam-launcher-grid .yam-app-card:not(.yam-card-main) {
+    opacity: 0;
+    transform: scale(.12) translateY(-20px);
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+}
+
+/* ያም ሲከፈት — ካርዶቹ ከያም ሳጥኑ ይወጣሉ */
+body.yam-dashboard-open .yam-launcher-grid .yam-app-card:not(.yam-card-main) {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+    position: relative;
+    inset: auto;
+}
+
+.yam-card-main {
+    position: relative;
+    z-index: 20;
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+}
+
+body.yam-dashboard-closed .yam-card-main {
+    transform: scale(1.05);
+    box-shadow: 0 18px 42px rgba(212,175,55,.32);
+}
+
+body.yam-dashboard-open .yam-card-main {
+    transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .yam-app-card,
+    .yam-card-main {
+        transition: none !important;
+    }
+}
+
+/* YAM DASHBOARD — 14 MODULE LAUNCHER */
+body.yam-dashboard-closed .yam-launcher-grid .yam-app-card,
+body.yam-dashboard-open .yam-launcher-grid .yam-app-card {
+    display: grid !important;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    inset: auto !important;
+}

@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { db } = require("./firebase");
+const { moveToUniversalTrash } = require("./trash-helper");
+const calculator = require("./universal-calculator");
 
 /* =========================================================
    YamGiftET AI — SELF-MADE PRODUCTS API
@@ -21,10 +23,10 @@ function calculateProduct(data = {}) {
     const sellPrice = Math.max(0, number(data.sellPrice));
     const unitCost = Math.max(0, number(data.unitCost));
 
-    const unitProfit = sellPrice - unitCost;
-    const totalSales = sellPrice * quantity;
-    const totalCost = unitCost * quantity;
-    const totalProfit = unitProfit * quantity;
+    const unitProfit = calculator.subtract(sellPrice, unitCost);
+    const totalSales = calculator.multiply(sellPrice, quantity);
+    const totalCost = calculator.multiply(unitCost, quantity);
+    const totalProfit = calculator.multiply(unitProfit, quantity);
 
     return {
         quantity,
@@ -37,7 +39,6 @@ function calculateProduct(data = {}) {
         totalProfit
     };
 }
-
 /* =========================================================
    GET ALL SELF-MADE PRODUCTS
    ========================================================= */
@@ -344,11 +345,28 @@ router.post("/self-products/:id/sales", async (req, res) => {
             clean(body.saleDate) ||
             new Date().toISOString().slice(0, 10);
 
-        const totalSales = salePrice * quantity;
-        const totalCost = unitCost * quantity;
-        const totalProfit = totalSales - totalCost;
+        const totalSales = calculator.multiply(salePrice, quantity);
+        const totalCost = calculator.multiply(unitCost, quantity);
+        const totalProfit = calculator.subtract(totalSales, totalCost);
 
-        const now = new Date().toISOString();
+        const received = Math.max(
+            0,
+            number(body.received ?? body.paidAmount ?? totalSales)
+        );
+
+        if (received > totalSales) {
+            return res.status(400).json({
+                success: false,
+                error: "የተቀበለው ክፍያ ከጠቅላላ ሽያጭ መብለጥ አይችልም።"
+            });
+        }
+
+        const receivable = calculator.subtract(
+            totalSales,
+            received
+        );
+
+    const now = new Date().toISOString();
 
         const sale = {
             productId,
@@ -362,6 +380,9 @@ router.post("/self-products/:id/sales", async (req, res) => {
             totalSales,
             totalCost,
             totalProfit,
+
+            received,
+            receivable,
 
             saleDate,
 
@@ -380,6 +401,22 @@ router.post("/self-products/:id/sales", async (req, res) => {
             updatedAt: now
         }, {
             merge: true
+        });
+
+        await recordStockMovement({
+            itemType: "selfProduct",
+            itemId: productId,
+            itemName: product.productName,
+            movementType: "SALE",
+            quantity,
+            unit: "ቁጥር",
+            previousStock: currentStock,
+            remainingStock: newStock,
+            unitCost,
+            totalValue: totalCost,
+            referenceId: saleRef.id,
+            movementDate: saleDate,
+            createdAt: now
         });
 
         res.status(201).json({
@@ -507,22 +544,172 @@ router.delete("/self-products/:id", async (req, res) => {
             });
         }
 
-        await ref.delete();
+        const data = existing.data() || {};
 
-        res.json({
+        const result = await moveToUniversalTrash({
+            collection: "selfProducts",
+            id,
+            data,
+            type: "selfProduct",
+            displayName:
+                data.name ||
+                data.productName ||
+                data.title ||
+                "Self Product",
+            extra: {
+                deletedFrom: "selfProducts"
+            }
+        });
+
+        return res.json({
             success: true,
-            message: "ምርቱ ተሰርዟል።",
-            id
+            trashed: true,
+            trashId: result.trashId,
+            message: "🗑️ ምርቱ ወደ Universal Trash ተወስዷል።",
+            product: result
         });
 
     } catch (error) {
-        console.error("Self Product DELETE Error:", error);
+        console.error(
+            "Self Product Universal Trash Error:",
+            error
+        );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            error: "ምርቱን መሰረዝ አልተቻለም።"
+            error:
+                error.message ||
+                "ምርቱን ወደ Universal Trash መውሰድ አልተቻለም።"
         });
     }
 });
+
+
+/* =========================================================
+   SELF-PRODUCT FINANCE — OWN ACCOUNTING ONLY
+   ========================================================= */
+
+router.get("/self-products-finance/summary", async (req, res) => {
+    try {
+        const productsSnap = await db.collection("selfProducts").get();
+
+        let stockQuantity = 0;
+        let stockValue = 0;
+        let totalSoldQuantity = 0;
+        let totalSales = 0;
+        let totalCost = 0;
+        let totalProfit = 0;
+
+        const products = [];
+
+        for (const productDoc of productsSnap.docs) {
+            const product = productDoc.data() || {};
+
+            const salesSnap = await db
+                .collection("selfProducts")
+                .doc(productDoc.id)
+                .collection("sales")
+                .get();
+
+            let soldQuantity = 0;
+            let sales = 0;
+            let cost = 0;
+            let profit = 0;
+
+            salesSnap.forEach(doc => {
+                const sale = doc.data() || {};
+                soldQuantity += number(sale.quantity);
+                sales += number(sale.totalSales);
+                cost += number(sale.totalCost);
+                profit += number(sale.totalProfit);
+            });
+
+            const stock = Math.max(0, number(product.stock));
+            const unitCost = Math.max(0, number(product.unitCost));
+
+            stockQuantity += stock;
+            stockValue += stock * unitCost;
+            totalSoldQuantity += soldQuantity;
+            totalSales += sales;
+            totalCost += cost;
+            totalProfit += profit;
+
+            products.push({
+                id: productDoc.id,
+                productName: clean(product.productName),
+                productType: clean(product.productType),
+                stock,
+                stockValue: stock * unitCost,
+                soldQuantity,
+                totalSales: sales,
+                totalCost: cost,
+                totalProfit: profit
+            });
+        }
+
+        const profitMargin =
+            totalSales > 0
+                ? (totalProfit / totalSales) * 100
+                : 0;
+
+        res.json({
+            success: true,
+            scope: "self-products-only",
+            summary: {
+                products: productsSnap.size,
+                stockQuantity,
+                stockValue,
+                totalSoldQuantity,
+                totalSales,
+                totalCost,
+                totalProfit,
+                profitMargin
+            },
+            products
+        });
+
+    } catch (error) {
+        console.error("Self Products Finance Summary Error:", error);
+
+        res.status(500).json({
+            success: false,
+            error: "የSelf-Product ፋይናንስ ስሌት ማስኬድ አልተቻለም።"
+        });
+    }
+});
+
+
+// =========================================================
+// STOCK MOVEMENT LEDGER — PHASE 1
+// Backend-only transaction audit
+// =========================================================
+async function recordStockMovement(data) {
+    const movement = {
+        itemType: data.itemType,
+        itemId: data.itemId,
+        itemName: clean(data.itemName),
+        movementType: data.movementType,
+        quantity: number(data.quantity),
+        unit: clean(data.unit),
+        previousStock: number(data.previousStock),
+        remainingStock: number(data.remainingStock),
+        unitCost: number(data.unitCost),
+        totalValue: number(data.totalValue),
+        referenceId: clean(data.referenceId),
+        movementDate: clean(data.movementDate),
+        createdAt: data.createdAt || new Date().toISOString()
+    };
+
+    if (
+        !movement.itemType ||
+        !movement.itemId ||
+        !movement.movementType ||
+        movement.quantity <= 0
+    ) {
+        throw new Error("Invalid stock movement");
+    }
+
+    return db.collection("stockMovements").add(movement);
+}
 
 module.exports = router;

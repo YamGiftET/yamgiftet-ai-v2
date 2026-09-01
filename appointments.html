@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YamGiftET AI — Appointments</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@bekim_2121/ethiopian-datepicker@1.1.6/dist/ethiopian-datepicker.css">
+<script src="https://cdn.jsdelivr.net/npm/@bekim_2121/ethiopian-datepicker@1.1.6/dist/ethiopian-datepicker.js"></script>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    <h1>🎁 YamGiftET AI</h1>
+    <p>Made with ❤️ in Ethiopia</p>
+  </div>
+
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="products.html">📦 Products</a>
+    <a href="self-products.html">🛍️ የራሴ ምርቶች</a>
+    <a href="orders.html">🧾 Orders</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="appointments.html">📅 Appointments</a>
+    <a href="notes.html">📝 Notes</a>
+    <a href="quote-library.html">💬 Quote Library</a>
+    <a href="ai.html">🤖 AI</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="contact.html">📞 Contact</a>
+  </nav>
+</header>
+
+<main style="padding:24px;">
+
+  <section>
+    <h2>📅 የቀጠሮ ማዕከል</h2>
+    <p>የደንበኞችን ቀጠሮ መመዝገብና ማስቀመጥ</p>
+
+    <form
+      id="appointmentForm"
+      onsubmit="handleAppointmentSubmit(event)"
+      style="display:grid;gap:14px;max-width:600px;"
+    >
+
+      <label>
+        👤 የደንበኛ ስም
+        <input
+          id="appointmentName"
+          type="text"
+          required
+          placeholder="ስም ያስገቡ"
+          style="width:100%;padding:12px;"
+        >
+      </label>
+
+      <label>
+        📞 ስልክ
+        <input
+          id="appointmentPhone"
+          type="tel"
+          required
+          placeholder="09..."
+          style="width:100%;padding:12px;"
+        >
+      </label>
+
+      <label>
+        📅 ቀን
+        <input
+            id="appointmentDate"
+            type="text"
+            readonly
+            required
+            autocomplete="off"
+            placeholder="የኢትዮጵያ ቀን ይምረጡ..."
+            style="width:100%;padding:12px;cursor:pointer;"
+          >
+      </label>
+
+      <label>
+        ⏰ ሰዓት
+        <input
+          id="appointmentTime"
+          type="time"
+          required
+          style="width:100%;padding:12px;"
+        >
+      </label>
+
+      <button type="submit">
+        ➕ ቀጠሮ መዝግብ
+      </button>
+
+    </form>
+  </section>
+
+  <hr>
+
+  <section>
+    <h2>📋 የተመዘገቡ ቀጠሮዎች</h2>
+
+    <p>
+      📅 ጠቅላላ ቀጠሮ፦
+      <strong id="appointmentsTotal">0</strong>
+    </p>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ደንበኛ</th>
+            <th>ስልክ</th>
+            <th>ቀን</th>
+            <th>ሰዓት</th>
+            <th>ተግባር</th>
+          </tr>
+        </thead>
+
+        <tbody id="appointmentsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/appointment.js"></script>
+
+<script>
+async function renderAppointmentsPage() {
+  const tbody = document.getElementById("appointmentsBody");
+  const total = document.getElementById("appointmentsTotal");
+  if (!tbody) return;
+
+  try {
+    await loadAppointments();
+    const list = Array.isArray(appointments) ? appointments : [];
+    if (total) total.textContent = list.length;
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="5">📭 ምንም ቀጠሮ አልተመዘገበም።</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map((item) =>
+      '<tr>' +
+      '<td>' + escapeAppointmentHTML(item.name || '-') + '</td>' +
+      '<td>' + escapeAppointmentHTML(item.phone || '-') + '</td>' +
+      '<td>' + escapeAppointmentHTML(item.date || '-') + '</td>' +
+      '<td>' + escapeAppointmentHTML(item.time || '-') + '</td>' +
+      '<td><button type="button" onclick="deleteAppointmentFromPage(\'' +
+      String(item.id || '') + '\')">🗑️ ሰርዝ</button></td>' +
+      '</tr>'
+    ).join('');
+
+  } catch (error) {
+    console.error("Appointments Render Error:", error);
+    if (total) total.textContent = '0';
+    tbody.innerHTML = '<tr><td colspan="5">❌ ቀጠሮዎችን ማምጣት አልተቻለም።</td></tr>';
+  }
+}
+
+async function handleAppointmentSubmit(event) {
+  event.preventDefault();
+  const name = document.getElementById("appointmentName")?.value.trim();
+  const phone = document.getElementById("appointmentPhone")?.value.trim();
+  const date = document.getElementById("appointmentDate")?.value;
+  const time = document.getElementById("appointmentTime")?.value;
+
+  if (!name || !phone || !date || !time) return;
+
+  try {
+    await addAppointment(name, phone, date, time);
+    event.target.reset();
+    await renderAppointmentsPage();
+    alert('✅ ቀጠሮው ተመዝግቧል።');
+  } catch (error) {
+    console.error("Appointment Submit Error:", error);
+    alert('❌ ቀጠሮውን ማስቀመጥ አልተቻለም።\n' + (error.message || ''));
+  }
+}
+
+async function deleteAppointmentFromPage(id) {
+  if (!id) return;
+  if (!confirm('ይህን ቀጠሮ ማጥፋት ይፈልጋሉ?')) return;
+
+  try {
+    await deleteAppointment(id);
+    await renderAppointmentsPage();
+    alert('🗑️ ቀጠሮው ወደ Universal Trash ተወስዷል።');
+  } catch (error) {
+    console.error("Appointment Delete Error:", error);
+    alert('❌ ቀጠሮውን መሰረዝ አልተቻለም።\n' + (error.message || ''));
+  }
+}
+
+function escapeAppointmentHTML(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    if (typeof EthiopianDatePicker !== "undefined") {
+      new EthiopianDatePicker('#appointmentDate', {
+        locale: 'am',
+        darkMode: false,
+        highlightHolidays: true,
+        onChange: (date) => {
+          console.log("📅 Ethiopian appointment date:", date);
+        }
+      });
+
+      console.log("✅ Ethiopian Calendar initialized");
+    } else {
+      console.error("❌ EthiopianDatePicker library አልተጫነም።");
+    }
+  } catch (error) {
+    console.error("❌ Ethiopian Calendar initialization error:", error);
+  }
+
+  renderAppointmentsPage();
+});
+</script>
+
+</body>
+</html>

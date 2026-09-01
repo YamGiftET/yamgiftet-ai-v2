@@ -166,35 +166,6 @@ const dashboard = {
         );
 
 
-        setDashboardValue(
-            "dashboardIncome",
-            formatBirr(data.totalIncome)
-        );
-
-
-        setDashboardValue(
-            "dashboardDeposit",
-            formatBirr(data.totalDeposit)
-        );
-
-
-        setDashboardValue(
-            "dashboardRemaining",
-            formatBirr(data.totalRemaining)
-        );
-
-
-        setDashboardValue(
-            "dashboardCost",
-            formatBirr(data.totalWorkCost)
-        );
-
-
-        setDashboardValue(
-            "dashboardProfit",
-            formatBirr(data.totalProfit)
-        );
-
 
         renderOrdersTable(
             this.orders
@@ -219,9 +190,10 @@ function getDeliveryCountdown(pickupDate) {
         };
     }
 
-    const target = new Date(pickupDate);
+    // 🇪🇹 pickupDate = Ethiopian date YYYY-MM-DD
+    const parts = String(pickupDate).split("-");
 
-    if (Number.isNaN(target.getTime())) {
+    if (parts.length !== 3) {
         return {
             text: "—",
             days: null,
@@ -229,16 +201,60 @@ function getDeliveryCountdown(pickupDate) {
         };
     }
 
-    const today = new Date();
+    const ethYear = Number(parts[0]);
+    const ethMonth = Number(parts[1]);
+    const ethDay = Number(parts[2]);
 
-    today.setHours(0, 0, 0, 0);
-    target.setHours(0, 0, 0, 0);
+    if (!ethYear || !ethMonth || !ethDay) {
+        return {
+            text: "—",
+            days: null,
+            className: "delivery-unknown"
+        };
+    }
+
+    const gregorian = ethiopianToGregorian(
+        ethYear,
+        ethMonth,
+        ethDay
+    );
+
+    if (
+        !gregorian ||
+        !gregorian.year ||
+        !gregorian.month ||
+        !gregorian.day
+    ) {
+        return {
+            text: "—",
+            days: null,
+            className: "delivery-unknown"
+        };
+    }
+
+    const target = new Date(
+        Date.UTC(
+            gregorian.year,
+            gregorian.month - 1,
+            gregorian.day
+        )
+    );
+
+    const now = new Date();
+
+    const today = new Date(
+        Date.UTC(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        )
+    );
 
     const difference =
         target.getTime() - today.getTime();
 
     const days =
-        Math.ceil(
+        Math.round(
             difference / (1000 * 60 * 60 * 24)
         );
 
@@ -267,10 +283,7 @@ function getDeliveryCountdown(pickupDate) {
     }
 
     return {
-        text:
-            "⚠️ " +
-            Math.abs(days) +
-            " ቀን አልፏል",
+        text: "⚠️ " + Math.abs(days) + " ቀን አልፏል",
         days,
         className: "delivery-overdue"
     };
@@ -358,6 +371,17 @@ function renderOrdersTable(
             const row =
                 document.createElement("tr");
 
+            // ================================
+            // 📅 Delivery Countdown
+            // ================================
+
+            const countdown =
+                getDeliveryCountdown(
+                    order.pickupDateGregorian ||
+                    order.pickupDate ||
+                    ""
+                );
+
 
             row.innerHTML = `
 
@@ -389,6 +413,14 @@ function renderOrdersTable(
                     ${escapeHTML(
                         order.pickupDate || ""
                     )}
+                </td>
+
+                <td>
+                    <span
+                        class="delivery-countdown ${countdown.className}"
+                    >
+                        ${countdown.text}
+                    </span>
                 </td>
 
                 <td>
@@ -637,14 +669,17 @@ let currentCustomerOrders = [];
 // 👥 Customers ከ Orders መፍጠር
 // =====================================
 
-function buildCustomers(orders) {
+function normalizeCustomerPhone(value) {
+  return String(value || "").replace(/[^0-9+]/g, "").replace(/^00/, "+");
+}
+
+function buildCustomers(orders, contacts = []) {
 
     const customers = new Map();
 
     (orders || []).forEach(order => {
 
-        const phone =
-            String(order.phone || "").trim();
+        const phone = normalizeCustomerPhone(order.phone);
 
         const name =
             String(order.customerName || "").trim();
@@ -686,6 +721,29 @@ function buildCustomers(orders) {
             customer.name = name;
         }
 
+    });
+
+    (contacts || []).forEach(contact => {
+        const phone = normalizeCustomerPhone(contact.phone);
+        const name = String(contact.name || "").trim();
+        if (!phone && !name) return;
+
+        const key = phone || name.toLowerCase();
+
+        if (!customers.has(key)) {
+            customers.set(key, {
+                name: name || "ያልተጠቀሰ",
+                phone: phone || "-",
+                orders: [],
+                totalIncome: 0,
+                totalRemaining: 0
+            });
+        } else {
+            const customer = customers.get(key);
+            if (name && customer.name === "ያልተጠቀሰ") {
+                customer.name = name;
+            }
+        }
     });
 
     return Array.from(customers.values());
@@ -966,85 +1024,35 @@ function openCustomerDetails(phone) {
 // =====================================
 
 function renderCustomerHistory(orders) {
+  const tbody = document.getElementById("customerHistoryBody");
+  if (!tbody) return;
 
-    const tbody =
-        document.getElementById(
-            "customerHistoryBody"
-        );
+  tbody.innerHTML = "";
 
+  if (!orders || !orders.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7">የትዕዛዝ ታሪክ የለም።</td>
+      </tr>
+    `;
+    return;
+  }
 
-    if (!tbody) {
-        return;
-    }
+  orders.forEach(order => {
+    const row = document.createElement("tr");
 
+    row.innerHTML = `
+      <td><strong>${escapeHTML(order.productName || "-")}</strong></td>
+      <td>${escapeHTML(order.orderDate || order.createdAt || "-")}</td>
+      <td>${formatBirr(order.totalAmount)}</td>
+      <td>${formatBirr(order.deposit)}</td>
+      <td>${formatBirr(order.remaining)}</td>
+      <td>${formatBirr(order.profit)}</td>
+      <td><span class="order-status">${escapeHTML(order.status || "አዲስ")}</span></td>
+    `;
 
-    tbody.innerHTML = "";
-
-
-    if (!orders || !orders.length) {
-
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5">
-                    የትዕዛዝ ታሪክ የለም።
-                </td>
-            </tr>
-        `;
-
-        return;
-
-    }
-
-
-    orders.forEach(order => {
-
-        const row =
-            document.createElement("tr");
-
-
-        row.innerHTML = `
-
-            <td>
-                ${escapeHTML(
-                    order.productName || "-"
-                )}
-            </td>
-
-            <td>
-                ${escapeHTML(
-                    order.orderDate ||
-                    order.createdAt ||
-                    "-"
-                )}
-            </td>
-
-            <td>
-                ${formatBirr(
-                    order.totalAmount
-                )}
-            </td>
-
-            <td>
-                ${formatBirr(
-                    order.remaining
-                )}
-            </td>
-
-            <td>
-                <span class="order-status">
-                    ${escapeHTML(
-                        order.status || "አዲስ"
-                    )}
-                </span>
-            </td>
-
-        `;
-
-
-        tbody.appendChild(row);
-
-    });
-
+    tbody.appendChild(row);
+  });
 }
 
 
@@ -1385,21 +1393,21 @@ dashboard.update =
 
                         <label>
                             📅 የትዕዛዝ ቀን
-                            <input
-                                type="date"
-                                id="yamEditOrderDate"
-                                value="${String(order.orderDate || "").slice(0,10)}"
-                            >
+                            <div class="yam-ethiopian-date-row">
+                                <select id="yamEditOrderDateYear"></select>
+                                <select id="yamEditOrderDateMonth"></select>
+                                <select id="yamEditOrderDateDay"></select>
+                            </div>
                         </label>
 
 
                         <label>
                             📦 የመረከቢያ ቀን
-                            <input
-                                type="date"
-                                id="yamEditPickupDate"
-                                value="${String(order.pickupDate || "").slice(0,10)}"
-                            >
+                            <div class="yam-ethiopian-date-row">
+                                <select id="yamEditPickupDateYear"></select>
+                                <select id="yamEditPickupDateMonth"></select>
+                                <select id="yamEditPickupDateDay"></select>
+                            </div>
                         </label>
 
 
@@ -1469,6 +1477,153 @@ dashboard.update =
 
 
         document.body.appendChild(modal);
+
+        // =====================================
+        // 🇪🇹 Ethiopian dates for Edit Order
+        // =====================================
+        function initYamEditEthiopianDate(prefix, value) {
+
+            const yearSelect =
+                document.getElementById(prefix + "Year");
+
+            const monthSelect =
+                document.getElementById(prefix + "Month");
+
+            const daySelect =
+                document.getElementById(prefix + "Day");
+
+            if (!yearSelect || !monthSelect || !daySelect) {
+                return;
+            }
+
+            let selectedYear;
+            let selectedMonth;
+            let selectedDay;
+
+            const parts = String(value || "").split("-");
+
+            if (parts.length === 3) {
+                selectedYear = Number(parts[0]);
+                selectedMonth = Number(parts[1]);
+                selectedDay = Number(parts[2]);
+            }
+
+            if (!selectedYear || !selectedMonth || !selectedDay) {
+                const today = gregorianToEthiopian(new Date());
+
+                selectedYear = today.year;
+                selectedMonth = today.month;
+                selectedDay = today.day;
+            }
+
+            yearSelect.innerHTML = "";
+
+            const today =
+                gregorianToEthiopian(new Date());
+
+            for (
+                let year = today.year - 2;
+                year <= today.year + 5;
+                year++
+            ) {
+                const option =
+                    document.createElement("option");
+
+                option.value = year;
+                option.textContent = year;
+
+                if (year === selectedYear) {
+                    option.selected = true;
+                }
+
+                yearSelect.appendChild(option);
+            }
+
+            monthSelect.innerHTML = "";
+
+            ETHIOPIAN_MONTHS.forEach(
+                (monthName, index) => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = index + 1;
+                    option.textContent =
+                        `${index + 1}. ${monthName}`;
+
+                    if (index + 1 === selectedMonth) {
+                        option.selected = true;
+                    }
+
+                    monthSelect.appendChild(option);
+                }
+            );
+
+            function updateDays() {
+
+                const year =
+                    Number(yearSelect.value);
+
+                const month =
+                    Number(monthSelect.value);
+
+                const maxDays =
+                    getEthiopianMonthDays(
+                        year,
+                        month
+                    );
+
+                const oldDay =
+                    Number(daySelect.value) ||
+                    selectedDay ||
+                    1;
+
+                daySelect.innerHTML = "";
+
+                for (
+                    let day = 1;
+                    day <= maxDays;
+                    day++
+                ) {
+                    const option =
+                        document.createElement("option");
+
+                    option.value = day;
+                    option.textContent = day;
+
+                    if (
+                        day ===
+                        Math.min(oldDay, maxDays)
+                    ) {
+                        option.selected = true;
+                    }
+
+                    daySelect.appendChild(option);
+                }
+            }
+
+            updateDays();
+
+            monthSelect.addEventListener(
+                "change",
+                updateDays
+            );
+
+            yearSelect.addEventListener(
+                "change",
+                updateDays
+            );
+        }
+
+        initYamEditEthiopianDate(
+            "yamEditOrderDate",
+            order.orderDate
+        );
+
+        initYamEditEthiopianDate(
+            "yamEditPickupDate",
+            order.pickupDate
+        );
 
 
         const status =
@@ -1541,14 +1696,14 @@ dashboard.update =
             workCost: cost,
 
             orderDate:
-                document.getElementById(
+                getEthiopianDate(
                     "yamEditOrderDate"
-                )?.value || "",
+                ),
 
             pickupDate:
-                document.getElementById(
+                getEthiopianDate(
                     "yamEditPickupDate"
-                )?.value || "",
+                ),
 
             status:
                 document.getElementById(
@@ -1923,6 +2078,18 @@ dashboard.update =
                                 ${escapeHTML(
                                     order.pickupDate || ""
                                 )}
+                            </td>
+
+                            <td>
+                                <span
+                                    class="delivery-countdown delivery-countdown-active-orders"
+                                >
+                                    ${getDeliveryCountdown(
+                                        order.pickupDateGregorian ||
+                                        order.pickupDate ||
+                                        ""
+                                    ).text}
+                                </span>
                             </td>
 
                             <td>
@@ -2649,7 +2816,6 @@ console.log(
 
 
 window.deleteYamOrder = async function(orderId) {
-
     const id = String(orderId || "").trim();
 
     if (!id) {
@@ -2658,7 +2824,9 @@ window.deleteYamOrder = async function(orderId) {
     }
 
     const confirmed = confirm(
-        "⚠️ ይህን ትዕዛዝ በእርግጥ ማጥፋት ይፈልጋሉ?"
+        "🗑️ ይህን ትዕዛዝ ወደ Trash ለመውሰድ እርግጠኛ ነህ?\\n\\n" +
+        "♻️ በኋላ Restore ማድረግ ትችላለህ።\\n" +
+        "🗑️ Permanently Delete ከTrash ውስጥ ብቻ ይሆናል።"
     );
 
     if (!confirmed) {
@@ -2666,24 +2834,36 @@ window.deleteYamOrder = async function(orderId) {
     }
 
     try {
-
         const response = await fetch(
             "/api/orders/" + encodeURIComponent(id),
             {
-                method: "DELETE"
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json"
+                }
             }
         );
 
-        const result = await response.json();
+        let result = {};
+
+        try {
+            result = await response.json();
+        } catch (e) {
+            result = {};
+        }
 
         if (!response.ok || !result.success) {
             throw new Error(
-                result.error || "Delete failed"
+                result.error ||
+                result.message ||
+                "Trash move failed"
             );
         }
 
         alert(
-            "✅ ትዕዛዙ ተሰርዟል።"
+            "🗑️ ትዕዛዙ ወደ Trash ተወስዷል።\\n\\n" +
+            "♻️ Restore ማድረግ ወይም\\n" +
+            "🗑️ Permanently Delete ማድረግ ትችላለህ።"
         );
 
         if (
@@ -2696,19 +2876,17 @@ window.deleteYamOrder = async function(orderId) {
         }
 
     } catch (error) {
-
         console.error(
-            "YamGiftET Delete Error:",
+            "YamGiftET Trash Error:",
             error
         );
 
         alert(
-            "❌ ትዕዛዙን ማጥፋት አልተቻለም።\\n" +
-            error.message
+            "❌ ትዕዛዙን ወደ Trash መውሰድ አልተቻለም።\\n\\n" +
+            (error.message || error)
         );
     }
 };
-
 console.log(
     "✅ YamGiftET Direct Backend Action Fix loaded."
 );
@@ -3609,7 +3787,7 @@ async function loadYamSelfProductsDashboard() {
     section.id = "yamSelfProductsDashboard";
 
     section.style.cssText = `
-        margin:25px 0;
+        margin:8px 0;
         padding:20px;
         background:#ffffff;
         border-radius:18px;
@@ -3988,3 +4166,625 @@ document.addEventListener(
 );
 
 })();
+
+/* =========================================================
+   🗑️ YAMGIFET UNIVERSAL TRASH UI
+   Restore + Permanent Delete + Empty Trash
+   ========================================================= */
+
+(function () {
+    "use strict";
+
+    function yamUniversalEscape(value) {
+        const div = document.createElement("div");
+        div.textContent = String(value ?? "");
+        return div.innerHTML;
+    }
+
+    function yamUniversalTrashFormatDate(value) {
+        if (!value) return "-";
+
+        try {
+            const date = new Date(value);
+
+            if (Number.isNaN(date.getTime())) {
+                return yamUniversalEscape(value);
+            }
+
+            return date.toLocaleString();
+        } catch (error) {
+            return yamUniversalEscape(value);
+        }
+    }
+
+    function yamUniversalTrashDisplayName(item) {
+        return (
+            item.displayName ||
+            item.customerName ||
+            item.name ||
+            item.title ||
+            item.productName ||
+            item.id ||
+            "-"
+        );
+    }
+
+    function createUniversalTrashUI() {
+        if (document.getElementById("yamUniversalTrashButton")) {
+            return;
+        }
+
+        const ordersSection =
+            document.querySelector(".dashboard-orders-section");
+
+        if (!ordersSection) {
+            setTimeout(createUniversalTrashUI, 500);
+            return;
+        }
+
+        const header = ordersSection.querySelector("h3");
+
+        if (!header) {
+            setTimeout(createUniversalTrashUI, 500);
+            return;
+        }
+
+        const button = document.createElement("button");
+
+        button.id = "yamUniversalTrashButton";
+        button.type = "button";
+        button.innerHTML = "🗑️ Universal Trash";
+        button.title = "ሁሉም የተሰረዙ መረጃዎች";
+        button.addEventListener("click", loadYamUniversalTrash);
+
+        header.style.display = "flex";
+        header.style.justifyContent = "space-between";
+        header.style.alignItems = "center";
+        header.style.gap = "10px";
+        header.style.flexWrap = "wrap";
+
+        header.appendChild(button);
+
+        const panel = document.createElement("div");
+
+        panel.id = "yamUniversalTrashPanel";
+
+        panel.innerHTML =
+            '<div class="yam-universal-trash-header">' +
+                '<div>' +
+                    '<h3>🗑️ Universal Trash</h3>' +
+                    '<p>የተሰረዙ ሁሉም መረጃዎች</p>' +
+                '</div>' +
+                '<div class="yam-universal-trash-top-actions">' +
+                    '<button type="button" id="yamUniversalTrashRefresh">🔄 Refresh</button>' +
+                    '<button type="button" id="yamUniversalTrashEmpty">🧹 Empty Trash</button>' +
+                    '<button type="button" id="yamUniversalTrashClose" title="ዝጋ">✖️</button>' +
+                '</div>' +
+            '</div>' +
+            '<div id="yamUniversalTrashBody">' +
+                '<p class="yam-universal-trash-empty">Trash እየተጫነ ነው...</p>' +
+            '</div>';
+
+        ordersSection.insertAdjacentElement("afterend", panel);
+
+        document
+            .getElementById("yamUniversalTrashClose")
+            .addEventListener("click", function () {
+                panel.style.display = "none";
+            });
+
+        document
+            .getElementById("yamUniversalTrashRefresh")
+            .addEventListener("click", loadYamUniversalTrash);
+
+        document
+            .getElementById("yamUniversalTrashEmpty")
+            .addEventListener("click", emptyYamUniversalTrash);
+
+        const style = document.createElement("style");
+
+        style.textContent =
+            "#yamUniversalTrashButton {" +
+                "border:0;" +
+                "border-radius:10px;" +
+                "padding:8px 14px;" +
+                "cursor:pointer;" +
+                "font-weight:700;" +
+                "font-size:14px;" +
+                "background:#8b1e1e;" +
+                "color:#fff;" +
+                "box-shadow:0 3px 8px rgba(0,0,0,.15);" +
+            "}" +
+
+            "#yamUniversalTrashButton:hover {" +
+                "opacity:.88;" +
+                "transform:translateY(-1px);" +
+            "}" +
+
+            "#yamUniversalTrashPanel {" +
+                "display:none;" +
+                "margin:18px 0;" +
+                "padding:18px;" +
+                "border-radius:16px;" +
+                "background:#fff;" +
+                "border:2px solid #8b1e1e;" +
+                "box-shadow:0 6px 20px rgba(0,0,0,.12);" +
+            "}" +
+
+            ".yam-universal-trash-header {" +
+                "display:flex;" +
+                "align-items:center;" +
+                "justify-content:space-between;" +
+                "gap:12px;" +
+                "margin-bottom:15px;" +
+                "flex-wrap:wrap;" +
+            "}" +
+
+            ".yam-universal-trash-header h3 {" +
+                "margin:0;" +
+            "}" +
+
+            ".yam-universal-trash-header p {" +
+                "margin:5px 0 0;" +
+                "opacity:.7;" +
+            "}" +
+
+            ".yam-universal-trash-top-actions {" +
+                "display:flex;" +
+                "gap:7px;" +
+                "flex-wrap:wrap;" +
+            "}" +
+
+            ".yam-universal-trash-top-actions button {" +
+                "border:0;" +
+                "border-radius:9px;" +
+                "padding:8px 11px;" +
+                "cursor:pointer;" +
+                "font-weight:700;" +
+            "}" +
+
+            "#yamUniversalTrashRefresh {" +
+                "background:#0d6efd;" +
+                "color:#fff;" +
+            "}" +
+
+            "#yamUniversalTrashEmpty {" +
+                "background:#b00020;" +
+                "color:#fff;" +
+            "}" +
+
+            "#yamUniversalTrashClose {" +
+                "background:transparent;" +
+                "font-size:20px;" +
+            "}" +
+
+            ".yam-universal-trash-card {" +
+                "display:flex;" +
+                "align-items:center;" +
+                "justify-content:space-between;" +
+                "gap:14px;" +
+                "padding:14px;" +
+                "margin-bottom:10px;" +
+                "border-radius:12px;" +
+                "background:#f7f7f7;" +
+                "border:1px solid #ddd;" +
+            "}" +
+
+            ".yam-universal-trash-info {" +
+                "flex:1;" +
+                "min-width:0;" +
+            "}" +
+
+            ".yam-universal-trash-info strong {" +
+                "display:block;" +
+                "margin-bottom:5px;" +
+            "}" +
+
+            ".yam-universal-trash-info small {" +
+                "display:block;" +
+                "opacity:.75;" +
+                "margin-top:3px;" +
+                "overflow-wrap:anywhere;" +
+            "}" +
+
+            ".yam-universal-trash-actions {" +
+                "display:flex;" +
+                "gap:7px;" +
+                "flex-wrap:wrap;" +
+            "}" +
+
+            ".yam-universal-restore-btn {" +
+                "border:0;" +
+                "border-radius:9px;" +
+                "padding:8px 11px;" +
+                "cursor:pointer;" +
+                "font-weight:700;" +
+                "background:#198754;" +
+                "color:#fff;" +
+            "}" +
+
+            ".yam-universal-permanent-btn {" +
+                "border:0;" +
+                "border-radius:9px;" +
+                "padding:8px 11px;" +
+                "cursor:pointer;" +
+                "font-weight:700;" +
+                "background:#b00020;" +
+                "color:#fff;" +
+            "}" +
+
+            ".yam-universal-trash-empty {" +
+                "text-align:center;" +
+                "padding:25px 10px;" +
+                "opacity:.7;" +
+            "}" +
+
+            "@media (max-width:700px) {" +
+                ".yam-universal-trash-card {" +
+                    "flex-direction:column;" +
+                    "align-items:stretch;" +
+                "}" +
+
+                ".yam-universal-trash-actions {" +
+                    "width:100%;" +
+                "}" +
+
+                ".yam-universal-trash-actions button {" +
+                    "flex:1;" +
+                "}" +
+
+                ".yam-universal-trash-top-actions {" +
+                    "width:100%;" +
+                "}" +
+
+                ".yam-universal-trash-top-actions button {" +
+                    "flex:1;" +
+                "}" +
+            "}";
+
+        document.head.appendChild(style);
+    }
+
+    async function loadYamUniversalTrash() {
+        const panel =
+            document.getElementById("yamUniversalTrashPanel");
+
+        const body =
+            document.getElementById("yamUniversalTrashBody");
+
+        if (!panel || !body) {
+            return;
+        }
+
+        panel.style.display = "block";
+
+        body.innerHTML =
+            '<p class="yam-universal-trash-empty">' +
+            '🗑️ Universal Trash እየተጫነ ነው...' +
+            '</p>';
+
+        try {
+            const response = await fetch(
+                "/api/universal-trash",
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || "Universal Trash load failed"
+                );
+            }
+
+            const items =
+                Array.isArray(data.items)
+                    ? data.items
+                    : [];
+
+            if (!items.length) {
+                body.innerHTML =
+                    '<p class="yam-universal-trash-empty">' +
+                    '♻️ Universal Trash ባዶ ነው።' +
+                    '</p>';
+
+                return;
+            }
+
+            body.innerHTML = items.map(function (item) {
+                const id =
+                    yamUniversalEscape(item.id || "");
+
+                const name =
+                    yamUniversalEscape(
+                        yamUniversalTrashDisplayName(item)
+                    );
+
+                const type =
+                    yamUniversalEscape(
+                        item.trashType || "-"
+                    );
+
+                const collection =
+                    yamUniversalEscape(
+                        item.sourceCollection || "-"
+                    );
+
+                const deletedAt =
+                    yamUniversalTrashFormatDate(
+                        item.deletedAt
+                    );
+
+                const originalId =
+                    yamUniversalEscape(
+                        item.originalId || "-"
+                    );
+
+                return (
+                    '<div class="yam-universal-trash-card">' +
+                        '<div class="yam-universal-trash-info">' +
+                            '<strong>👤 ' + name + '</strong>' +
+                            '<small>🏷️ Type: ' + type + '</small>' +
+                            '<small>📁 Collection: ' + collection + '</small>' +
+                            '<small>🆔 Original ID: ' + originalId + '</small>' +
+                            '<small>🕒 Deleted: ' + deletedAt + '</small>' +
+                        '</div>' +
+
+                        '<div class="yam-universal-trash-actions">' +
+                            '<button type="button" ' +
+                                'class="yam-universal-restore-btn" ' +
+                                'data-trash-id="' + id + '">' +
+                                '♻️ Restore' +
+                            '</button>' +
+
+                            '<button type="button" ' +
+                                'class="yam-universal-permanent-btn" ' +
+                                'data-trash-id="' + id + '">' +
+                                '🗑️ Permanently Delete' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>'
+                );
+            }).join("");
+
+            body
+                .querySelectorAll(".yam-universal-restore-btn")
+                .forEach(function (button) {
+                    button.addEventListener(
+                        "click",
+                        function () {
+                            yamRestoreUniversalTrash(
+                                button.getAttribute("data-trash-id")
+                            );
+                        }
+                    );
+                });
+
+            body
+                .querySelectorAll(".yam-universal-permanent-btn")
+                .forEach(function (button) {
+                    button.addEventListener(
+                        "click",
+                        function () {
+                            yamPermanentDeleteUniversalTrash(
+                                button.getAttribute("data-trash-id")
+                            );
+                        }
+                    );
+                });
+
+        } catch (error) {
+            console.error(
+                "YamGiftET Universal Trash Load Error:",
+                error
+            );
+
+            body.innerHTML =
+                '<p class="yam-universal-trash-empty">' +
+                '❌ Universal Trash መጫን አልተቻለም።<br>' +
+                yamUniversalEscape(
+                    error.message || error
+                ) +
+                '</p>';
+        }
+    }
+
+    async function yamRestoreUniversalTrash(trashId) {
+        const id =
+            String(trashId || "").trim();
+
+        if (!id) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            "♻️ ይህን መረጃ Restore ማድረግ ይፈልጋሉ?\n\n" +
+            "መረጃው ወደ ዋናው collection ይመለሳል።"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/universal-trash/" +
+                encodeURIComponent(id) +
+                "/restore",
+                {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const result =
+                await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.error ||
+                    "Universal Trash restore failed"
+                );
+            }
+
+            alert(
+                "♻️ መረጃው በትክክል Restore ተደርጓል።"
+            );
+
+            await loadYamUniversalTrash();
+
+            if (
+                window.dashboard &&
+                typeof window.dashboard.loadOrders === "function"
+            ) {
+                await window.dashboard.loadOrders();
+            }
+
+        } catch (error) {
+            console.error(
+                "Universal Trash Restore Error:",
+                error
+            );
+
+            alert(
+                "❌ Restore ማድረግ አልተቻለም።\n\n" +
+                (error.message || error)
+            );
+        }
+    }
+
+    async function yamPermanentDeleteUniversalTrash(trashId) {
+        const id =
+            String(trashId || "").trim();
+
+        if (!id) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            "⚠️ በጣም ጠንቃቃ!\n\n" +
+            "🗑️ ይህን መረጃ Permanently Delete ካደረጉት\n" +
+            "ሙሉ በሙሉ ይጠፋል።\n\n" +
+            "♻️ እንደገና Restore ማድረግ አይቻልም።\n\n" +
+            "እርግጠኛ ነዎት?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/universal-trash/" +
+                encodeURIComponent(id) +
+                "/permanent",
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const result =
+                await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.error ||
+                    "Permanent delete failed"
+                );
+            }
+
+            alert(
+                "🗑️ መረጃው በቋሚነት ተሰርዟል።"
+            );
+
+            await loadYamUniversalTrash();
+
+        } catch (error) {
+            console.error(
+                "Universal Trash Permanent Delete Error:",
+                error
+            );
+
+            alert(
+                "❌ Permanently Delete ማድረግ አልተቻለም።\n\n" +
+                (error.message || error)
+            );
+        }
+    }
+
+    async function emptyYamUniversalTrash() {
+        const confirmed = window.confirm(
+            "⚠️ በጣም ጠንቃቃ!\n\n" +
+            "🧹 Universal Trash ውስጥ ያሉ ሁሉም መረጃዎች\n" +
+            "በቋሚነት ይሰረዛሉ።\n\n" +
+            "♻️ Restore ማድረግ አይቻልም።\n\n" +
+            "ሁሉንም መሰረዝ ይፈልጋሉ?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/universal-trash",
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const result =
+                await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.error ||
+                    "Empty Universal Trash failed"
+                );
+            }
+
+            alert(
+                "🧹 Universal Trash በትክክል ተጠርጓል።\n\n" +
+                "የተሰረዙ መረጃዎች: " +
+                String(result.deletedCount || 0)
+            );
+
+            await loadYamUniversalTrash();
+
+        } catch (error) {
+            console.error(
+                "Universal Trash Clear Error:",
+                error
+            );
+
+            alert(
+                "❌ Universal Trash መጥረግ አልተቻለም።\n\n" +
+                (error.message || error)
+            );
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            createUniversalTrashUI
+        );
+    } else {
+        createUniversalTrashUI();
+    }
+})();
+
+
+

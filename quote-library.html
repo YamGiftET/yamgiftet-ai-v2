@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YamGiftET AI — Quote Library</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section id="quoteLibrarySection" class="quote-library-section">
+
+    <div class="quote-library-header">
+        <div>
+            <span class="quote-library-kicker">💬 YamGiftET AI</span>
+            <h2>📚 የጥቅስ ላይብረሪ</h2>
+            <p>የተፈቀዱ ምርጥ እና ለስጦታ የሚመቹ የአማርኛ ጥቅሶች</p>
+        </div>
+
+        <button id="generateQuoteButton" type="button"
+                onclick="quoteLibrary.generate()">
+            ✨ አዲስ ምርጥ ጥቅስ
+        </button>
+    </div>
+
+    <div class="quote-library-stats">
+
+        <div class="quote-library-stat">
+            <span>📚</span>
+            <strong id="quoteLibraryTotal">0</strong>
+            <small>ጠቅላላ ጥቅሶች</small>
+        </div>
+
+        <div class="quote-library-stat">
+            <span>📅</span>
+            <strong id="quoteLibraryToday">0</strong>
+            <small>የዛሬ ጥቅሶች</small>
+        </div>
+
+        <div class="quote-library-stat">
+            <span>⭐</span>
+            <strong id="quoteLibraryBestScore">—</strong>
+            <small>ከፍተኛ ውጤት</small>
+        </div>
+
+    </div>
+
+    
+        <div id="quoteLibraryTabs" class="quote-library-tabs">
+            <button type="button" class="quote-library-tab active" data-tab="all">
+                📚 ሁሉም
+            </button>
+            <button type="button" class="quote-library-tab" data-tab="favorites">
+                ⭐ Favorites
+            </button>
+            <button type="button" class="quote-library-tab" data-tab="trash">
+                🗑️ Trash
+            </button>
+        </div>
+
+<div id="quoteLibraryList" class="quote-library-list">
+        <div class="quote-library-empty">
+            ⏳ ጥቅሶች እየተጫኑ ነው...
+        </div>
+    </div>
+
+</section>
+
+<script src="js/quote-library.js"></script>
+
+</body>
+</html>

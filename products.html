@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YamGiftET AI — Products</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    <h1>🎁 YamGiftET AI</h1>
+    <p>Made with ❤️ in Ethiopia</p>
+  </div>
+
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="products.html">📦 Products</a>
+    <a href="self-products.html">🛍️ የራሴ ምርቶች</a>
+    <a href="orders.html">🧾 Orders</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="appointments.html">📅 Appointments</a>
+    <a href="notes.html">📝 Notes</a>
+    <a href="quote-library.html">💬 Quote Library</a>
+    <a href="ai.html">🤖 AI</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="contact.html">📞 Contact</a>
+  </nav>
+</header>
+
+<main style="padding:24px;">
+
+<section>
+  <h2>📦 YamGiftET Products</h2>
+  <p>የYamGiftET የስጦታ ምርቶች እና የምርት መረጃ</p>
+
+  <input
+    id="productSearch"
+    type="search"
+    placeholder="🔎 ምርት፣ ምድብ፣ መጠን ወይም ለማን እንደሚሆን ፈልግ..."
+    style="width:100%;max-width:600px;padding:13px;margin:15px 0;"
+  >
+
+  <div id="productsList"
+       style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;">
+  </div>
+</section>
+
+</main>
+
+<script src="js/products.js"></script>
+
+<script>
+function escapeProductHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderProducts(list) {
+  const container = document.getElementById("productsList");
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="card">
+        <h3>📭 ምርት አልተገኘም</h3>
+        <p>የፈለጉት ምርት በአሁኑ ጊዜ አልተገኘም።</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(product => `
+    <article class="card">
+      <h3>🎁 ${escapeProductHTML(product.name)}</h3>
+
+      <p>
+        <strong>💰 ዋጋ ከ፦</strong>
+        ${escapeProductHTML(product.priceFrom)} ብር
+      </p>
+
+      ${product.size ? `
+        <p>
+          <strong>📐 መጠን፦</strong>
+          ${escapeProductHTML(product.size)}
+        </p>
+      ` : ""}
+
+      <p>
+        <strong>🏷️ ምድብ፦</strong>
+        ${escapeProductHTML(product.category)}
+      </p>
+
+      <p>${escapeProductHTML(product.description)}</p>
+
+      <p>
+        <strong>👥 ለማን፦</strong><br>
+        ${product.suitableFor.map(item =>
+          `<span>${escapeProductHTML(item)}</span>`
+        ).join(" • ")}
+      </p>
+
+      <p>
+        <strong>🎉 ለየትኛው አጋጣሚ፦</strong><br>
+        ${product.occasions.map(item =>
+          `<span>${escapeProductHTML(item)}</span>`
+        ).join(" • ")}
+      </p>
+    </article>
+  `).join("");
+}
+
+function filterProductsPage() {
+  const search = String(
+    document.getElementById("productSearch")?.value || ""
+  ).trim();
+
+  if (!search) {
+    renderProducts(yamGiftProducts);
+    return;
+  }
+
+  renderProducts(findYamGiftProducts(search));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderProducts(yamGiftProducts);
+
+  document
+    .getElementById("productSearch")
+    ?.addEventListener("input", filterProductsPage);
+});
+</script>
+
+</body>
+</html>

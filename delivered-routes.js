@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { db } = require("./firebase");
+const { moveToUniversalTrash } = require("./trash-helper");
+const { ensureContact } = require("./contacts-routes");
 
 function number(value) {
     const n = Number(value);
@@ -129,6 +131,7 @@ router.post("/delivered-orders", async (req, res) => {
                 new Date().toISOString()
         };
 
+        await ensureContact(record.customerName, record.phone);
         const doc = await db
             .collection("deliveredOrders")
             .add(record);
@@ -214,6 +217,7 @@ router.post("/orders/:id/deliver", async (req, res) => {
 
         const profit = totalAmount - workCost;
 
+        await ensureContact(existing.customerName, existing.phone);
         const archive = {
             originalOrderId: id,
 
@@ -309,7 +313,6 @@ router.post("/orders/:id/deliver", async (req, res) => {
 
 router.delete("/delivered-orders/:id", async (req, res) => {
     try {
-
         const id = clean(req.params.id);
 
         if (!id) {
@@ -319,42 +322,58 @@ router.delete("/delivered-orders/:id", async (req, res) => {
             });
         }
 
-        const doc = await db
+        const ref = db
             .collection("deliveredOrders")
-            .doc(id)
-            .get();
+            .doc(id);
 
-        if (!doc.exists) {
+        const existing = await ref.get();
+
+        if (!existing.exists) {
             return res.status(404).json({
                 success: false,
                 error: "የተረከበው ስራ አልተገኘም።"
             });
         }
 
-        await db
-            .collection("deliveredOrders")
-            .doc(id)
-            .delete();
+        const data = existing.data() || {};
 
-        res.json({
+        const result = await moveToUniversalTrash({
+            collection: "deliveredOrders",
+            id,
+            data,
+            type: "deliveredOrder",
+            displayName:
+                data.customerName ||
+                data.name ||
+                data.productName ||
+                data.title ||
+                "Delivered Work",
+            extra: {
+                deletedFrom: "deliveredOrders"
+            }
+        });
+
+        return res.json({
             success: true,
-            message: "የተረከበው ስራ ተሰርዟል።"
+            trashed: true,
+            trashId: result.trashId,
+            message: "🗑️ የተረከበው ስራ ወደ Universal Trash ተወስዷል።",
+            delivered: result
         });
 
     } catch (error) {
-
         console.error(
-            "Delivered Order Delete Error:",
+            "Delivered Universal Trash Error:",
             error
         );
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             error:
-                "የተረከበውን ስራ መሰረዝ አልተቻለም።"
+                error.message ||
+                "የተረከበውን ስራ ወደ Universal Trash መውሰድ አልተቻለም።"
         });
     }
 });
-
 
 module.exports = router;

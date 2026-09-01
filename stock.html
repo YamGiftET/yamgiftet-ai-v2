@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YamGiftET AI | Stock Management</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .yam-stock-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .yam-stock-header {
+      background: linear-gradient(135deg, #0f3d2e, #145a42);
+      color: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+
+    .yam-stock-header h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .yam-stock-header p {
+      margin: 0;
+      opacity: .9;
+    }
+
+    .yam-stock-back {
+      display: inline-flex;
+      margin-bottom: 14px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .yam-stock-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .yam-stock-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    .yam-stock-card .icon {
+      font-size: 25px;
+    }
+
+    .yam-stock-card .label {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: .7;
+    }
+
+    .yam-stock-card .value {
+      display: block;
+      margin-top: 4px;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .yam-stock-panel {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.08);
+    }
+
+    .yam-stock-panel h2 {
+      margin-top: 0;
+    }
+
+    .yam-stock-controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .yam-stock-controls input,
+    .yam-stock-controls select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    .yam-stock-table-wrap {
+      overflow-x: auto;
+    }
+
+    .yam-stock-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    .yam-stock-table th,
+    .yam-stock-table td {
+      padding: 11px 9px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .yam-stock-table th {
+      background: #f7f8f7;
+      font-size: 13px;
+    }
+
+    .yam-stock-status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .yam-stock-status.ok {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+
+    .yam-stock-status.low {
+      background: #fff8e1;
+      color: #8d6e00;
+    }
+
+    .yam-stock-status.empty {
+      background: #ffebee;
+      color: #b71c1c;
+    }
+
+    .yam-stock-empty,
+    .yam-stock-loading,
+    .yam-stock-error {
+      padding: 20px;
+      text-align: center;
+      border-radius: 12px;
+      background: #f7f8f7;
+    }
+
+    .yam-stock-error {
+      background: #fff1f1;
+      color: #a40000;
+    }
+
+    .yam-stock-ledger {
+      max-height: 480px;
+      overflow: auto;
+    }
+
+    @media (max-width: 850px) {
+      .yam-stock-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .yam-stock-controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .yam-stock-page {
+        padding: 10px;
+      }
+
+      .yam-stock-summary {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .yam-stock-card {
+        padding: 12px;
+      }
+
+      .yam-stock-card .value {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="yam-stock-page">
+
+    <a class="yam-stock-back" href="dashboard.html">← ወደ Dashboard</a>
+
+    <section class="yam-stock-header">
+      <h1>📦 Module 15 — Stock Management</h1>
+      <p>የጥሬ እቃና የራስ ምርት ክምችት ማዕከል</p>
+    </section>
+
+    <section class="yam-stock-summary">
+      <div class="yam-stock-card">
+        <span class="icon">📦</span>
+        <span class="label">ጠቅላላ Items</span>
+        <span class="value" id="stockTotalItems">0</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">🧱</span>
+        <span class="label">ጥሬ እቃ</span>
+        <span class="value" id="stockRawMaterials">0</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">🛍️</span>
+        <span class="label">የራስ ምርቶች</span>
+        <span class="value" id="stockSelfProducts">0</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">💰</span>
+        <span class="label">ጠቅላላ Stock Value</span>
+        <span class="value" id="stockTotalValue">0 ብር</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">📥</span>
+        <span class="label">Stock IN</span>
+        <span class="value" id="stockInQuantity">0</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">📤</span>
+        <span class="label">Stock OUT</span>
+        <span class="value" id="stockOutQuantity">0</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">⚠️</span>
+        <span class="label">Low Stock</span>
+        <span class="value" id="stockLowCount">0</span>
+      </div>
+
+      <div class="yam-stock-card">
+        <span class="icon">🔴</span>
+        <span class="label">Out of Stock</span>
+        <span class="value" id="stockEmptyCount">0</span>
+      </div>
+    </section>
+
+    <section class="yam-stock-panel">
+      <h2>📊 Stock Overview</h2>
+
+      <div class="yam-stock-controls">
+        <input
+          id="stockSearch"
+          type="search"
+          placeholder="🔎 ምርት / ጥሬ እቃ ፈልግ..."
+        >
+
+        <select id="stockTypeFilter">
+          <option value="all">ሁሉም</option>
+          <option value="rawMaterial">🧱 ጥሬ እቃ</option>
+          <option value="selfProduct">🛍️ የራስ ምርት</option>
+        </select>
+
+        <select id="stockStatusFilter">
+          <option value="all">ሁሉም Status</option>
+          <option value="ok">OK</option>
+          <option value="low">Low Stock</option>
+          <option value="empty">Out of Stock</option>
+        </select>
+      </div>
+
+      <div id="stockOverview">
+        <div class="yam-stock-loading">⏳ Stock መረጃ እየተጫነ ነው...</div>
+      </div>
+    </section>
+
+    <section class="yam-stock-panel">
+      <h2>📒 Stock Movement Ledger</h2>
+
+      <div id="stockLedger">
+        <div class="yam-stock-loading">⏳ Movement መረጃ እየተጫነ ነው...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/stock.js"></script>
+</body>
+</html>

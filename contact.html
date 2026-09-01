@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YamGiftET AI — Contact Center</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+.contact-page {
+    padding: 24px;
+}
+
+.contact-header {
+    margin-bottom: 20px;
+}
+
+.contact-header h2 {
+    margin-bottom: 6px;
+}
+
+.contact-toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.contact-search {
+    flex: 1;
+    min-width: 220px;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.contact-add-btn {
+    padding: 12px 18px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.contact-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.contact-stat {
+    padding: 18px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.contact-stat strong {
+    display: block;
+    font-size: 24px;
+    margin-top: 5px;
+}
+
+.contact-table-wrapper {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.contact-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.contact-table th,
+.contact-table td {
+    padding: 13px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.contact-table th {
+    font-weight: 700;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.contact-actions button {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.contact-empty {
+    text-align: center;
+    padding: 35px;
+}
+
+.contact-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.contact-modal-content {
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px;
+}
+
+.contact-form-group {
+    margin-bottom: 15px;
+}
+
+.contact-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.contact-form-group input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    font-size: 16px;
+}
+
+.contact-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.contact-modal-actions button {
+    padding: 11px 17px;
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .contact-page {
+        padding: 14px;
+    }
+
+    .contact-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-toolbar {
+        flex-direction: column;
+    }
+
+    .contact-search {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <h1>🎁 YamGiftET AI</h1>
+        <p>Made with ❤️ in Ethiopia</p>
+    </div>
+
+    <nav>
+        <a href="index.html">🏠 Home</a>
+        <a href="products.html">📦 Products</a>
+        <a href="self-products.html">🛍️ የራሴ ምርቶች</a>
+        <a href="orders.html">🧾 Orders</a>
+        <a href="customers.html">👥 Customers</a>
+        <a href="appointments.html">📅 Appointments</a>
+        <a href="notes.html">📝 Notes</a>
+        <a href="quote-library.html">💬 Quote Library</a>
+        <a href="ai.html">🤖 AI</a>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="contact.html">📞 Contact</a>
+    </nav>
+</header>
+
+<main class="contact-page">
+
+    <section class="contact-header">
+        <h2>📞 Centralized Contact Center</h2>
+        <p>የደንበኞችን የContact መረጃ በአንድ ቦታ ያስተዳድሩ።</p>
+    </section>
+
+    <section class="contact-toolbar">
+
+        <input
+            id="contactSearch"
+            class="contact-search"
+            type="search"
+            placeholder="🔎 በስም ወይም በስልክ ፈልግ..."
+        >
+
+        <button
+            type="button"
+            class="contact-add-btn"
+            onclick="openContactForm()"
+        >
+            ➕ Contact ጨምር
+        </button>
+
+    </section>
+
+    <section class="contact-stats">
+
+        <div class="contact-stat">
+            👥 ጠቅላላ Contacts
+            <strong id="contactTotal">0</strong>
+        </div>
+
+        <div class="contact-stat">
+            🟢 Active Contacts
+            <strong id="contactActive">0</strong>
+        </div>
+
+        <div class="contact-stat">
+            🕒 የመጨረሻ ማዘመኛ
+            <strong id="contactLastUpdated">—</strong>
+        </div>
+
+    </section>
+
+    <section class="contact-table-wrapper">
+
+        <table class="contact-table">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>👤 ስም</th>
+                    <th>📞 ስልክ</th>
+                    <th>📅 የመጨረሻ ጊዜ</th>
+                    <th>⚙️ Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="contactsBody">
+
+                <tr>
+                    <td colspan="5" class="contact-empty">
+                        ⏳ Contacts በመጫን ላይ...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+
+<!-- CONTACT FORM MODAL -->
+
+<div
+    id="contactFormModal"
+    class="contact-modal"
+>
+
+    <div class="contact-modal-content">
+
+        <button
+            type="button"
+            onclick="closeContactForm()"
+            style="float:right;"
+        >
+            ✖️
+        </button>
+
+        <h2 id="contactFormTitle">
+            ➕ Contact ጨምር
+        </h2>
+
+        <form id="contactForm">
+
+            <input
+                type="hidden"
+                id="contactId"
+            >
+
+            <div class="contact-form-group">
+
+                <label for="contactName">
+                    👤 ስም
+                </label>
+
+                <input
+                    id="contactName"
+                    type="text"
+                    required
+                    placeholder="የደንበኛው ስም"
+                >
+
+            </div>
+
+            <div class="contact-form-group">
+
+                <label for="contactPhone">
+                    📞 ስልክ
+                </label>
+
+                <input
+                    id="contactPhone"
+                    type="tel"
+                    required
+                    placeholder="09..."
+                >
+
+            </div>
+
+            <div class="contact-form-group contact-photo-form-group">
+                <label for="contactPhoto">
+                    📸 የContact ፎቶ
+                </label>
+
+                <input
+                    id="contactPhoto"
+                    type="file"
+                    accept="image/*"
+                >
+
+                <small>
+                    JPG, PNG ወዘተ — ከ5MB በታች
+                </small>
+            </div>
+
+            <div class="contact-modal-actions">
+
+                <button
+                    type="button"
+                    onclick="closeContactForm()"
+                >
+                    ሰርዝ
+                </button>
+
+                <button
+                    type="submit"
+                >
+                    💾 አስቀምጥ
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="js/contact.js"></script>
+
+</body>
+</html>

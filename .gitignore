@@ -10,3 +10,11 @@ uploads/
 
 # Project backup folders
 yamgiftet-ai-v2-backup-*/
+
+# YamGiftET local backups
+backup-*/
+*.backup
+*.backup-*
+*.final-backup
+*.before-*
+*.broken

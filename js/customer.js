@@ -14,23 +14,24 @@ async function loadFirebaseCustomers() {
 
     try {
 
-        const response =
-            await fetch("/api/orders");
+        const [ordersResponse, contactsResponse] = await Promise.all([
+            fetch("/api/orders"),
+            fetch("/api/contacts")
+        ]);
 
-        const data =
-            await response.json();
+        const data = await ordersResponse.json();
+        const contactsData = await contactsResponse.json();
 
-        if (!response.ok || !data.success) {
-
-            throw new Error(
-                data.error ||
-                "የደንበኞችን መረጃ ማምጣት አልተቻለም።"
-            );
-
+        if (!ordersResponse.ok || !data.success) {
+            throw new Error(data.error || "የትዕዛዝ መረጃ ማምጣት አልተቻለም።");
         }
 
-        const orders =
-            data.orders || [];
+        if (!contactsResponse.ok || !contactsData.success) {
+            throw new Error(contactsData.error || "የContact መረጃ ማምጣት አልተቻለም።");
+        }
+
+        const orders = data.orders || [];
+        const contacts = contactsData.contacts || [];
 
         console.log(
             "📦 Firebase Orders:",
@@ -43,7 +44,7 @@ async function loadFirebaseCustomers() {
         ) {
 
             customersData =
-                buildCustomers(orders);
+                buildCustomers(orders, contacts);
 
             renderCustomers(
                 customersData

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YamGiftET AI | Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="yam-dashboard-closed">
+
+<header class="dashboard-header">
+  <h2>📊 YamGiftET AI Dashboard</h2>
+  <p>የYamGiftET AI የቢዝነስ ማጠቃለያና አስተዳደር</p>
+  <button id="yamLogoutBtn" type="button">🔐 ውጣ</button>
+</header>
+
+<main>
+<!-- YAM DASHBOARD APP LAUNCHER -->
+<section id="yamDashboardLauncher" class="yam-dashboard-launcher">
+  <div class="yam-launcher-title">
+    <span>🌟</span>
+    <div>
+      <h2>ያም</h2>
+      <p>የYamGiftET AI ዋና ማዕከል</p>
+    </div>
+  </div>
+
+  <div class="yam-launcher-grid">
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='orders.html'">
+      <span class="yam-app-icon">📦</span>
+      <strong>ትዕዛዞች</strong>
+      <small>የደንበኛ ትዕዛዞች</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='self-products.html'">
+      <span class="yam-app-icon">🛍️</span>
+      <strong>የራሴ ምርቶች</strong>
+      <small>ምርትና ሽያጭ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='customers.html'">
+      <span class="yam-app-icon">👥</span>
+      <strong>ደንበኞች</strong>
+      <small>የደንበኛ መረጃ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='appointments.html'">
+      <span class="yam-app-icon">📅</span>
+      <strong>ቀጠሮዎች</strong>
+      <small>ቀጠሮና ማስታወሻ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='notes.html'">
+      <span class="yam-app-icon">📝</span>
+      <strong>ማስታወሻዎች</strong>
+      <small>የንግድ መዝገቦች</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='quote-library.html'">
+      <span class="yam-app-icon">💬</span>
+      <strong>የጥቅስ ቤተ-መጽሐፍት</strong>
+      <small>ጥቅሶችና መልዕክቶች</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='ai.html'">
+      <span class="yam-app-icon">🤖</span>
+      <strong>AI ረዳት</strong>
+      <small>የንግድ AI እርዳታ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='contact.html'">
+      <span class="yam-app-icon">📞</span>
+      <strong>እውቂያዎች</strong>
+      <small>የደንበኛ እውቂያ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='finance.html'">
+      <span class="yam-app-icon">💰</span>
+      <strong>ፋይናንስ</strong>
+      <small>ሽያጭ • ወጪ • ትርፍ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='raw-material-expense.html'">
+      <span class="yam-app-icon">🧱</span>
+      <strong>ጥሬ እቃ እና ወጪ</strong>
+      <small>ግዢ • ክምችት • ወጪ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='stock.html'">
+      <span class="yam-app-icon">📦</span>
+      <strong>Stock Management</strong>
+      <small>ጥሬ እቃ • የራስ ምርት • Stock Movement</small>
+    </button>
+
+      onclick="window.location.href='products.html'">
+      <span class="yam-app-icon">🎁</span>
+      <strong>ምርቶች</strong>
+      <small>የYamGift ምርቶች</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='business-health.html'">
+      <span class="yam-app-icon">📊</span>
+      <strong>የንግድ ጤና</strong>
+      <small>የንግድ ሁኔታና ማጠቃለያ</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='management.html'">
+      <span class="yam-app-icon">🛡️</span>
+      <strong>አስተዳደር</strong>
+      <small>የስርዓቱ ቁጥጥርና ትንተና</small>
+    </button>
+
+    <button class="yam-app-card" type="button"
+      onclick="window.location.href='trash.html'">
+      <span class="yam-app-icon">🗑️</span>
+      <strong>መጣያ</strong>
+      <small>የተሰረዙ መረጃዎች</small>
+    </button>
+
+  </div>
+</section>
+
+<!-- =========================================
+
+     ========================================= -->
+<section class="dashboard-main-card">
+
+  <h3>📊 Dashboard</h3>
+  <p>የYamGiftET AI የቢዝነስ ማጠቃለያ</p>
+
+  <div class="dashboard-stats">
+
+    <div class="dashboard-stat">
+      <span>📦</span>
+      <strong id="dashboardOrders">0</strong>
+      <small>ጠቅላላ ትዕዛዞች</small>
+    </div>
+
+    <div class="dashboard-stat">
+      <span>👥</span>
+      <strong id="dashboardCustomers">0</strong>
+      <small>ደንበኞች</small>
+    </div>
+
+    <div class="dashboard-stat">
+      <span>💰</span>
+
+    <div class="dashboard-stat">
+      <span>💵</span>
+
+    <div class="dashboard-stat">
+      <span>⏳</span>
+
+    <div class="dashboard-stat">
+      <span>🛠️</span>
+
+    <div class="dashboard-stat">
+      <span>📈</span>
+
+  </div>
+
+
+  <!-- =====================================
+       📦 ORDERS
+       ===================================== -->
+  <div class="dashboard-orders-section">
+
+    <h3>📦 የቅርብ ትዕዛዞች</h3>
+
+    <div class="dashboard-table-wrapper">
+
+      <table class="dashboard-orders-table">
+
+        <thead>
+          <tr>
+            <th>ደንበኛ</th>
+            <th>ስልክ</th>
+            <th>ምርት</th>
+            <th>የትዕዛዝ ቀን</th>
+            <th>የመረከቢያ ቀን</th>
+            <th>⏳ ቀን ቀረ</th>
+            <th>ጠቅላላ</th>
+            <th>ተከፍሏል</th>
+            <th>ቀሪ</th>
+            <th>ትርፍ</th>
+            <th>ሁኔታ</th>
+            <th>📸 ፎቶ</th>
+          </tr>
+        </thead>
+
+        <tbody id="dashboardOrdersBody">
+          <tr>
+            <td colspan="12">
+              ትዕዛዞች እየተጫኑ ነው...
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+
+<footer>
+  <p>© 2026 YamGiftET AI v2</p>
+</footer>
+
+
+<!-- =========================================
+     JAVASCRIPT
+     ========================================= -->
+
+<script type="module" src="js/firebase.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  function protectDashboard() {
+    const auth = window.yamFirebaseAuth;
+    if (!auth) return;
+
+    auth.onAuthStateChanged(function (user) {
+      if (!user) {
+        window.location.replace("login.html");
+      }
+    });
+  }
+
+  if (window.yamFirebaseAuth) {
+    protectDashboard();
+  } else {
+    window.addEventListener("yamAuthStateChanged", function (event) {
+      if (!event.detail.user) {
+        window.location.replace("login.html");
+      }
+    });
+  }
+})();
+</script>
+<script src="js/auth.js"></script>
+<script src="js/ethiopian-calendar.js"></script>
+<script src="js/products.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/raw-material-expense-dashboard.js"></script>
+<script src="js/management-controller.js"></script>
+<script src="js/yam-final-fix.js"></script>
+
+</body>
+
+<style>
+/* YAM DASHBOARD — CLOSED BY DEFAULT */
+body.yam-dashboard-closed main > section:not(#yamDashboardLauncher) {
+    display: none;
+}
+
+body.yam-dashboard-closed .yam-launcher-grid .yam-app-card:not(.yam-card-main) {
+    display: grid !important;
+}
+
+body.yam-dashboard-open main > section:not(#yamDashboardLauncher) {
+    display: block;
+}
+
+body.yam-dashboard-open .yam-launcher-grid .yam-app-card:not(.yam-card-main) {
+    display: grid;
+}
+</style>

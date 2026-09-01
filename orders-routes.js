@@ -5,6 +5,9 @@ const fs = require("fs");
 
 const router = express.Router();
 const { db } = require("./firebase");
+const { moveToUniversalTrash } = require("./trash-helper");
+const { ensureContact } = require("./contacts-routes");
+const calculator = require("./universal-calculator");
 
 /* =========================================================
    YamGiftET AI — MASTER ORDERS ROUTES
@@ -98,9 +101,12 @@ function calculateOrder(totalAmount, deposit, workCost) {
     const paid = Math.max(number(deposit), 0);
     const cost = Math.max(number(workCost), 0);
 
-    const remaining = Math.max(total - paid, 0);
+    const remaining = Math.max(
+        calculator.subtract(total, paid),
+        0
+    );
 
-    const profit = total - cost;
+    const profit = calculator.subtract(total, cost);
 
     return {
         totalAmount: total,
@@ -215,6 +221,12 @@ router.post(
                 createdAt: now,
                 updatedAt: now
             };
+
+              try {
+                  await ensureContact(customerName, phone);
+              } catch (contactError) {
+                  console.error("⚠️ Contact Auto-Sync Error:", contactError);
+              }
 
             const doc =
                 await db
@@ -334,6 +346,7 @@ router.get(
     "/orders/:id",
     async (req, res) => {
         try {
+
 
             const doc =
                 await db
@@ -491,6 +504,7 @@ router.patch(
                     clean(merged.pickupDate),
 
                 status:
+
                     finalStatus,
 
                 notes:
@@ -515,6 +529,12 @@ router.patch(
              * 4. Delete the active order
              * =====================================================
              */
+              try {
+                  await ensureContact(orderData.customerName, orderData.phone);
+              } catch (contactError) {
+                  console.error("⚠️ Contact Update Auto-Sync Error:", contactError);
+              }
+
             if (isDeliveredStatus(finalStatus)) {
 
                 const deliveredRef =
@@ -622,53 +642,290 @@ router.patch(
 );
 
 /* =========================================================
-   DELETE ORDER
+   🗑️ TRASH / RESTORE / PERMANENT DELETE
    ========================================================= */
 
-router.delete(
-    "/orders/:id",
-    async (req, res) => {
+/*
+ * DELETE ORDER
+ * -------------------------
+ * Order ን በቀጥታ አንሰርዘውም።
+ * ወደ deletedOrders Trash እንወስደዋለን።
+ */
+router.delete("/orders/:id", async (req, res) => {
+    try {
+        const orderId = clean(req.params.id);
 
-        try {
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                error: "የትዕዛዝ ID የለም።"
+            });
+        }
 
-            const doc =
-                await db
-                    .collection("orders")
-                    .doc(req.params.id)
-                    .get();
+        const orderRef = db
+            .collection("orders")
+            .doc(orderId);
 
-            if (!doc.exists) {
+        const orderSnap = await orderRef.get();
 
-                return res.status(404).json({
-                    success: false,
-                    error:
-                        "ትዕዛዙ አልተገኘም።"
-                });
+        if (!orderSnap.exists) {
+            return res.status(404).json({
+                success: false,
+                error: "ትዕዛዙ አልተገኘም።"
+            });
+        }
+
+        const orderData = orderSnap.data() || {};
+
+        const result = await moveToUniversalTrash({
+            collection: "orders",
+            id: orderId,
+            data: orderData,
+            type: "order",
+            displayName:
+                orderData.customerName ||
+                orderData.name ||
+                orderData.productName ||
+                "Order",
+            extra: {
+                deletedFrom: "orders"
             }
+        });
 
-            await db
-                .collection("orders")
-                .doc(req.params.id)
-                .delete();
+        return res.json({
+            success: true,
+            trashed: true,
+            trashId: result.trashId,
+            message:
+                "🗑️ ትዕዛዙ ወደ Universal Trash ተወስዷል።",
+            order: result
+        });
 
-            res.json({
+    } catch (error) {
+        console.error(
+            "Order Universal Trash Error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error:
+                error.message ||
+                "ትዕዛዙን ወደ Universal Trash መውሰድ አልተቻለም።"
+        });
+    }
+});
+
+/* 
+ * DELETE ORDER አሁን Universal Trash ይጠቀማል።
+ */
+/*
+ * GET DELETED ORDERS
+ * -------------------------
+ * Trash ውስጥ ያሉ orders
+ */
+router.get(
+    "/deleted-orders",
+    async (req, res) => {
+        try {
+            const snapshot = await db
+                .collection("deletedOrders")
+                .orderBy("deletedAt", "desc")
+                .get();
+
+            const orders = snapshot.docs.map(doc => {
+                const data = doc.data() || {};
+
+                const money = calculateOrder(
+                    data.totalAmount,
+                    data.deposit,
+                    data.workCost
+                );
+
+                return {
+                    id: doc.id,
+                    ...data,
+                    ...money,
+                    trashStatus: "deleted"
+                };
+            });
+
+            return res.json({
                 success: true,
-
-                message:
-                    "ትዕዛዙ ተሰርዟል።"
+                count: orders.length,
+                orders
             });
 
         } catch (error) {
-
             console.error(
-                "Order Delete Error:",
+                "Deleted Orders Get Error:",
                 error
             );
 
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
                 error:
-                    "ትዕዛዙን መሰረዝ አልተቻለም።"
+                    error.message ||
+                    "የተሰረዙ ትዕዛዞችን ማምጣት አልተቻለም።"
+            });
+        }
+    }
+);
+
+
+/*
+ * RESTORE DELETED ORDER
+ * -------------------------
+ * deletedOrders → orders
+ */
+router.post(
+    "/deleted-orders/:id/restore",
+    async (req, res) => {
+        try {
+            const orderId = clean(req.params.id);
+
+            if (!orderId) {
+                return res.status(400).json({
+                    success: false,
+                    error: "የትዕዛዝ ID የለም።"
+                });
+            }
+
+            const trashRef = db
+                .collection("deletedOrders")
+                .doc(orderId);
+
+            const trashSnap = await trashRef.get();
+
+            if (!trashSnap.exists) {
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "በTrash ውስጥ ይህ ትዕዛዝ አልተገኘም።"
+                });
+            }
+
+            const deletedOrder = trashSnap.data() || {};
+
+            const orderRef = db
+                .collection("orders")
+                .doc(orderId);
+
+            const restoredOrder = {
+                ...deletedOrder,
+
+                id: undefined,
+
+                deletedAt: undefined,
+                trashStatus: undefined,
+                deletedFrom: undefined,
+
+                restoredAt:
+                    new Date().toISOString(),
+
+                updatedAt:
+                    new Date().toISOString()
+            };
+
+            /*
+             * Firestore undefined fields እንዳይገቡ
+             */
+            delete restoredOrder.id;
+            delete restoredOrder.deletedAt;
+            delete restoredOrder.trashStatus;
+            delete restoredOrder.deletedFrom;
+
+            await db.runTransaction(async (transaction) => {
+                transaction.set(
+                    orderRef,
+                    restoredOrder
+                );
+
+                transaction.delete(
+                    trashRef
+                );
+            });
+
+            return res.json({
+                success: true,
+                restored: true,
+                message:
+                    "♻️ ትዕዛዙ በትክክል ወደ Orders ተመልሷል።",
+                order: {
+                    id: orderId,
+                    ...restoredOrder
+                }
+            });
+
+        } catch (error) {
+            console.error(
+                "Order Restore Error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    error.message ||
+                    "ትዕዛዙን Restore ማድረግ አልተቻለም።"
+            });
+        }
+    }
+);
+
+
+/*
+ * PERMANENT DELETE
+ * -------------------------
+ * deletedOrders → permanently deleted
+ */
+router.delete(
+    "/deleted-orders/:id/permanent",
+    async (req, res) => {
+        try {
+            const orderId = clean(req.params.id);
+
+            if (!orderId) {
+                return res.status(400).json({
+                    success: false,
+                    error: "የትዕዛዝ ID የለም።"
+                });
+            }
+
+            const trashRef = db
+                .collection("deletedOrders")
+                .doc(orderId);
+
+            const trashSnap = await trashRef.get();
+
+            if (!trashSnap.exists) {
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "በTrash ውስጥ ይህ ትዕዛዝ አልተገኘም።"
+                });
+            }
+
+            await trashRef.delete();
+
+            return res.json({
+                success: true,
+                permanentlyDeleted: true,
+                message:
+                    "🗑️ ትዕዛዙ በቋሚነት ተሰርዟል።"
+            });
+
+        } catch (error) {
+            console.error(
+                "Permanent Order Delete Error:",
+                error
+            );
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    error.message ||
+                    "ትዕዛዙን በቋሚነት መሰረዝ አልተቻለም።"
             });
         }
     }

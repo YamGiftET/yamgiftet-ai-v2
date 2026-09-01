@@ -14,6 +14,7 @@ content="width=device-width, initial-scale=1.0">
 rel="stylesheet"
 href="style.css">
 
+<link rel="stylesheet" href="notes.css">
 </head>
 
 <body>
@@ -33,25 +34,17 @@ Made with ❤️ in Ethiopia
 </div>
 
 <nav>
-        <a href="self-products.html" class="nav-self-products">
-            🛍️ የራሴ ምርቶች
-        </a>
-    
-
-<a href="#">Home</a>
-
-<a href="#">Products</a>
-
-<a href="#">AI</a>
-
-<a href="#">Customers</a>
-
-<a href="#">Appointments</a>
-
-<a href="#">Dashboard</a>
-
-<a href="#">Contact</a>
-
+    <a href="index.html">🏠 Home</a>
+    <a href="products.html">📦 Products</a>
+    <a href="self-products.html">🛍️ የራሴ ምርቶች</a>
+    <a href="orders.html">🧾 Orders</a>
+    <a href="customers.html">👥 Customers</a>
+    <a href="appointments.html">📅 Appointments</a>
+    <a href="notes.html">📝 Notes</a>
+    <a href="quote-library.html">💬 Quote Library</a>
+    <a href="ai.html">🤖 AI</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="contact.html">📞 Contact</a>
 </nav>
 
 </header>
@@ -137,6 +130,156 @@ Gift ምርቶች
 
 </div>
 
+
+<!-- =========================================
+     🛡️ YamGiftET AI — የአስተዳደር ማዕከል
+     ========================================= -->
+<section id="dashboardManagementCenter" class="dashboard-management-center">
+
+    <div class="management-header">
+        <div>
+            <span class="management-kicker">🛡️ የቢዝነስ ቁጥጥር</span>
+            <h2>የYamGiftET አስተዳደር ማዕከል</h2>
+            <p>የቢዝነሱን ሁሉንም ክፍል ይመርምር፣ ያጠቃልል እና የሚያስፈልገውን ምክር ይሰጣል።</p>
+        </div>
+
+        <div class="management-status">
+            <span class="management-status-dot"></span>
+            <span id="managementSystemStatus">ስርዓቱ ዝግጁ ነው</span>
+        </div>
+    </div>
+
+    <div class="management-overview">
+
+        <div class="management-item">
+            <span>💰</span>
+            <div>
+                <strong>ፋይናንስ</strong>
+                <small id="managementFinanceStatus">እየተመረመረ ነው</small>
+            </div>
+        </div>
+
+        <div class="management-item">
+            <span>📦</span>
+            <div>
+                <strong>ስቶክ</strong>
+                <small id="managementStockStatus">እየተመረመረ ነው</small>
+            </div>
+        </div>
+
+        <div class="management-item">
+            <span>🧱</span>
+            <div>
+                <strong>ጥሬ እቃ</strong>
+                <small id="managementMaterialStatus">እየተመረመረ ነው</small>
+            </div>
+        </div>
+
+        <div class="management-item">
+            <span>🧾</span>
+            <div>
+                <strong>ትዕዛዞች</strong>
+                <small id="managementOrdersStatus">እየተመረመረ ነው</small>
+            </div>
+        </div>
+
+        <div class="management-item">
+            <span>👥</span>
+            <div>
+                <strong>ደንበኞች</strong>
+                <small id="managementCustomersStatus">እየተመረመረ ነው</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🚨 የሂሳብ ስህተት ማስጠንቀቂያ -->
+    <div id="financeErrorPanel" class="finance-error-panel">
+        <div class="finance-error-header">
+            <div>
+                <span>🚨</span>
+                <div>
+                    <h3>የሂሳብ ስህተት ማስጠንቀቂያ</h3>
+                    <p>የተሳሳተ ሂሳብ ካለ ቦታውን እና መፍትሄውን ያሳያል።</p>
+                </div>
+            </div>
+            <span id="financeErrorCount" class="finance-error-count">0</span>
+        </div>
+
+        <div id="financeErrorList" class="finance-error-list">
+            <div class="finance-empty-state">
+                <span>✅</span>
+                <p>እስካሁን የተገኘ የሂሳብ ስህተት የለም።</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🤖 የአስተዳደር AI ምክር -->
+    <div class="management-advice">
+        <div class="management-advice-title">
+            <span>🤖</span>
+            <div>
+                <h3>የቢዝነስ ግምገማ እና ምክር</h3>
+                <p>የተሰበሰበውን የቢዝነስ መረጃ በመመርመር የሚቀጥለውን እርምጃ ይጠቁማል።</p>
+            </div>
+        </div>
+
+        <div id="managementAdviceList" class="management-advice-list">
+            <div class="management-advice-item">
+                <span>💡</span>
+                <p>የቢዝነስ መረጃዎች ሲገናኙ የተሟላ ግምገማ ይታያል።</p>
+            </div>
+        </div>
+    </div>
+
+</section>
+<!-- =====================================
+     🧮 YamGiftET AI — Universal Calculator
+     ===================================== -->
+<section id="universalCalculator" class="universal-calculator-section">
+    <div class="universal-calculator">
+        <div class="calculator-header">
+            <span>🧮</span>
+            <div>
+                <h2>Universal Calculator</h2>
+                <p>የYamGiftET አጠቃላይ ማስያ</p>
+            </div>
+        </div>
+
+        <input id="universalCalculatorDisplay" class="calculator-display" type="text" value="0" readonly>
+
+        <div class="calculator-buttons">
+            <button type="button" data-calculator-clear>C</button>
+            <button type="button" data-calculator-backspace>⌫</button>
+            <button type="button" data-calculator-operation="%">%</button>
+            <button type="button" data-calculator-operation="/">÷</button>
+
+            <button type="button" data-calculator-number="7">7</button>
+            <button type="button" data-calculator-number="8">8</button>
+            <button type="button" data-calculator-number="9">9</button>
+            <button type="button" data-calculator-operation="*">×</button>
+
+            <button type="button" data-calculator-number="4">4</button>
+            <button type="button" data-calculator-number="5">5</button>
+            <button type="button" data-calculator-number="6">6</button>
+            <button type="button" data-calculator-operation="-">−</button>
+
+            <button type="button" data-calculator-number="1">1</button>
+            <button type="button" data-calculator-number="2">2</button>
+            <button type="button" data-calculator-number="3">3</button>
+            <button type="button" data-calculator-operation="+">+</button>
+
+            <button type="button" class="calculator-zero" data-calculator-number="0">0</button>
+            <button type="button" data-calculator-number=".">.</button>
+            <button type="button" class="calculator-equals" data-calculator-equals>=</button>
+        </div>
+    </div>
+</section>
+
+
+<!-- =====================================
+     💬 YamGiftET AI — Quote Library
+     ===================================== -->
 <div class="card dashboard-main-card">
 
 <h3>📊 Dashboard</h3>
@@ -204,7 +347,7 @@ Gift ምርቶች
                     <th>ስልክ</th>
                     <th>ምርት</th>
                     <th>የትዕዛዝ ቀን</th>
-                    <th>የመረከቢያ ቀን</th>
+                    <th>የመረከቢያ ቀን</th>                                    <th>⏳ ቀን ቀረ</th>
                     <th>ጠቅላላ</th>
                     <th>ተከፍሏል</th>
                     <th>ቀሪ</th>
@@ -246,6 +389,147 @@ Cloud Database
 </div>
 
 </section>
+
+<!-- =====================================
+     📝 YamGiftET Notes & Records AI
+     ===================================== -->
+<section id="notes-ai-section" class="notes-ai-section">
+    <div class="notes-ai-header">
+        <span class="notes-ai-kicker">📝 Notes & Records</span>
+        <h2>🤖 የNotes AI ረዳት</h2>
+        <p>የንግድ ሀሳብ፣ ማስታወሻ እና ምክር ይጠይቁ።</p>
+    </div>
+
+    <div class="notes-ai-box">
+        <textarea
+            id="notesAiQuestion"
+            rows="4"
+            placeholder="ጥያቄዎን እዚህ ይጻፉ..."></textarea>
+
+        <div class="notes-ai-actions">
+            <button id="askNotesAiBtn" type="button">
+                🤖 AIን ጠይቅ
+            </button>
+
+            <button id="clearNotesAiBtn" type="button">
+                🗑️ አጽዳ
+            </button>
+        </div>
+
+        <div id="notesAiStatus" class="notes-ai-status"></div>
+
+        <div id="notesAiReply" class="notes-ai-reply">
+            <div class="notes-ai-empty">
+                💡 የAI ምክርህ እዚህ ይታያል።
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- =====================================
+     📝 YamGiftET Notes & Records
+     ===================================== -->
+<section id="notes-records-section" class="notes-records-section">
+
+    <div class="notes-header">
+        <div>
+            <span>📝 Notes & Records</span>
+            <h2>የማስታወሻ እና መዝገብ ማዕከል</h2>
+            <p>የንግድ ሀሳቦች፣ የደንበኛ መረጃዎች እና ጠቃሚ ማስታወሻዎችን ያስቀምጡ።</p>
+        </div>
+    </div>
+
+    <div id="notesMessage" class="notes-message"></div>
+
+    <form id="noteForm" class="note-form">
+
+        <input type="hidden" id="noteId">
+
+        <div class="note-form-row">
+
+            <div class="note-field">
+                <label for="noteTitle">ርዕስ</label>
+                <input
+                    type="text"
+                    id="noteTitle"
+                    placeholder="የማስታወሻው ርዕስ..."
+                >
+            </div>
+
+            <div class="note-field">
+                <label for="noteCategory">ምድብ</label>
+                <select id="noteCategory">
+                    <option value="ሌላ">ሌላ</option>
+                    <option value="የንግድ ሀሳብ">የንግድ ሀሳብ</option>
+                    <option value="ደንበኛ">ደንበኛ</option>
+                    <option value="ትዕዛዝ">ትዕዛዝ</option>
+                    <option value="ፋይናንስ">ፋይናንስ</option>
+                    <option value="ምርት">ምርት</option>
+                    <option value="ሌላ">ሌላ</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="note-field">
+            <label for="noteContent">ማስታወሻ</label>
+            <textarea
+                id="noteContent"
+                rows="6"
+                placeholder="ሙሉ ማስታወሻዎን እዚህ ይጻፉ..."
+            ></textarea>
+        </div>
+
+        <div class="note-field">
+            <label for="notePhoto">ፎቶ (አማራጭ)</label>
+            <input
+                type="file"
+                id="notePhoto"
+                accept="image/*"
+            >
+        </div>
+
+        <div class="note-form-actions">
+            <button type="submit" id="saveNoteBtn">
+                💾 አስቀምጥ
+            </button>
+
+            <button type="button" id="cancelEditBtn" hidden>
+                ✖️ ሰርዝ
+            </button>
+        </div>
+
+    </form>
+
+    <div class="notes-toolbar">
+
+        <input
+            type="search"
+            id="notesSearch"
+            placeholder="🔍 ማስታወሻ ፈልግ..."
+        >
+
+        <select id="notesFilter">
+            <option value="">ሁሉም ምድቦች</option>
+            <option value="የንግድ ሀሳብ">የንግድ ሀሳብ</option>
+            <option value="ደንበኛ">ደንበኛ</option>
+            <option value="ትዕዛዝ">ትዕዛዝ</option>
+            <option value="ፋይናንስ">ፋይናንስ</option>
+            <option value="ምርት">ምርት</option>
+            <option value="ሌላ">ሌላ</option>
+        </select>
+
+    </div>
+
+    <div id="notesList" class="notes-list">
+        <div class="note-card">
+            <p>⏳ ማስታወሻዎች እየተጫኑ ነው...</p>
+        </div>
+    </div>
+
+</section>
+
 <!-- ==========================
 AI Chat
 ========================== -->
@@ -292,8 +576,11 @@ YamGiftET AI v2
 <script src="script.js"></script>
 <script src="js/products.js"></script>
 <script src="js/ai.js?v=2"></script>
-<script src="js/firebase.js"></script>
+<script type="module" src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ethiopian-calendar.js"></script>
 <script src="js/dashboard.js"></script>
+<script src="js/raw-material-expense-dashboard.js"></script>
 <script src="js/yam-final-fix.js"></script>
 
 
@@ -323,5 +610,9 @@ YamGiftET AI v2
     </iframe>
 </section>
 
+<script src="js/quote-library.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/management-controller.js"></script>
+    <script src="js/universal-calculator-ui.js"></script>
 </body>
 </html>
