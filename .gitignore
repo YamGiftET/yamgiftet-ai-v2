@@ -31,3 +31,17 @@ audit-before-*
 *.backup-*
 *.broken
 backups/
+
+# Local development scripts, tests and audit files
+add-management-ai.js
+add-management-route.js
+connect-management-ai.js
+dashboard-finance-card-backup-*.html
+finance-audit.txt
+finance-routes-step24-*.js
+firebase-auth-test.html
+replace-universal-trash-ui.js
+universal-calculator.js.final-finance-backup
+update-management-ai.js
+yam-logout-handler-check.js
+tatus --short
