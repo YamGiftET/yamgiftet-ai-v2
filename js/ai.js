@@ -42,7 +42,7 @@ async function sendMessage() {
     try {
 
         const response = await fetch(
-            "http://localhost:3000/api/chat",
+            "https://yamgiftet-ai-v2-backend.onrender.com/api/chat",
             {
                 method: "POST",
 
