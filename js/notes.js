@@ -1,3 +1,4 @@
+const API_BASE = "https://yamgiftet-ai-v2-backend.onrender.com";
 const notesState = {
     notes: [],
     editingId: null
@@ -23,7 +24,7 @@ function ethiopianNow() {
 
 async function loadNotes() {
     try {
-        const res = await fetch("/api/notes");
+        const res = await fetch(API_BASE + "/api/notes");
         const data = await res.json();
 
         if (!data.success) throw new Error(data.error || "Notes ሊጫኑ አልቻሉም።");
@@ -112,7 +113,7 @@ async function saveNote(event) {
     if (photo) formData.append("photo", photo);
 
     try {
-        const url = id ? `/api/notes/${id}` : "/api/notes";
+        const url = id ? API_BASE + "/api/notes/" + id : API_BASE + "/api/notes";
         const method = id ? "PATCH" : "POST";
 
         const res = await fetch(url, {
@@ -164,7 +165,7 @@ async function deleteNote(id) {
     if (!confirm("ይህን Note ወደ Trash መላክ ይፈልጋሉ?")) return;
 
     try {
-        const res = await fetch(`/api/notes/${id}`, {
+        const res = await fetch(API_BASE + "/api/notes/" + id, {
             method: "DELETE"
         });
 
@@ -215,7 +216,7 @@ async function askNotesAI() {
     }
 
     try {
-        const res = await fetch("/api/notes-ai", {
+        const res = await fetch(API_BASE + "/api/notes-ai", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
