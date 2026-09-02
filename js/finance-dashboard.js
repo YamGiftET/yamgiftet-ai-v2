@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    const API = "/api";
+    const API = "https://yamgiftet-ai-v2-backend.onrender.com/api";
 
     function money(value) {
         const n = Number(value || 0);
