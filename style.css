@@ -3718,3 +3718,437 @@ body.yam-dashboard-open .yam-launcher-grid .yam-app-card {
     }
 }
 
+
+/* =========================================
+   📜 UNIVERSAL CALCULATOR HISTORY BOX
+   Fixed height + internal scrolling
+   ========================================= */
+
+#calculatorHistoryList {
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 4px 4px 2px;
+    box-sizing: border-box;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#calculatorHistoryList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#calculatorHistoryList::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, .22);
+    border-radius: 10px;
+}
+
+#calculatorHistoryList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width: 480px) {
+    #calculatorHistoryList {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 360px) {
+    #calculatorHistoryList {
+        max-height: 270px;
+    }
+}
+
+/* =========================================
+   🧮 UNIVERSAL CALCULATOR — DISPLAY FIX
+   Mobile-first: contained + readable
+   ========================================= */
+
+.universal-calculator {
+    overflow: hidden;
+}
+
+.universal-calculator-expression {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    padding: 6px 14px 0;
+    box-sizing: border-box;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: right;
+    pointer-events: none;
+    scrollbar-width: none;
+}
+
+.universal-calculator-expression::-webkit-scrollbar {
+    display: none;
+}
+
+.calculator-display {
+    position: relative;
+    width: 100%;
+    height: 68px;
+    min-width: 0;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border-radius: 16px;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: right;
+    overflow: hidden;
+}
+
+@media (max-width: 480px) {
+    .universal-calculator-expression {
+        font-size: 13px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .calculator-display {
+        height: 64px;
+        padding: 8px 12px;
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 360px) {
+    .universal-calculator-expression {
+        font-size: 12px;
+    }
+
+    .calculator-display {
+        height: 60px;
+        font-size: 26px;
+    }
+}
+
+
+/* =========================================
+   🧪 YAMGIFTET EPOXY CALCULATOR
+   Mobile-first UI
+   ========================================= */
+
+.epoxy-calculator-section {
+    width: 100%;
+    padding: 18px 12px;
+    box-sizing: border-box;
+}
+
+.epoxy-calculator {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 18px;
+    box-sizing: border-box;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .10);
+    overflow: hidden;
+}
+
+.epoxy-calculator-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.epoxy-calculator-header > span {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(212, 175, 55, .14);
+    font-size: 25px;
+}
+
+.epoxy-calculator-header h2 {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.25;
+}
+
+.epoxy-calculator-header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: .72;
+}
+
+.epoxy-calculator-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.epoxy-field {
+    width: 100%;
+    min-width: 0;
+}
+
+.epoxy-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.epoxy-field input,
+.epoxy-field select {
+    width: 100%;
+    min-height: 50px;
+    padding: 11px 13px;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, .14);
+    border-radius: 13px;
+    background: #fff;
+    font-size: 16px;
+    line-height: 1.2;
+    outline: none;
+}
+
+.epoxy-field input:focus,
+.epoxy-field select:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, .14);
+}
+
+.epoxy-ratio-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+    align-items: end;
+    gap: 8px;
+}
+
+.epoxy-ratio-separator {
+    padding-bottom: 14px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.epoxy-calculate-button {
+    width: 100%;
+    min-height: 54px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 14px;
+    background: #0f3d2e;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.epoxy-calculate-button:active {
+    transform: scale(.98);
+}
+
+.epoxy-calculator-error {
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: rgba(180, 30, 30, .08);
+    color: #b42318;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.epoxy-results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.epoxy-result-card {
+    min-width: 0;
+    padding: 14px 12px;
+    box-sizing: border-box;
+    border-radius: 15px;
+    background: rgba(15, 61, 46, .055);
+    text-align: center;
+}
+
+.epoxy-result-card span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.epoxy-result-card strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.epoxy-result-card small {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    opacity: .65;
+}
+
+.epoxy-result-total {
+    grid-column: 1 / -1;
+}
+
+.epoxy-result-total strong {
+    font-size: 27px;
+}
+
+@media (max-width: 360px) {
+    .epoxy-calculator-section {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .epoxy-calculator {
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .epoxy-calculator-header h2 {
+        font-size: 19px;
+    }
+
+    .epoxy-results {
+        gap: 8px;
+    }
+
+    .epoxy-result-card {
+        padding: 12px 8px;
+    }
+
+    .epoxy-result-card strong {
+        font-size: 19px;
+    }
+
+    .epoxy-result-total strong {
+        font-size: 24px;
+    }
+}
+
+/* =========================================
+   📜 UNIVERSAL CALCULATOR — RICH HISTORY V2
+   Mobile-first
+   ========================================= */
+
+.calculator-history-title {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #222;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.calculator-history-meta {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #777;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.calculator-history-finance {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    color: #555;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    scrollbar-width: none;
+}
+
+.calculator-history-finance::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .calculator-history-title {
+        font-size: 14px;
+    }
+
+    .calculator-history-meta,
+    .calculator-history-finance {
+        font-size: 11px;
+    }
+}
+
+
+/* -----------------------------------------
+   Universal Calculator History Actions
+   ----------------------------------------- */
+
+.calculator-history-item {
+    cursor: default;
+}
+
+.calculator-history-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.calculator-history-action {
+    min-height: 34px;
+    padding: 6px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.calculator-history-action:active {
+    transform: scale(.96);
+}
+
+.calculator-history-action[data-history-action="edit"] {
+    font-weight: 800;
+}
+
+@media (max-width: 480px) {
+    .calculator-history-action {
+        min-height: 32px;
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .calculator-history-actions {
+        gap: 6px;
+    }
+}
+

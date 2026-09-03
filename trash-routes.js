@@ -216,4 +216,161 @@ router.delete(
 );
 
 
+/* =========================================================
+   CALCULATOR HISTORY → UNIVERSAL TRASH BRIDGE
+   Calculator History lives in browser localStorage,
+   therefore it uses a dedicated Trash bridge.
+   ========================================================= */
+
+/* MOVE CALCULATOR HISTORY ITEM TO UNIVERSAL TRASH */
+router.post(
+    "/universal-trash/calculator-history",
+    async (req, res) => {
+        try {
+            const item = req.body?.item;
+
+            if (!item || typeof item !== "object") {
+                return res.status(400).json({
+                    success: false,
+                    error: "የCalculator History መረጃ ያስፈልጋል።"
+                });
+            }
+
+            const originalId = clean(item.id);
+
+            if (!originalId) {
+                return res.status(400).json({
+                    success: false,
+                    error: "የCalculator History ID ያስፈልጋል።"
+                });
+            }
+
+            const trashRef = db
+                .collection("universalTrash")
+                .doc();
+
+            const now = new Date().toISOString();
+
+            const trashData = {
+                calculatorHistoryItem: item,
+
+                originalId,
+                sourceCollection: "localStorage",
+                trashType: "calculator-history",
+                displayName:
+                    clean(
+                        item.title ||
+                        item.expression ||
+                        "Calculator History"
+                    ),
+                deletedAt: now,
+                trashStatus: "deleted"
+            };
+
+            await trashRef.set(trashData);
+
+            res.json({
+                success: true,
+                trashId: trashRef.id,
+                message:
+                    "🗑️ Calculator History ወደ Universal Trash ተወስዷል።"
+            });
+
+        } catch (error) {
+            console.error(
+                "Calculator History Trash Error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error:
+                    error.message ||
+                    "Calculator History ወደ Trash መውሰድ አልተቻለም።"
+            });
+        }
+    }
+);
+
+/* RESTORE CALCULATOR HISTORY FROM UNIVERSAL TRASH */
+router.post(
+    "/universal-trash/calculator-history/:id/restore",
+    async (req, res) => {
+        try {
+            const id = clean(req.params.id);
+
+            if (!id) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Trash ID ያስፈልጋል።"
+                });
+            }
+
+            const trashRef = db
+                .collection("universalTrash")
+                .doc(id);
+
+            const trashSnap = await trashRef.get();
+
+            if (!trashSnap.exists) {
+                return res.status(404).json({
+                    success: false,
+                    error:
+                        "የCalculator History Trash መረጃ አልተገኘም።"
+                });
+            }
+
+            const trashData = trashSnap.data() || {};
+
+            if (
+                trashData.trashType !==
+                "calculator-history"
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "ይህ መረጃ Calculator History አይደለም።"
+                });
+            }
+
+            const item =
+                trashData.calculatorHistoryItem;
+
+            if (
+                !item ||
+                typeof item !== "object"
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error:
+                        "የCalculator History መረጃው ሙሉ አይደለም።"
+                });
+            }
+
+            await trashRef.delete();
+
+            res.json({
+                success: true,
+                restored: true,
+                calculatorHistoryItem: item,
+                message:
+                    "♻️ Calculator History ተመልሷል።"
+            });
+
+        } catch (error) {
+            console.error(
+                "Calculator History Restore Error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                error:
+                    error.message ||
+                    "Calculator History Restore ማድረግ አልተቻለም።"
+            });
+        }
+    }
+);
+
 module.exports = router;

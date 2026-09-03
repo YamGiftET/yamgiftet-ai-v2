@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>YamGiftET AI | የመለኪያ መቀየሪያ</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="dashboard-header">
+    <h2>📏 የመለኪያ መቀየሪያ</h2>
+    <p>የYamGiftET AI Units Center</p>
+</header>
+
+<main class="units-center-page">
+
+    <section class="dashboard-module-card">
+        <div class="dashboard-module-icon">📏</div>
+
+        <div class="dashboard-module-content">
+            <h3>Units Center</h3>
+            <p>
+                የVolume፣ Weight እና Length መለኪያዎችን
+                በፍጥነት ይቀይሩ።
+            </p>
+        </div>
+    </section>
+
+    <section class="dashboard-module-card">
+
+        <div class="units-converter">
+
+            <div class="epoxy-field">
+                <label for="unitsCategory">
+                    የመለኪያ ምድብ
+                </label>
+
+                <select id="unitsCategory">
+                    <option value="volume">📦 Volume</option>
+                    <option value="weight">⚖️ Weight</option>
+                    <option value="length">📏 Length</option>
+                </select>
+            </div>
+
+            <div class="epoxy-field">
+                <label for="unitsValue">
+                    መጠን
+                </label>
+
+                <input
+                    id="unitsValue"
+                    type="number"
+                    inputmode="decimal"
+                    min="0"
+                    step="any"
+                    placeholder="ለምሳሌ 1000"
+                >
+            </div>
+
+            <div class="epoxy-field">
+                <label for="unitsFrom">
+                    ከ
+                </label>
+
+                <select id="unitsFrom"></select>
+            </div>
+
+            <div class="epoxy-field">
+                <label for="unitsTo">
+                    ወደ
+                </label>
+
+                <select id="unitsTo"></select>
+            </div>
+
+            <button
+                type="button"
+                id="unitsConvertButton"
+            >
+                🔄 ቀይር
+            </button>
+
+            <section
+                id="unitsResult"
+                class="dashboard-module-card"
+                hidden
+            >
+                <h3>📊 ውጤት</h3>
+
+                <p id="unitsResultText">-</p>
+            </section>
+
+            <div
+                id="unitsError"
+                role="alert"
+                hidden
+            ></div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script src="js/ethiopian-calendar.js"></script>
+<script src="js/units-converter-browser.js"></script>
+<script src="js/units-center.js"></script>
+<script src="js/auth-guard.js"></script>
+
+</body>
+</html>

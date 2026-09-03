@@ -253,7 +253,8 @@
               <div class="card-actions">
                 <button
                   class="restore"
-                  data-id="${id}">
+                  data-id="${id}"
+                  data-trash-type="${type}">
                   ♻️ Restore
                 </button>
 
@@ -269,7 +270,10 @@
 
         document.querySelectorAll(".restore").forEach(button => {
           button.addEventListener("click", () => {
-            restoreTrash(button.dataset.id);
+            restoreTrash(
+              button.dataset.id,
+              button.dataset.trashType
+            );
           });
         });
 
@@ -289,7 +293,7 @@
       }
     }
 
-    async function restoreTrash(id) {
+    async function restoreTrash(id, trashType) {
       if (!id) return;
 
       if (!confirm(
@@ -298,10 +302,17 @@
       )) return;
 
       try {
+        const restoreUrl =
+          trashType === "calculator-history"
+            ? "/api/universal-trash/calculator-history/" +
+              encodeURIComponent(id) +
+              "/restore"
+            : "/api/universal-trash/" +
+              encodeURIComponent(id) +
+              "/restore";
+
         const response = await fetch(
-          "/api/universal-trash/" +
-          encodeURIComponent(id) +
-          "/restore",
+          restoreUrl,
           {
             method: "POST",
             headers: {
@@ -318,7 +329,65 @@
           );
         }
 
-        alert("♻️ መረጃው በትክክል Restore ተደርጓል።");
+        if (
+          trashType === "calculator-history" &&
+          result.calculatorHistoryItem &&
+          typeof result.calculatorHistoryItem === "object"
+        ) {
+          const historyKey =
+            "yamgiftet_universal_calculator_history";
+
+          let history = [];
+
+          try {
+            const stored =
+              localStorage.getItem(historyKey);
+
+            const parsed = stored
+              ? JSON.parse(stored)
+              : [];
+
+            history = Array.isArray(parsed)
+              ? parsed
+              : [];
+          } catch (storageError) {
+            console.error(
+              "Calculator History LocalStorage Read Error:",
+              storageError
+            );
+            history = [];
+          }
+
+          const restoredItem =
+            result.calculatorHistoryItem;
+
+          const existingIndex =
+            history.findIndex(
+              item =>
+                item &&
+                item.id === restoredItem.id
+            );
+
+          if (existingIndex === -1) {
+            history.unshift(restoredItem);
+          } else {
+            history[existingIndex] = restoredItem;
+          }
+
+          localStorage.setItem(
+            historyKey,
+            JSON.stringify(history)
+          );
+
+          alert(
+            "♻️ Calculator History በትክክል Restore ተደርጓል።"
+          );
+        } else {
+          alert(
+            "♻️ መረጃው በትክክል Restore ተደርጓል።"
+          );
+        }
+
         await loadTrash();
 
       } catch (error) {

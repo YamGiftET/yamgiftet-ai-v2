@@ -1059,6 +1059,26 @@
                     >
                 </label>
 
+                <div class="yam-re-calculator-actions">
+                    <p>🧮 Calculator ውጤት ወደ ግዢ ላክ</p>
+
+                    <button
+                        type="button"
+                        class="yam-re-calculator-action"
+                        data-raw-material-calculator-action="quantity"
+                    >
+                        📦 ወደ ግዢ ብዛት አስገባ
+                    </button>
+
+                    <button
+                        type="button"
+                        class="yam-re-calculator-action"
+                        data-raw-material-calculator-action="unit-cost"
+                    >
+                        💰 ወደ አንድ እቃ ዋጋ አስገባ
+                    </button>
+                </div>
+
                 <label>
                     የአንድ እቃ ዋጋ
                     <input
@@ -1406,6 +1426,124 @@
                         required
                     >
                 </label>
+
+                <section
+                    id="costProfitCalculator"
+                    class="universal-calculator-section"
+                    style="margin-top:16px;"
+                >
+                    <div class="universal-calculator">
+                        <div class="calculator-header">
+                            <span>📊</span>
+                            <div>
+                                <h3>Cost & Profit</h3>
+                                <p>የዋጋ፣ ወጪ እና ትርፍ ስሌት</p>
+                            </div>
+                        </div>
+
+                        <label>
+                            Quantity
+                            <input
+                                id="costProfitQuantity"
+                                type="number"
+                                min="0.0001"
+                                step="any"
+                            >
+                        </label>
+
+                        <label>
+                            Material Unit Cost
+                            <input
+                                id="costProfitMaterialUnitCost"
+                                type="number"
+                                min="0"
+                                step="any"
+                            >
+                        </label>
+
+                        <label>
+                            Work Cost
+                            <input
+                                id="costProfitWorkCost"
+                                type="number"
+                                min="0"
+                                step="any"
+                                value="0"
+                            >
+                        </label>
+
+                        <label>
+                            Other Cost
+                            <input
+                                id="costProfitOtherCost"
+                                type="number"
+                                min="0"
+                                step="any"
+                                value="0"
+                            >
+                        </label>
+
+                        <label>
+                            Selling Price
+                            <input
+                                id="costProfitSellingPrice"
+                                type="number"
+                                min="0"
+                                step="any"
+                                value="0"
+                            >
+                        </label>
+
+                        <button
+                            type="button"
+                            id="costProfitCalculateButton"
+                        >
+                            📊 Cost & Profit አስላ
+                        </button>
+
+                        <div
+                            id="costProfitError"
+                            role="alert"
+                        ></div>
+
+                        <div
+                            id="costProfitResult"
+                            hidden
+                        >
+                            <p>
+                                Material Cost:
+                                <strong id="costProfitResultMaterialCost">0</strong>
+                            </p>
+                            <p>
+                                Total Cost:
+                                <strong id="costProfitResultTotalCost">0</strong>
+                            </p>
+                            <p>
+                                Selling Price:
+                                <strong id="costProfitResultSellingPrice">0</strong>
+                            </p>
+                            <p>
+                                Profit:
+                                <strong id="costProfitResultProfit">0</strong>
+                            </p>
+                            <p>
+                                Profit %:
+                                <strong id="costProfitResultProfitPercent">0%</strong>
+                            </p>
+                            <p>
+                                Margin %:
+                                <strong id="costProfitResultMarginPercent">0%</strong>
+                            </p>
+
+                            <button
+                                type="button"
+                                data-cost-profit-destination="raw-material"
+                            >
+                                📤 ወደ Purchase ላክ
+                            </button>
+                        </div>
+                    </div>
+                </section>
 
                 ${buildEthiopianDateFields(
                     "yamPurchase",

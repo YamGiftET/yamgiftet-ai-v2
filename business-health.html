@@ -52,7 +52,63 @@
 
   </section>
 
-  <section class="management-advice">
+  <section id="universalCalculator" class="universal-calculator-section">
+  <div class="universal-calculator">
+    <div class="calculator-header">
+      <span>🧮</span>
+      <div>
+        <h2>Universal Calculator</h2>
+        <p>ለቢዝነስ ጤና ትንተና ፈጣን ስሌት</p>
+      </div>
+    </div>
+
+    <input
+      id="universalCalculatorDisplay"
+      class="calculator-display"
+      type="text"
+      value="0"
+      readonly
+      aria-label="የCalculator ውጤት"
+    >
+
+    <div class="calculator-buttons">
+      <button type="button" data-calculator-clear>C</button>
+      <button type="button" data-calculator-backspace>⌫</button>
+      <button type="button" data-calculator-operation="%">%</button>
+      <button type="button" data-calculator-operation="/">÷</button>
+
+      <button type="button" data-calculator-number="7">7</button>
+      <button type="button" data-calculator-number="8">8</button>
+      <button type="button" data-calculator-number="9">9</button>
+      <button type="button" data-calculator-operation="*">×</button>
+
+      <button type="button" data-calculator-number="4">4</button>
+      <button type="button" data-calculator-number="5">5</button>
+      <button type="button" data-calculator-number="6">6</button>
+      <button type="button" data-calculator-operation="-">−</button>
+
+      <button type="button" data-calculator-number="1">1</button>
+      <button type="button" data-calculator-number="2">2</button>
+      <button type="button" data-calculator-number="3">3</button>
+      <button type="button" data-calculator-operation="+">+</button>
+
+      <button type="button" data-calculator-number="0">0</button>
+      <button type="button" data-calculator-number=".">.</button>
+      <button type="button" data-calculator-equals>=</button>
+    </div>
+
+    <div class="business-health-calculator-action">
+      <button
+        type="button"
+        data-business-health-calculator-action="analysis"
+      >
+        📊 ውጤቱን ወደ ትንተና ላክ
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="management-advice">
     <div class="management-advice-title">
       <h3>🧠 የቢዝነስ ጤና ትንተና</h3>
       <p>በንግድ መረጃዎች ላይ የተመሰረተ ግምገማ</p>
@@ -67,6 +123,7 @@
 <script src="js/business-health.js"></script>
 <script src="js/universal-calculator-ui.js"></script>
 
+<script src="js/calculator-business-health-integration.js"></script>
 <script src="js/auth-guard.js"></script>
 </body>
 </html>

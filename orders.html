@@ -82,7 +82,225 @@
 
 <div class="form-group">
             <label>የተስማማንበት ዋጋ</label>
+                    <!-- 🧮 YamGiftET Universal Calculator -->
+        <section id="universalCalculator" class="universal-calculator-section">
+          <div class="universal-calculator">
+
+            <div class="calculator-header">
+              <span>🧮</span>
+              <div>
+                <h2>Universal Calculator</h2>
+                <p>የንግድ ፈጣን ስሌት ማዕከል</p>
+              </div>
+            </div>
+
             <input
+              id="universalCalculatorDisplay"
+              class="calculator-display"
+              type="text"
+              value="0"
+              readonly
+              aria-label="የCalculator ውጤት"
+            >
+
+            <div class="calculator-buttons">
+
+              <button type="button" data-calculator-clear>C</button>
+              <button type="button" data-calculator-backspace>⌫</button>
+              <button type="button" data-calculator-operation="%">%</button>
+              <button type="button" data-calculator-operation="/">÷</button>
+
+              <button type="button" data-calculator-number="7">7</button>
+              <button type="button" data-calculator-number="8">8</button>
+              <button type="button" data-calculator-number="9">9</button>
+              <button type="button" data-calculator-operation="*">×</button>
+
+              <button type="button" data-calculator-number="4">4</button>
+              <button type="button" data-calculator-number="5">5</button>
+              <button type="button" data-calculator-number="6">6</button>
+              <button type="button" data-calculator-operation="-">−</button>
+
+              <button type="button" data-calculator-number="1">1</button>
+              <button type="button" data-calculator-number="2">2</button>
+              <button type="button" data-calculator-number="3">3</button>
+              <button type="button" data-calculator-operation="+">+</button>
+
+              <button
+                type="button"
+                class="calculator-zero"
+                data-calculator-number="0"
+              >0</button>
+
+              <button type="button" data-calculator-number=".">.</button>
+
+              <button
+                type="button"
+                class="calculator-equals"
+                data-calculator-equals
+              >=</button>
+
+            </div>
+          </div>
+        </section>
+
+    
+    <!-- 💰 YamGiftET Cost & Profit -->
+    <section id="costProfitCalculator" class="cost-profit-section">
+        <div class="cost-profit-header">
+            <span>💰</span>
+            <div>
+                <h2>Cost & Profit</h2>
+                <p>የወጪ፣ ትርፍ እና ኪሳራ ስሌት</p>
+            </div>
+        </div>
+
+        <div class="cost-profit-form">
+            <div class="form-group">
+                <label for="costProfitQuantity">ብዛት</label>
+                <input
+                    type="number"
+                    id="costProfitQuantity"
+                    min="0"
+                    step="any"
+                    value="1"
+                    placeholder="1"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="costProfitMaterialUnitCost">
+                    የአንድ እቃ ወጪ
+                </label>
+                <input
+                    type="number"
+                    id="costProfitMaterialUnitCost"
+                    min="0"
+                    step="any"
+                    value="0"
+                    placeholder="0"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="costProfitWorkCost">የሥራ ወጪ</label>
+                <input
+                    type="number"
+                    id="costProfitWorkCost"
+                    min="0"
+                    step="any"
+                    value="0"
+                    placeholder="0"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="costProfitOtherCost">ሌላ ወጪ</label>
+                <input
+                    type="number"
+                    id="costProfitOtherCost"
+                    min="0"
+                    step="any"
+                    value="0"
+                    placeholder="0"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="costProfitSellingPrice">መሸጫ ዋጋ</label>
+                <input
+                    type="number"
+                    id="costProfitSellingPrice"
+                    min="0"
+                    step="any"
+                    value="0"
+                    placeholder="0"
+                >
+            </div>
+
+            <button
+                type="button"
+                id="costProfitCalculateButton"
+                class="cost-profit-calculate-button"
+            >
+                🧮 Cost & Profit አስላ
+            </button>
+        </div>
+
+        <div
+            id="costProfitError"
+            class="cost-profit-error"
+            role="alert"
+        ></div>
+
+        <div
+            id="costProfitResult"
+            class="cost-profit-result"
+            hidden
+        >
+            <h3>📊 Cost & Profit Result</h3>
+
+            <div class="cost-profit-result-grid">
+                <div>
+                    <span>የቁሳቁስ ጠቅላላ ወጪ</span>
+                    <strong id="costProfitResultMaterialCost">0</strong>
+                </div>
+
+                <div>
+                    <span>ጠቅላላ ወጪ</span>
+                    <strong id="costProfitResultTotalCost">0</strong>
+                </div>
+
+                <div>
+                    <span>መሸጫ ዋጋ</span>
+                    <strong id="costProfitResultSellingPrice">0</strong>
+                </div>
+
+                <div>
+                    <span>ትርፍ / ኪሳራ</span>
+                    <strong id="costProfitResultProfit">0</strong>
+                </div>
+
+                <div>
+                    <span>Profit %</span>
+                    <strong id="costProfitResultProfitPercent">0%</strong>
+                </div>
+
+                <div>
+                    <span>Margin %</span>
+                    <strong id="costProfitResultMarginPercent">0%</strong>
+                </div>
+            </div>
+
+            <div class="cost-profit-actions">
+                <button
+                    type="button"
+                    data-cost-profit-destination="order"
+                >
+                    📤 ወደ Order ላክ
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div class="order-calculator-integration">
+            <p>🧮 የCalculator ውጤት ወደ Order ላክ</p>
+
+            <div class="order-calculator-actions">
+                <button type="button" data-order-calculator-target="total">
+                    💰 ወደ ጠቅላላ ዋጋ
+                </button>
+
+                <button type="button" data-order-calculator-target="deposit">
+                    💵 ወደ ቀብድ
+                </button>
+
+                <button type="button" data-order-calculator-target="workCost">
+                    🛠️ ወደ የሥራ ወጪ
+                </button>
+            </div>
+        </div>
+
+<input
                 type="number"
                 id="orderTotalAmount"
                 min="0"
@@ -218,6 +436,11 @@
 <script src="js/ethiopian-calendar.js"></script>
 <script src="js/orders.js"></script>
 
+<script src="js/universal-calculator-ui.js"></script>
+<script src="js/cost-profit-browser.js"></script>
+<script src="js/cost-profit-ui.js"></script>
+<script src="js/cost-profit-orders-integration.js"></script>
+<script src="js/orders-calculator-integration.js"></script>
 <script src="js/auth-guard.js"></script>
 </body>
 </html>

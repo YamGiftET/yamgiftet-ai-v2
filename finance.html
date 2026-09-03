@@ -95,6 +95,133 @@
       </div>
     </section>
 
+
+    <!-- 🧪 YamGiftET Epoxy Calculator -->
+    <section id="epoxyCalculator" class="epoxy-calculator-section">
+        <div class="epoxy-calculator">
+
+            <div class="epoxy-calculator-header">
+                <span>🧪</span>
+                <div>
+                    <h2>Epoxy Calculator</h2>
+                    <p>የEpoxy ሬዚን፣ ሃርደነር እና መጠን ማስሊያ</p>
+                </div>
+            </div>
+
+            <div class="epoxy-calculator-form">
+
+                <div class="epoxy-field">
+                    <label for="epoxyShape">የቅርጽ አይነት</label>
+                    <select id="epoxyShape">
+                        <option value="rectangle">Rectangle</option>
+                        <option value="square">Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="oval">Oval</option>
+                        <option value="triangle">Triangle</option>
+                    </select>
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyLength">Length</label>
+                    <input id="epoxyLength" type="number" inputmode="decimal" min="0" step="any" placeholder="ርዝመት">
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyWidth">Width</label>
+                    <input id="epoxyWidth" type="number" inputmode="decimal" min="0" step="any" placeholder="ስፋት">
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyDiameter">Diameter</label>
+                    <input id="epoxyDiameter" type="number" inputmode="decimal" min="0" step="any" placeholder="ዲያሜትር">
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyBase">Base</label>
+                    <input id="epoxyBase" type="number" inputmode="decimal" min="0" step="any" placeholder="መሠረት">
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyHeight">Height</label>
+                    <input id="epoxyHeight" type="number" inputmode="decimal" min="0" step="any" placeholder="ቁመት">
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyThickness">Thickness</label>
+                    <input id="epoxyThickness" type="number" inputmode="decimal" min="0" step="any" placeholder="ውፍረት">
+                </div>
+
+                <div class="epoxy-field">
+                    <label for="epoxyWastePercent">Waste %</label>
+                    <input id="epoxyWastePercent" type="number" inputmode="decimal" min="0" step="any" value="0" placeholder="ለምሳሌ 10">
+                </div>
+
+                <div class="epoxy-ratio-row">
+                    <div class="epoxy-field">
+                        <label for="epoxyResinRatio">Resin Ratio</label>
+                        <input id="epoxyResinRatio" type="number" inputmode="decimal" min="0" step="any" value="1">
+                    </div>
+
+                    <div class="epoxy-ratio-separator">:</div>
+
+                    <div class="epoxy-field">
+                        <label for="epoxyHardenerRatio">Hardener Ratio</label>
+                        <input id="epoxyHardenerRatio" type="number" inputmode="decimal" min="0" step="any" value="1">
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    id="epoxyCalculateButton"
+                    class="epoxy-calculate-button"
+                >
+                    🧮 አስላ
+                </button>
+
+                <div
+                    id="epoxyCalculatorError"
+                    class="epoxy-calculator-error"
+                    role="alert"
+                    hidden
+                ></div>
+
+            </div>
+
+            <div class="epoxy-results">
+                <div class="epoxy-result-card">
+                    <span>📐 Area</span>
+                    <strong id="epoxyResultArea">0.00</strong>
+                    <small>cm²</small>
+                </div>
+
+                <div class="epoxy-result-card">
+                    <span>📦 Volume</span>
+                    <strong id="epoxyResultVolume">0.00</strong>
+                    <small>cm³</small>
+                </div>
+
+                <div class="epoxy-result-card epoxy-result-total">
+                    <span>🧪 Total Epoxy</span>
+                    <strong id="epoxyResultTotal">0.00</strong>
+                    <small>mL</small>
+                </div>
+
+                <div class="epoxy-result-card">
+                    <span>🔵 Resin</span>
+                    <strong id="epoxyResultResin">0.00</strong>
+                    <small>mL</small>
+                </div>
+
+                <div class="epoxy-result-card">
+                    <span>🟡 Hardener</span>
+                    <strong id="epoxyResultHardener">0.00</strong>
+                    <small>mL</small>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
     <div class="yam-re-tab-panel active">
 
       <div class="yam-re-panel-header">
@@ -104,7 +231,7 @@
         </div>
       </div>
 
-      
+
     <div id="financeSources" class="yam-re-finance-sources"></div>
 
     <div id="financeHistory" class="yam-re-finance-history-section">
@@ -117,8 +244,10 @@
 
 </main>
 
+<script src="js/ethiopian-calendar.js"></script>
 <script src="js/finance-dashboard.js"></script>
 <script src="js/universal-calculator-ui.js"></script>
+<script src="js/epoxy-calculator-ui.js"></script>
 
 <script src="js/auth-guard.js"></script>
 </body>
