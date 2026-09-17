@@ -17,7 +17,7 @@ const quoteLibrary = {
         `;
 
         try {
-            const response = await fetch("/api/quote-assistant/quotes");
+            const response = await fetch("https://yamgiftet-ai-v2-backend.onrender.com/api/quote-assistant/quotes");
             const data = await response.json();
 
             if (!response.ok || !data.success) {
@@ -49,6 +49,7 @@ const quoteLibrary = {
 
             if (this.activeTab === "trash") return isTrash;
             if (this.activeTab === "favorites") return !isTrash && isFavorite;
+            if (this.activeTab === "used") return !isTrash && Number(item.usedCount || 0) > 0;
             return !isTrash;
         });
 
@@ -58,6 +59,8 @@ const quoteLibrary = {
                     ? "🗑️ Trash ባዶ ነው።"
                     : this.activeTab === "favorites"
                     ? "⭐ እስካሁን Favorite የተደረገ ጥቅስ የለም።"
+                    : this.activeTab === "used"
+                    ? "🎁 እስካሁን የተጠቀምኩበት ጥቅስ የለም።"
                     : "📭 እስካሁን የተቀመጠ ምርጥ ጥቅስ የለም።";
 
             list.innerHTML = `
@@ -86,6 +89,9 @@ const quoteLibrary = {
                     <button type="button" onclick="quoteLibrary.favorite(${originalIndex})">
                         ${favoriteLabel}
                     </button>
+                      <button type="button" onclick="quoteLibrary.markUsed(${originalIndex})">
+                          🎁 ተጠቀምኩበት${Number(item.usedCount || 0) > 0 ? ` × ${Number(item.usedCount)}` : ""}
+                      </button>
                     <button type="button" onclick="quoteLibrary.trash(${originalIndex})">
                         🗑️ Trash
                     </button>
@@ -140,6 +146,31 @@ const quoteLibrary = {
         } catch (error) {
             console.error("Quote Favorite Error:", error);
             alert(error.message || "Favorite ማድረግ አልተቻለም።");
+        }
+    },
+
+    async markUsed(index) {
+        const item = this.quotes[index];
+        if (!item?.id) return;
+
+        try {
+            const response = await fetch(
+                `/api/quote-assistant/quotes/${encodeURIComponent(item.id)}/used`,
+                { method: "PATCH" }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "ጥቅሱን እንደተጠቀምኩበት ማስመዝገብ አልተቻለም።");
+            }
+
+            item.usedCount = Number(data.usedCount || 0);
+            this.render();
+            this.updateStats();
+        } catch (error) {
+            console.error("Quote Used Error:", error);
+            alert(error.message || "ጥቅሱን እንደተጠቀምኩበት ማስመዝገብ አልተቻለም።");
         }
     },
 
@@ -223,7 +254,7 @@ const quoteLibrary = {
     },
 
     setTab(tab) {
-        if (!["all", "favorites", "trash"].includes(tab)) {
+        if (!["all", "favorites", "used", "trash"].includes(tab)) {
             tab = "all";
         }
 
@@ -289,12 +320,18 @@ const quoteLibrary = {
         }
 
         try {
-            const response = await fetch("/api/quote-assistant/generate", {
+            const category = document.getElementById("quoteCategory")?.value || "Love";
+            const count = Number(document.getElementById("quoteCount")?.value || 10);
+
+            const response = await fetch("https://yamgiftet-ai-v2-backend.onrender.com/api/quote-assistant/generate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({})
+                body: JSON.stringify({
+                    category,
+                    count
+                })
             });
 
             const data = await response.json();

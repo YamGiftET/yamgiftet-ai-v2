@@ -17,6 +17,32 @@
             <p>የተፈቀዱ ምርጥ እና ለስጦታ የሚመቹ የአማርኛ ጥቅሶች</p>
         </div>
 
+        <div class="quote-library-generator-options">
+            <label>
+                ምድብ
+                <select id="quoteCategory">
+                    <option value="Love">❤️ Love</option>
+                    <option value="Birthday">🎂 Birthday</option>
+                    <option value="Gift">🎁 Gift</option>
+                    <option value="Thanks">🙏 Thanks</option>
+                    <option value="Family">👨‍👩‍👧 Family</option>
+                    <option value="Friendship">🤝 Friendship</option>
+                    <option value="Memories">💭 Memories</option>
+                    <option value="Happiness">😊 Happiness</option>
+                    <option value="Bible">📖 Bible</option>
+                    <option value="Spiritual">🕊️ Spiritual</option>
+                </select>
+            </label>
+
+            <label>
+                ብዛት
+                <select id="quoteCount">
+                    <option value="10">10 ጥቅሶች</option>
+                    <option value="15">15 ጥቅሶች</option>
+                    <option value="20">20 ጥቅሶች</option>
+                </select>
+            </label>
+        </div>
         <button id="generateQuoteButton" type="button"
                 onclick="quoteLibrary.generate()">
             ✨ አዲስ ምርጥ ጥቅስ
@@ -52,6 +78,9 @@
             </button>
             <button type="button" class="quote-library-tab" data-tab="favorites">
                 ⭐ Favorites
+            </button>
+            <button type="button" class="quote-library-tab" data-tab="used">
+                🎁 ተጠቀምኩበት
             </button>
             <button type="button" class="quote-library-tab" data-tab="trash">
                 🗑️ Trash

@@ -41,7 +41,7 @@ emoji የጥቅሱን ዋና ስሜትና ይዘት የሚወክል አንድ �
 ከጥቅሱ ይዘት ጋር የሚስማማውን ምረጥ።
 `;
 
-async function generateQuote() {
+async function generateQuote(category = "Love") {
     if (!OPENROUTER_API_KEY) {
         throw new Error("OpenRouter API key is missing");
     }
@@ -57,7 +57,7 @@ async function generateQuote() {
                 "X-Title": "YamGiftET Quote Assistant"
             },
             body: JSON.stringify({
-                model: "openrouter/free",
+                models: ["google/gemma-4-31b-it:free", "nvidia/nemotron-3-ultra-550b-a55b:free", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"],
                 messages: [
                     {
                         role: "system",
@@ -65,7 +65,7 @@ async function generateQuote() {
                     },
                     {
                         role: "user",
-                        content: "አሁን አንድ እጅግ ምርጥ እና ልዩ ጥቅስ አመንጭ።"
+                        content: `አሁን በ"${category}" ምድብ ላይ የተመሠረተ፣ ለYam Gift epoxy frame ተስማሚ የሆነ እጅግ ምርጥ እና ልዩ ጥቅስ አመንጭ።`
                     }
                 ]
             })
@@ -75,9 +75,14 @@ async function generateQuote() {
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(
+        const error = new Error(
             data?.error?.message || "Quote AI request failed"
         );
+        error.status = response.status;
+        error.code = data?.error?.code || null;
+        error.rateLimit = data?.error?.metadata?.limit_source || null;
+        error.rateLimitReset = data?.error?.metadata?.headers?.["X-RateLimit-Reset"] || null;
+        throw error;
     }
 
     const content = data?.choices?.[0]?.message?.content || "";
@@ -106,7 +111,8 @@ async function generateQuote() {
     return {
         quote,
         score,
-        emoji
+        emoji,
+        model: data?.model || null
     };
 }
 
@@ -123,22 +129,51 @@ async function isDuplicate(quote) {
 /* Generate ONE approved quote */
 router.post("/quote-assistant/generate", async (req, res) => {
     try {
-        let approved = null;
+        const allowedCategories = [
+            "Love",
+            "Birthday",
+            "Gift",
+            "Thanks",
+            "Family",
+            "Friendship",
+            "Memories",
+            "Happiness",
+            "Bible",
+            "Spiritual"
+        ];
+
+        const category = allowedCategories.includes(req.body?.category)
+            ? req.body.category
+            : "Love";
+
+        const requestedCount = Number(req.body?.count || 1);
+        const count = Number.isInteger(requestedCount)
+            ? Math.min(Math.max(requestedCount, 10), 20)
+            : 10;
+
+        const approvedQuotes = [];
 
         for (let attempt = 1; attempt <= 50; attempt++) {
-            const result = await generateQuote();
+            const result = await generateQuote(category);
 
             if (!result) continue;
+
+            if (approvedQuotes.some(item => item.quote === result.quote)) {
+                continue;
+            }
 
             if (await isDuplicate(result.quote)) {
                 continue;
             }
 
-            approved = result;
-            break;
+            approvedQuotes.push(result);
+
+            if (approvedQuotes.length >= count) {
+                break;
+            }
         }
 
-        if (!approved) {
+        if (approvedQuotes.length === 0) {
             return res.status(503).json({
                 success: false,
                 error: "ምርጥ ጥቅስ ማግኘት አልተቻለም።"
@@ -147,33 +182,52 @@ router.post("/quote-assistant/generate", async (req, res) => {
 
         const now = new Date().toISOString();
 
-        const doc = {
-            quote: approved.quote,
-            score: approved.score,
-            emoji: approved.emoji,
-            approved: true,
-            createdAt: now,
-            updatedAt: now
-        };
+        const savedQuotes = [];
 
-        const ref = await db
-            .collection(QUOTE_COLLECTION)
-            .add(doc);
+        for (const approved of approvedQuotes) {
+            const doc = {
+                quote: approved.quote,
+                score: approved.score,
+                emoji: approved.emoji,
+                category,
+                quoteType: "AI-Generated",
+                status: "approved",
+                isFavorite: false,
+                approved: true,
+                createdAt: now,
+                updatedAt: now
+            };
+
+            const ref = await db
+                .collection(QUOTE_COLLECTION)
+                .add(doc);
+
+            savedQuotes.push({
+                id: ref.id,
+                ...doc
+            });
+        }
 
         res.json({
             success: true,
-            quote: {
-                id: ref.id,
-                ...doc
-            }
+            count: savedQuotes.length,
+            quotes: savedQuotes
         });
 
     } catch (error) {
         console.error("Quote Assistant Error:", error);
 
-        res.status(500).json({
+        const status = Number(error?.status) || 500;
+
+        res.status(status).json({
             success: false,
-            error: "Quote Assistant ስራውን ማከናወን አልቻለም።"
+            error: status === 429
+                ? "Quote AI FREE daily limit ላይ ደርሷል።"
+                : "Quote Assistant ስራውን ማከናወን አልቻለም።",
+            details: error?.message || "Unknown error",
+            code: error?.code || null,
+            rateLimit: error?.rateLimit || null,
+            rateLimitReset: error?.rateLimitReset || null
         });
     }
 });
@@ -239,6 +293,41 @@ router.patch("/quote-assistant/quotes/:id/favorite", async (req, res) => {
         res.status(500).json({
             success: false,
             error: "Favorite ማድረግ አልተቻለም።"
+        });
+    }
+});
+
+/* Mark quote as used on a gift/frame */
+router.patch("/quote-assistant/quotes/:id/used", async (req, res) => {
+    try {
+        const ref = db.collection(QUOTE_COLLECTION).doc(req.params.id);
+        const snap = await ref.get();
+
+        if (!snap.exists) {
+            return res.status(404).json({
+                success: false,
+                error: "ጥቅሱ አልተገኘም።"
+            });
+        }
+
+        const current = snap.data();
+        const usedCount = Number(current.usedCount || 0) + 1;
+
+        await ref.update({
+            usedCount,
+            updatedAt: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            usedCount
+        });
+    } catch (error) {
+        console.error("Quote Used Error:", error);
+
+        res.status(500).json({
+            success: false,
+            error: "ጥቅሱን እንደተጠቀምኩበት ማስመዝገብ አልተቻለም።"
         });
     }
 });
