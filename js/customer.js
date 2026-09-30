@@ -488,7 +488,7 @@ function renderCustomerHistory(orders) {
   if (!orders || !orders.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7">የትዕዛዝ ታሪክ የለም።</td>
+        <td colspan="8">የትዕዛዝ ታሪክ የለም።</td>
       </tr>
     `;
     return;
@@ -499,6 +499,7 @@ function renderCustomerHistory(orders) {
 
     row.innerHTML = `
       <td><strong>${escapeHTML(order.productName || "-")}</strong></td>
+      <td>${escapeHTML(String(order.quantity || 0))} ${escapeHTML(order.unit || "pcs")}</td>
       <td>${escapeHTML(order.orderDate || order.createdAt || "-")}</td>
       <td>${formatBirr(order.totalAmount)}</td>
       <td>${formatBirr(order.deposit)}</td>

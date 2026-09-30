@@ -258,6 +258,32 @@
                     </div>
                 </div>
 
+                <div style="margin:14px 0;">
+                    <button
+                        type="button"
+                        id="yamREAddPurchaseMaterial"
+                        class="yam-re-primary"
+                    >
+                        ➕ አዲስ ጥሬ እቃ
+                    </button>
+                </div>
+
+                <div class="yam-re-purchase-selector">
+                    <label for="yamREPurchaseMaterial">
+                        📦 ጥሬ እቃ ይምረጡ
+                    </label>
+
+                    <select id="yamREPurchaseMaterial">
+                        <option value="">-- ጥሬ እቃ ይምረጡ --</option>
+                        ${materials.map(material => `
+                            <option value="${esc(material.id)}">
+                                ${esc(material.materialName)}
+                                (${esc(material.unit || "pcs")})
+                            </option>
+                        `).join("")}
+                    </select>
+                </div>
+
                 <div id="yamREPurchasesList">
                     ጥሬ እቃ በመጀመሪያ ይምረጡ።
                 </div>
@@ -369,6 +395,45 @@
             );
         }
 
+        const addPurchaseMaterial = document.getElementById(
+            "yamREAddPurchaseMaterial"
+        );
+
+        if (addPurchaseMaterial) {
+            addPurchaseMaterial.addEventListener(
+                "click",
+                () => showMaterialModal()
+            );
+        }
+
+        const purchaseMaterial = document.getElementById(
+            "yamREPurchaseMaterial"
+        );
+
+        if (purchaseMaterial) {
+            purchaseMaterial.addEventListener(
+                "change",
+                () => {
+                    const materialId = purchaseMaterial.value;
+
+                    if (!materialId) {
+                        const list = document.getElementById(
+                            "yamREPurchasesList"
+                        );
+
+                        if (list) {
+                            list.textContent =
+                                "ጥሬ እቃ በመጀመሪያ ይምረጡ።";
+                        }
+
+                        return;
+                    }
+
+                    loadPurchaseHistory(materialId);
+                }
+            );
+        }
+
         const addMaterial = document.getElementById(
             "yamREAddMaterial"
         );
@@ -402,6 +467,239 @@
             : [];
 
         renderMaterials();
+
+        const purchaseMaterial = document.getElementById(
+            "yamREPurchaseMaterial"
+        );
+
+        if (purchaseMaterial) {
+            purchaseMaterial.innerHTML = `
+                <option value="">
+                    -- ጥሬ እቃ ይምረጡ --
+                </option>
+                ${materials.map(material => `
+                    <option value="${esc(material.id)}">
+                        ${esc(material.materialName)}
+                        (${esc(material.unit || "pcs")})
+                    </option>
+                `).join("")}
+            `;
+        }
+    }
+
+    async function loadPurchaseHistory(materialId) {
+        const list = document.getElementById(
+            "yamREPurchasesList"
+        );
+
+        if (!list) return;
+
+        list.textContent =
+            "⏳ የግዢ ታሪክ እየተጫነ...";
+
+        try {
+            const data = await api(
+                `${API}/raw-materials/${encodeURIComponent(materialId)}/purchases`
+            );
+
+            renderPurchaseHistory(data);
+        } catch (error) {
+            console.error(
+                "Purchase History Error:",
+                error
+            );
+
+            list.innerHTML = `
+                <div class="yam-re-empty">
+                    ❌ የግዢ ታሪኩን ማምጣት አልተቻለም።
+                </div>
+            `;
+        }
+    }
+
+    function renderPurchaseHistory(data) {
+        const container = document.getElementById(
+            "yamREPurchasesList"
+        );
+
+        if (!container) return;
+
+        const purchases = Array.isArray(data?.purchases)
+            ? data.purchases
+            : [];
+
+        const summary = data?.summary || {};
+        const quantityByUnit =
+            summary.quantityByUnit &&
+            typeof summary.quantityByUnit === "object"
+                ? summary.quantityByUnit
+                : {};
+
+        if (!purchases.length) {
+            container.innerHTML = `
+                <div class="yam-re-empty">
+                    🛒 ለዚህ ጥሬ እቃ የግዢ ታሪክ የለም።
+                </div>
+            `;
+            return;
+        }
+
+        const quantitySummary =
+            Object.entries(quantityByUnit)
+                .map(
+                    ([unit, quantity]) =>
+                        `${number(quantity)} ${esc(unit)}`
+                )
+                .join(" + ");
+
+        container.innerHTML = `
+            <div class="yam-re-purchase-history">
+
+                <div class="yam-re-summary-grid">
+                    <div>
+                        <small>🧾 የግዢ ብዛት</small>
+                        <strong>
+                            ${quantitySummary || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <small>💰 ጠቅላላ የግዢ ዋጋ</small>
+                        <strong>
+                            ${money(summary.totalCost)}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="yam-re-purchase-list">
+                    ${purchases
+                        .map(purchase => `
+                            <div class="yam-re-purchase-card">
+
+                                <div>
+                                    <strong>
+                                        📅 ${esc(
+                                            purchase.purchaseDate || "-"
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <p>
+                                    🆔 Batch ID:
+                                    <strong>${esc(purchase.batchId || "-")}</strong>
+                                </p>
+
+                                ${
+                                    ["mm2", "cm2", "m2"].includes(purchase.unit)
+                                        ? `
+                                            <p>
+                                                📐 Dimensions:
+                                                <strong>
+                                                    ${
+    purchase.length != null &&
+    purchase.width != null &&
+    purchase.dimensionUnit
+        ? `${number(purchase.length)} × ${number(purchase.width)} ${esc(purchase.dimensionUnit)}`
+        : "—"
+}
+                                                </strong>
+                                            </p>
+
+                                            <p>
+                                                📏 Area:
+                                                <strong>
+                                                    ${
+    purchase.area != null &&
+    purchase.areaUnit
+        ? `${number(purchase.area)} ${esc(purchase.areaUnit)}`
+        : "—"
+}
+                                                </strong>
+                                            </p>
+
+                                            ${
+                                                purchase.thickness && number(purchase.thickness) > 0
+                                                    ? `
+                                                        <p>
+                                                            📎 Thickness:
+                                                            <strong>
+                                                                ${number(purchase.thickness)} ${esc(purchase.thicknessUnit || "mm")}
+                                                            </strong>
+                                                        </p>
+                                                    `
+                                                    : ""
+                                            }
+
+                                            <p>
+                                                💳 Purchase Price:
+                                                <strong>${
+    purchase.purchasePrice != null
+        ? money(purchase.purchasePrice)
+        : "—"
+}</strong>
+                                            </p>
+                                        `
+                                        : ""
+                                }
+
+                                <p>
+                                    📦 ብዛት:
+                                    <strong>
+                                        ${number(
+                                            purchase.quantity
+                                        )}
+                                        ${esc(
+                                            purchase.unit || ""
+                                        )}
+                                    </strong>
+                                </p>
+
+                                <p>
+                                    💵 Unit Cost:
+                                    <strong>
+                                        ${money(
+                                            purchase.unitCost
+                                        )}/${esc(
+                                            purchase.unit || ""
+                                        )}
+                                    </strong>
+                                </p>
+
+                                <p>
+                                    💰 Total Cost:
+                                    <strong>
+                                        ${money(
+                                            purchase.totalCost
+                                        )}
+                                    </strong>
+                                </p>
+
+                                <p>
+                                    🏪 Supplier:
+                                    ${esc(
+                                        purchase.supplier || "-"
+                                    )}
+                                </p>
+
+                                ${
+                                    purchase.notes
+                                        ? `
+                                            <p>
+                                                📝 ${esc(
+                                                    purchase.notes
+                                                )}
+                                            </p>
+                                        `
+                                        : ""
+                                }
+
+                            </div>
+                        `)
+                        .join("")}
+                </div>
+
+            </div>
+        `;
     }
 
     async function loadExpenses() {
@@ -643,7 +941,7 @@
                                 </p>
 
                                 <p>
-                                    📦 Stock:
+                                    📦 ክምችት:
                                     <strong>
                                         ${number(
                                             material.stock
@@ -665,7 +963,7 @@
                                 </p>
 
                                 <p>
-                                    💰 Stock Value:
+                                    💰 የክምችት ዋጋ:
                                     <strong>
                                         ${money(
                                             material.stockValue
@@ -991,6 +1289,16 @@
                 item => item.id === id
             ) || {};
 
+        const unitConverter =
+            window.yamUnitsConverter;
+
+        const currentUnit =
+            unitConverter
+                ? unitConverter.normalizeUnit(
+                    material.unit || "pcs"
+                )
+                : (material.unit || "pcs");
+
         openModal(`
             <div class="yam-re-modal-header">
                 <h3>
@@ -1031,23 +1339,92 @@
                             material.category ||
                             ""
                         )}"
-                        placeholder="Resin, Color, Frame..."
+                        placeholder="ኢፖክሲ፣ ቀለም፣ ፍሬም..."
                     >
                 </label>
 
                 <label>
                     መለኪያ
-                    <input
-                        name="unit"
-                        value="${esc(
-                            material.unit ||
-                            "ቁጥር"
-                        )}"
-                    >
+                    <select name="unit" required>
+                        <optgroup label="💧 Volume / ፈሳሽ">
+                            <option value="ml" ${
+                                currentUnit === "ml"
+                                    ? "selected"
+                                    : ""
+                            }>ml</option>
+                            <option value="l" ${
+                                currentUnit === "l"
+                                    ? "selected"
+                                    : ""
+                            }>L</option>
+                        </optgroup>
+
+                        <optgroup label="⚖️ Weight / ክብደት">
+                            <option value="mg" ${
+                                currentUnit === "mg"
+                                    ? "selected"
+                                    : ""
+                            }>mg</option>
+                            <option value="g" ${
+                                currentUnit === "g"
+                                    ? "selected"
+                                    : ""
+                            }>g</option>
+                            <option value="kg" ${
+                                currentUnit === "kg"
+                                    ? "selected"
+                                    : ""
+                            }>kg</option>
+                        </optgroup>
+
+                        <optgroup label="📏 Length / ርዝመት">
+                            <option value="mm" ${
+                                currentUnit === "mm"
+                                    ? "selected"
+                                    : ""
+                            }>mm</option>
+                            <option value="cm" ${
+                                currentUnit === "cm"
+                                    ? "selected"
+                                    : ""
+                            }>cm</option>
+                            <option value="m" ${
+                                currentUnit === "m"
+                                    ? "selected"
+                                    : ""
+                            }>m</option>
+                        </optgroup>
+
+                        <optgroup label="📐 Area / ስፋት">
+                            <option value="mm2" ${
+                                currentUnit === "mm2"
+                                    ? "selected"
+                                    : ""
+                            }>mm²</option>
+                            <option value="cm2" ${
+                                currentUnit === "cm2"
+                                    ? "selected"
+                                    : ""
+                            }>cm²</option>
+                            <option value="m2" ${
+                                currentUnit === "m2"
+                                    ? "selected"
+                                    : ""
+                            }>m²</option>
+                        </optgroup>
+
+                        <optgroup label="🔢 Count / ቁጥር">
+                            <option value="pcs" ${
+                                currentUnit === "pcs"
+                                    ? "selected"
+                                    : ""
+                            }>pcs / ቁጥር</option>
+                        </optgroup>
+                    </select>
                 </label>
 
                 <label>
-                    Current Stock
+                    አሁን ያለ ክምችት
                     <input
                         name="stock"
                         type="number"
@@ -1056,11 +1433,37 @@
                         value="${number(
                             material.stock
                         )}"
-                    >
+                     readonly aria-readonly="true" title="ክምችት በግዢ፣ በክምችት መግቢያ/መውጫ እና በሌሎች የክምችት እንቅስቃሴዎች ብቻ ይለወጣል።">
                 </label>
 
+                ${
+                    id
+                        ? ""
+                        : `
+                <label>
+                    📦 የመጀመሪያ ግዢ ብዛት
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input
+                            name="initialPurchaseQuantity"
+                            type="number"
+                            min="0"
+                            step="any"
+                            value="0"
+                            style="flex:1;"
+                        >
+                        <strong id="yamInitialPurchaseUnitLabel" style="white-space:nowrap;">
+                            ${esc(currentUnit || "pcs")}
+                        </strong>
+                    </div>
+                    <small style="display:block;margin-top:6px;opacity:.7;">
+                        አዲሱ ጥሬ እቃ ሲመዘገብ የመጀመሪያ ግዢ ከሆነ ብዛቱን እዚህ ያስገቡ።
+                    </small>
+                </label>
+
+                `}
+
                 <div class="yam-re-calculator-actions">
-                    <p>🧮 Calculator ውጤት ወደ ግዢ ላክ</p>
+                    <p>🧮 ካልኩሌተር ውጤት ወደ ግዢ ላክ</p>
 
                     <button
                         type="button"
@@ -1093,7 +1496,7 @@
                 </label>
 
                 <label>
-                    Minimum Stock
+                    ዝቅተኛ የክምችት መጠን
                     <input
                         name="minimumStock"
                         type="number"
@@ -1106,7 +1509,7 @@
                 </label>
 
                 <label>
-                    Supplier
+                    አቅራቢ
                     <input
                         name="supplier"
                         value="${esc(
@@ -1178,7 +1581,26 @@
            RAW MATERIAL PHOTO PICKER
            ===================================================== */
 
-        const photoInput =
+        const unitSelect = form?.elements?.unit;
+    const initialPurchaseUnitLabel = form?.querySelector(
+        "#yamInitialPurchaseUnitLabel"
+    );
+
+    if (unitSelect && initialPurchaseUnitLabel) {
+        const syncInitialPurchaseUnit = () => {
+            initialPurchaseUnitLabel.textContent =
+                unitSelect.value || "pcs";
+        };
+
+        unitSelect.addEventListener(
+            "change",
+            syncInitialPurchaseUnit
+        );
+
+        syncInitialPurchaseUnit();
+    }
+
+    const photoInput =
             document.getElementById(
                 "yamMaterialPhotoInput"
             );
@@ -1336,20 +1758,88 @@
                 body.minimumStock =
                     number(body.minimumStock);
 
+                const initialPurchaseQuantity =
+                    number(body.initialPurchaseQuantity);
+
+                delete body.initialPurchaseQuantity;
+
                 try {
-                    await api(
-                        id
-                            ? `${API}/raw-materials/${encodeURIComponent(
-                                  id
-                              )}`
-                            : `${API}/raw-materials`,
-                        {
-                            method: id
-                                ? "PATCH"
-                                : "POST",
-                            body: JSON.stringify(body)
+                    const saveResult =
+                        await api(
+                            id
+                                ? `${API}/raw-materials/${encodeURIComponent(
+                                      id
+                                  )}`
+                                : `${API}/raw-materials`,
+                            {
+                                method: id
+                                    ? "PATCH"
+                                    : "POST",
+                                body: JSON.stringify(body)
+                            }
+                        );
+
+                    if (
+                        !id &&
+                        initialPurchaseQuantity > 0 &&
+                        saveResult?.material?.id
+                    ) {
+                        const initialPurchaseRequestId =
+                            typeof crypto !== "undefined" &&
+                            typeof crypto.randomUUID === "function"
+                                ? crypto.randomUUID()
+                                : `initial-purchase-${Date.now()}-${Math.random()
+                                      .toString(36)
+                                      .slice(2)}`;
+
+                        const initialPurchaseBody = {
+                            quantity:
+                                initialPurchaseQuantity,
+                unit:
+                    body.unit,
+
+                            unitCost:
+                                number(body.unitCost),
+
+                            supplier:
+                                body.supplier || "",
+
+                            notes:
+                                body.description || "",
+
+                            requestId:
+                                initialPurchaseRequestId
+                        };
+
+                        let purchaseDate = "";
+
+                        if (
+                            typeof getEthiopianDate ===
+                            "function"
+                        ) {
+                            purchaseDate =
+                                getEthiopianDate(
+                                    "yamPurchase"
+                                );
                         }
-                    );
+
+                        if (purchaseDate) {
+                            initialPurchaseBody.purchaseDate =
+                                purchaseDate;
+                        }
+
+                        await api(
+                            `${API}/raw-materials/${encodeURIComponent(
+                                saveResult.material.id
+                            )}/purchases`,
+                            {
+                                method: "POST",
+                                body: JSON.stringify(
+                                    initialPurchaseBody
+                                )
+                            }
+                        );
+                    }
 
                     closeModal();
 
@@ -1373,6 +1863,17 @@
 
         if (!material) return;
 
+        const unitConverter = window.yamUnitsConverter;
+        const purchaseUnit = unitConverter
+            ? unitConverter.normalizeUnit(material.unit || "pcs")
+            : (material.unit || "pcs");
+
+        const purchaseRequestId =
+            typeof crypto !== "undefined" &&
+            typeof crypto.randomUUID === "function"
+                ? crypto.randomUUID()
+                : `purchase-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
         openModal(`
             <div class="yam-re-modal-header">
                 <h3>🛒 የጥሬ እቃ ግዢ</h3>
@@ -1394,38 +1895,106 @@
             </p>
 
             <p>
-                Current Stock:
+                አሁን ያለ ክምችት:
                 <strong>
-                    ${number(material.stock)}
+                    ${number(material.stock)} ${esc(purchaseUnit)}
                 </strong>
             </p>
 
             <form id="yamPurchaseForm">
 
-                <label>
-                    የግዢ ብዛት
-                    <input
-                        name="quantity"
-                        type="number"
-                        min="0.0001"
-                        step="any"
-                        required
-                    >
-                </label>
+                                      <div
+                      id="areaPurchaseFields"
+                      style="display:${["mm2","cm2","m2"].includes(purchaseUnit) ? "block" : "none"};margin:12px 0;"
+                  >
+                      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;">
+                          <label>
+                              ርዝመት
+                              <input name="length" type="number" min="0.0001" step="any">
+                          </label>
+                          <label>
+                              ስፋት
+                              <input name="width" type="number" min="0.0001" step="any">
+                          </label>
+                          <label>
+                              የመጠን መለኪያ
+                              <select name="dimensionUnit">
+                                  <option value="mm">mm</option>
+                                  <option value="cm" selected>cm</option>
+                                  <option value="m">m</option>
+                              </select>
+                          </label>
+                          <label>
+                              ውፍረት (አማራጭ)
+                              <input name="thickness" type="number" min="0" step="any">
+                          </label>
+                      </div>
 
-                <label>
-                    የአንድ እቃ ዋጋ
-                    <input
-                        name="unitCost"
-                        type="number"
-                        min="0.01"
-                        step="any"
-                        value="${number(
-                            material.unitCost
-                        )}"
-                        required
-                    >
-                </label>
+                      <label style="margin-top:10px;">
+                          የArea መለኪያ
+                          <select name="areaUnit">
+                              <option value="mm2" ${purchaseUnit === "mm2" ? "selected" : ""}>mm²</option>
+                              <option value="cm2" ${purchaseUnit === "cm2" ? "selected" : ""}>cm²</option>
+                              <option value="m2" ${purchaseUnit === "m2" ? "selected" : ""}>m²</option>
+                          </select>
+                      </label>
+
+                      <label style="margin-top:10px;">
+                          የግዢ ጠቅላላ ዋጋ
+                          <input name="purchasePrice" type="number" min="0.01" step="any">
+                      </label>
+
+                      <div style="margin-top:10px;padding:10px;border-radius:8px;background:rgba(212,175,55,.08);">
+                          📐 Area:
+                          <strong id="purchaseAreaDisplay">0</strong>
+                          <span id="purchaseAreaUnitDisplay">${esc(purchaseUnit)}</span>
+                          <br>
+                          💰 Area Unit Cost:
+                          <strong id="purchaseAreaUnitCostDisplay">0</strong> ብር
+                      </div>
+                  </div>
+
+                  <div id="normalPurchaseFields">
+                      <label>
+                          📦 የተገዛው ጥሬ እቃ ብዛት
+                          <div style="display:flex;align-items:center;gap:8px;">
+                              <input
+                                  name="quantity"
+                                  type="number"
+                                  min="0.0001"
+                                  step="any"
+                                  required
+                                  style="flex:1;"
+                              >
+                              <strong style="white-space:nowrap;">
+                                  ${esc(purchaseUnit)}
+                              </strong>
+                          </div>
+                          <small style="display:block;margin-top:6px;opacity:.7;">
+                              የሚገዛው ብዛት በዚህ እቃ መለኪያ ይመዘገባል።
+                          </small>
+                      </label>
+
+                      <label>
+                          የአንድ ${esc(purchaseUnit)} ዋጋ
+                          <input
+                              name="unitCost"
+                              type="number"
+                              min="0.01"
+                              step="any"
+                              value="${number(material.unitCost)}"
+                              required
+                          >
+                      </label>
+                  </div>
+
+                  <div
+                      id="purchaseTotalValue"
+                      style="margin:12px 0;padding:12px;border-radius:10px;background:rgba(212,175,55,.10);"
+                  >
+                    🧾 ጠቅላላ የግዢ ዋጋ:
+                    <strong id="purchaseTotalAmount">0 ብር</strong>
+                </div>
 
                 <section
                     id="costProfitCalculator"
@@ -1436,13 +2005,13 @@
                         <div class="calculator-header">
                             <span>📊</span>
                             <div>
-                                <h3>Cost & Profit</h3>
+                                <h3>ወጪ እና ትርፍ</h3>
                                 <p>የዋጋ፣ ወጪ እና ትርፍ ስሌት</p>
                             </div>
                         </div>
 
                         <label>
-                            Quantity
+                            መጠን
                             <input
                                 id="costProfitQuantity"
                                 type="number"
@@ -1452,7 +2021,7 @@
                         </label>
 
                         <label>
-                            Material Unit Cost
+                            የጥሬ እቃ አንድ ዋጋ
                             <input
                                 id="costProfitMaterialUnitCost"
                                 type="number"
@@ -1462,7 +2031,7 @@
                         </label>
 
                         <label>
-                            Work Cost
+                            የሥራ ወጪ
                             <input
                                 id="costProfitWorkCost"
                                 type="number"
@@ -1473,7 +2042,7 @@
                         </label>
 
                         <label>
-                            Other Cost
+                            ሌሎች ወጪዎች
                             <input
                                 id="costProfitOtherCost"
                                 type="number"
@@ -1484,7 +2053,7 @@
                         </label>
 
                         <label>
-                            Selling Price
+                            የሽያጭ ዋጋ
                             <input
                                 id="costProfitSellingPrice"
                                 type="number"
@@ -1498,7 +2067,7 @@
                             type="button"
                             id="costProfitCalculateButton"
                         >
-                            📊 Cost & Profit አስላ
+                            📊 ወጪ እና ትርፍ አስላ
                         </button>
 
                         <div
@@ -1511,27 +2080,27 @@
                             hidden
                         >
                             <p>
-                                Material Cost:
+                                የጥሬ እቃ ወጪ:
                                 <strong id="costProfitResultMaterialCost">0</strong>
                             </p>
                             <p>
-                                Total Cost:
+                                ጠቅላላ ወጪ:
                                 <strong id="costProfitResultTotalCost">0</strong>
                             </p>
                             <p>
-                                Selling Price:
+                                የሽያጭ ዋጋ:
                                 <strong id="costProfitResultSellingPrice">0</strong>
                             </p>
                             <p>
-                                Profit:
+                                ትርፍ:
                                 <strong id="costProfitResultProfit">0</strong>
                             </p>
                             <p>
-                                Profit %:
+                                የትርፍ %:
                                 <strong id="costProfitResultProfitPercent">0%</strong>
                             </p>
                             <p>
-                                Margin %:
+                                የትርፍ ማርጅን %:
                                 <strong id="costProfitResultMarginPercent">0%</strong>
                             </p>
 
@@ -1539,7 +2108,7 @@
                                 type="button"
                                 data-cost-profit-destination="raw-material"
                             >
-                                📤 ወደ Purchase ላክ
+                                📤 ወደ ግዢ ላክ
                             </button>
                         </div>
                     </div>
@@ -1551,7 +2120,7 @@
                 )}
 
                 <label>
-                    Supplier
+                    አቅራቢ
                     <input name="supplier">
                 </label>
 
@@ -1570,68 +2139,359 @@
             </form>
         `);
 
-        const form =
-            document.getElementById(
-                "yamPurchaseForm"
-            );
 
-        form.addEventListener(
-            "submit",
-            async event => {
-                event.preventDefault();
+          const form =
+              document.getElementById("yamPurchaseForm");
 
-                const body =
-                    Object.fromEntries(
-                        new FormData(form)
-                    );
+          const purchaseQuantityInput =
+              form.querySelector('input[name="quantity"]');
 
-                body.quantity =
-                    number(body.quantity);
+          const purchaseUnitCostInput =
+              form.querySelector('input[name="unitCost"]');
 
-                body.unitCost =
-                    number(body.unitCost);
+          const purchaseTotalAmount =
+              form.querySelector("#purchaseTotalAmount");
 
-                let purchaseDate = "";
+          const areaPurchaseFields =
+              form.querySelector("#areaPurchaseFields");
 
-                if (
-                    typeof getEthiopianDate ===
-                    "function"
-                ) {
-                    purchaseDate =
-                        getEthiopianDate(
-                            "yamPurchase"
-                        );
-                }
+          const normalPurchaseFields =
+              form.querySelector("#normalPurchaseFields");
 
-                if (purchaseDate) {
-                    body.purchaseDate =
-                        purchaseDate;
-                }
+          const areaLengthInput =
+              form.querySelector('input[name="length"]');
 
-                try {
-                    await api(
-                        `${API}/raw-materials/${encodeURIComponent(
-                            materialId
-                        )}/purchases`,
-                        {
-                            method: "POST",
-                            body: JSON.stringify(body)
-                        }
-                    );
+          const areaWidthInput =
+              form.querySelector('input[name="width"]');
 
-                    closeModal();
+          const areaDimensionUnitInput =
+              form.querySelector('select[name="dimensionUnit"]');
 
-                    await loadMaterials();
-                    await loadFinancialSummary();
-                } catch (error) {
-                    alert(
-                        error.message ||
-                        "ግዢውን ማስቀመጥ አልተቻለም።"
-                    );
-                }
-            }
-        );
-    }
+          const areaUnitInput =
+              form.querySelector('select[name="areaUnit"]');
+
+          const areaPurchasePriceInput =
+              form.querySelector('input[name="purchasePrice"]');
+
+          const areaDisplay =
+              form.querySelector("#purchaseAreaDisplay");
+
+          const areaUnitDisplay =
+              form.querySelector("#purchaseAreaUnitDisplay");
+
+          const areaUnitCostDisplay =
+              form.querySelector("#purchaseAreaUnitCostDisplay");
+
+          const isAreaPurchase =
+              ["mm2", "cm2", "m2"].includes(purchaseUnit);
+
+          if (areaPurchaseFields) {
+              areaPurchaseFields.style.display =
+                  isAreaPurchase ? "block" : "none";
+          }
+
+          if (normalPurchaseFields) {
+              normalPurchaseFields.style.display =
+                  isAreaPurchase ? "none" : "block";
+          }
+          if (purchaseQuantityInput) purchaseQuantityInput.required = !isAreaPurchase;
+          if (purchaseUnitCostInput) purchaseUnitCostInput.required = !isAreaPurchase;
+
+
+          function updateAreaPurchase() {
+              if (!isAreaPurchase) return;
+
+              const length =
+                  number(areaLengthInput?.value);
+
+              const width =
+                  number(areaWidthInput?.value);
+
+              const purchasePrice =
+                  number(areaPurchasePriceInput?.value);
+
+              const dimensionUnit =
+                  areaDimensionUnitInput?.value || "cm";
+
+              const areaUnit =
+                  areaUnitInput?.value || purchaseUnit;
+
+              const lengthFactor = {
+                  mm: 1,
+                  cm: 10,
+                  m: 1000
+              };
+
+              const areaFactor = {
+                  mm2: 1,
+                  cm2: 100,
+                  m2: 1000000
+              };
+
+              const dimensionFactor =
+                  lengthFactor[dimensionUnit];
+
+              const targetFactor =
+                  areaFactor[areaUnit];
+
+              const areaInMm2 =
+                  length > 0 &&
+                  width > 0 &&
+                  dimensionFactor
+                      ? length * dimensionFactor *
+                        width * dimensionFactor
+                      : 0;
+
+              const area =
+                  areaInMm2 > 0 &&
+                  targetFactor
+                      ? areaInMm2 / targetFactor
+                      : 0;
+
+              const areaUnitCost =
+                  area > 0 &&
+                  purchasePrice > 0
+                      ? purchasePrice / area
+                      : 0;
+
+              if (areaDisplay) {
+                  areaDisplay.textContent =
+                      area.toLocaleString(
+                          undefined,
+                          { maximumFractionDigits: 10 }
+                      );
+              }
+
+              if (areaUnitDisplay) {
+                  areaUnitDisplay.textContent =
+                      areaUnit;
+              }
+
+              if (areaUnitCostDisplay) {
+                  areaUnitCostDisplay.textContent =
+                      areaUnitCost.toLocaleString(
+                          undefined,
+                          { maximumFractionDigits: 10 }
+                      );
+              }
+
+              if (purchaseTotalAmount) {
+                  purchaseTotalAmount.textContent =
+                      `${area.toLocaleString()} ${areaUnit} × ${areaUnitCost.toLocaleString()} ብር/${areaUnit} = ${purchasePrice.toLocaleString()} ብር`;
+              }
+          }
+
+          function updatePurchaseTotal() {
+              if (isAreaPurchase) {
+                  updateAreaPurchase();
+                  return;
+              }
+
+              const quantity =
+                  number(purchaseQuantityInput?.value);
+
+              const unitCost =
+                  number(purchaseUnitCostInput?.value);
+
+              const total =
+                  quantity * unitCost;
+
+              if (purchaseTotalAmount) {
+                  purchaseTotalAmount.textContent =
+                      `${quantity.toLocaleString()} ${purchaseUnit} × ${unitCost.toLocaleString()} ብር/${purchaseUnit} = ${total.toLocaleString()} ብር`;
+              }
+          }
+
+          purchaseQuantityInput?.addEventListener(
+              "input",
+              updatePurchaseTotal
+          );
+
+          purchaseUnitCostInput?.addEventListener(
+              "input",
+              updatePurchaseTotal
+          );
+
+          [
+              areaLengthInput,
+              areaWidthInput,
+              areaDimensionUnitInput,
+              areaUnitInput,
+              areaPurchasePriceInput
+          ].forEach(input => {
+              input?.addEventListener(
+                  "input",
+                  updateAreaPurchase
+              );
+
+              input?.addEventListener(
+                  "change",
+                  updateAreaPurchase
+              );
+          });
+
+          updatePurchaseTotal();
+
+          form.addEventListener(
+              "submit",
+              async event => {
+                  event.preventDefault();
+
+                  const body =
+                      Object.fromEntries(
+                          new FormData(form)
+                      );
+
+                  if (isAreaPurchase) {
+                      const length =
+                          number(
+                              areaLengthInput?.value
+                          );
+
+                      const width =
+                          number(
+                              areaWidthInput?.value
+                          );
+
+                      const purchasePrice =
+                          number(
+                              areaPurchasePriceInput?.value
+                          );
+
+                      const dimensionUnit =
+                          areaDimensionUnitInput?.value ||
+                          "cm";
+
+                      const areaUnit =
+                          areaUnitInput?.value ||
+                          purchaseUnit;
+
+                      const lengthFactor = {
+                          mm: 1,
+                          cm: 10,
+                          m: 1000
+                      };
+
+                      const areaFactor = {
+                          mm2: 1,
+                          cm2: 100,
+                          m2: 1000000
+                      };
+
+                      const dimensionFactor =
+                          lengthFactor[dimensionUnit];
+
+                      const targetFactor =
+                          areaFactor[areaUnit];
+
+                      const area =
+                          length > 0 &&
+                          width > 0 &&
+                          dimensionFactor &&
+                          targetFactor
+                              ? (
+                                  length *
+                                  dimensionFactor *
+                                  width *
+                                  dimensionFactor
+                                ) / targetFactor
+                              : 0;
+
+                      const unitCost =
+                          area > 0 &&
+                          purchasePrice > 0
+                              ? purchasePrice / area
+                              : 0;
+
+                      body.quantity = area;
+                      body.unitCost = unitCost;
+                      body.unit = purchaseUnit;
+                      body.length = length;
+                      body.width = width;
+                      body.dimensionUnit =
+                          dimensionUnit;
+                      body.areaUnit = areaUnit;
+                      body.purchasePrice =
+                          purchasePrice;
+
+                      const thicknessInput =
+                          form.querySelector(
+                              'input[name="thickness"]'
+                          );
+
+                      if (
+                          thicknessInput &&
+                          thicknessInput.value !== ""
+                      ) {
+                          body.thickness =
+                              number(
+                                  thicknessInput.value
+                              );
+                      } else {
+                          delete body.thickness;
+                      }
+                  } else {
+                      body.quantity =
+                          number(body.quantity);
+
+                      body.unitCost =
+                          number(body.unitCost);
+
+                      body.unit =
+                          purchaseUnit;
+
+                      delete body.length;
+                      delete body.width;
+                      delete body.dimensionUnit;
+                      delete body.areaUnit;
+                      delete body.purchasePrice;
+                      delete body.thickness;
+                  }
+
+                  body.requestId =
+                      purchaseRequestId;
+
+                  let purchaseDate = "";
+
+                  if (
+                      typeof getEthiopianDate ===
+                      "function"
+                  ) {
+                      purchaseDate =
+                          getEthiopianDate(
+                              "yamPurchase"
+                          );
+                  }
+
+                  if (purchaseDate) {
+                      body.purchaseDate =
+                          purchaseDate;
+                  }
+
+                  try {
+                      await api(
+                          `${API}/raw-materials/${encodeURIComponent(
+                              materialId
+                          )}/purchases`,
+                          {
+                              method: "POST",
+                              body: JSON.stringify(body)
+                          }
+                      );
+
+                      closeModal();
+
+                      await loadMaterials();
+                      await loadFinancialSummary();
+                  } catch (error) {
+                      alert(
+                          error.message ||
+                          "ግዢውን ማስቀመጥ አልተቻለም።"
+                      );
+                  }
+              }
+          );
+        }
 
     function showExpenseModal(id = "") {
         const expense =

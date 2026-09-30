@@ -24,7 +24,13 @@ const quoteLibrary = {
                 throw new Error(data.error || "ጥቅሶችን ማምጣት አልተቻለም።");
             }
 
-            this.quotes = Array.isArray(data.quotes) ? data.quotes : [];
+            this.quotes = Array.isArray(data.quotes)
+                ? data.quotes.sort((a, b) => {
+                    const da = new Date(a.createdAt || 0).getTime();
+                    const db = new Date(b.createdAt || 0).getTime();
+                    return db - da;
+                })
+                : [];
             this.render();
             this.updateStats();
 
@@ -107,6 +113,22 @@ const quoteLibrary = {
                         ${escapeQuoteHtml(item.emoji || "💬")}
                         ${escapeQuoteHtml(item.quote || "")}
                     </p>
+
+                    ${item.scriptureReference ? `
+                    <div class="quote-library-scripture">
+                        📖 ${escapeQuoteHtml(item.scriptureReference)}
+                    </div>
+                    ` : ""}
+
+                    <div class="quote-library-source">
+                        ${item.quoteSource === "user"
+                            ? "✍️ የእኔ ምርጫ"
+                            : item.quoteSource === "ai"
+                            ? "🤖 AI ምርጫ"
+                            : item.quoteType === "Source Quote"
+                            ? "📖 የተረጋገጠ የመጽሐፍ ቅዱስ ምንጭ"
+                            : "🤖 AI የተፈጠረ"}
+                    </div>
 
                     <div class="quote-library-meta">
                         <span>📅 ${formatQuoteDate(item.createdAt)}</span>
@@ -320,8 +342,17 @@ const quoteLibrary = {
         }
 
         try {
-            const category = document.getElementById("quoteCategory")?.value || "Love";
-            const count = Number(document.getElementById("quoteCount")?.value || 10);
+            const source =
+                document.getElementById("quoteSource")?.value || "user";
+
+            const customCategory =
+                document.getElementById("customQuoteCategory")?.value?.trim() || "";
+
+            const category = customCategory;
+
+            const count = Number(
+                document.getElementById("quoteCount")?.value || 10
+            );
 
             const response = await fetch("https://yamgiftet-ai-v2-backend.onrender.com/api/quote-assistant/generate", {
                 method: "POST",
@@ -329,6 +360,7 @@ const quoteLibrary = {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
+                    source,
                     category,
                     count
                 })
@@ -355,8 +387,26 @@ const quoteLibrary = {
     },
 
     async copyByIndex(index) {
-        const quote = this.quotes[index]?.quote || "";
-        await this.copy(quote);
+        const item = this.quotes[index] || {};
+        const quote = String(item.quote || "").trim();
+        const emoji = String(item.emoji || "").trim();
+        const reference = String(item.scriptureReference || "").trim();
+
+        const parts = [];
+
+        if (emoji) {
+            parts.push(emoji);
+        }
+
+        if (quote) {
+            parts.push(quote);
+        }
+
+        if (reference) {
+            parts.push(`— ${reference}`);
+        }
+
+        await this.copy(parts.join(" "));
     },
 
     async copy(quote) {
@@ -409,6 +459,43 @@ const quoteLibrary = {
             todayElement.textContent = count;
         }
 
+        const favoritesElement = document.getElementById("quoteLibraryFavorites");
+        if (favoritesElement) {
+            const favorites = this.quotes.filter(
+                item => item.trashed !== true && item.favorite === true
+            ).length;
+
+            favoritesElement.textContent = favorites;
+        }
+
+        const usedElement = document.getElementById("quoteLibraryUsed");
+        if (usedElement) {
+            const used = this.quotes.filter(
+                item => item.trashed !== true && Number(item.usedCount || 0) > 0
+            ).length;
+
+            usedElement.textContent = used;
+        }
+
+        const trashElement = document.getElementById("quoteLibraryTrash");
+        if (trashElement) {
+            const trash = this.quotes.filter(
+                item => item.trashed === true
+            ).length;
+
+            trashElement.textContent = trash;
+        }
+
+        const totalUsageElement = document.getElementById("quoteLibraryTotalUsage");
+        if (totalUsageElement) {
+            const totalUsage = this.quotes.reduce(
+                (sum, item) => sum + Math.max(0, Number(item.usedCount || 0)),
+                0
+            );
+
+            totalUsageElement.textContent = totalUsage;
+        }
+
         const bestElement = document.getElementById("quoteLibraryBestScore");
         if (bestElement) {
             const best = this.quotes.reduce(
@@ -439,18 +526,40 @@ function formatQuoteDate(value) {
         return String(value);
     }
 
-    return date.toLocaleString("am-ET", {
+    return new Intl.DateTimeFormat("am-ET-u-ca-ethiopic", {
         year: "numeric",
-        month: "short",
+        month: "long",
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit"
-    });
+    }).format(date);
 }
 
 window.quoteLibrary = quoteLibrary;
 
 document.addEventListener("DOMContentLoaded", () => {
     quoteLibrary.bindTabs();
+
+    const quoteSource = document.getElementById("quoteSource");
+    const aiCategoryLabel = document.getElementById("aiQuoteCategoryLabel");
+    const customCategoryLabel = document.getElementById("customQuoteCategoryLabel");
+
+    const updateQuoteCategoryVisibility = () => {
+        const isAI = quoteSource?.value === "ai";
+
+        if (aiCategoryLabel) {
+            aiCategoryLabel.style.display = isAI ? "" : "none";
+        }
+
+        if (customCategoryLabel) {
+            customCategoryLabel.style.display = isAI ? "none" : "";
+        }
+    };
+
+    if (quoteSource) {
+        quoteSource.addEventListener("change", updateQuoteCategoryVisibility);
+        updateQuoteCategoryVisibility();
+    }
+
     quoteLibrary.load();
 });

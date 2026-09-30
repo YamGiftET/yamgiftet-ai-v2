@@ -550,6 +550,76 @@
             </div>
 
             <div>
+                <label for="productUnit">
+                    📏 የምርት Unit
+                </label>
+                <select id="productUnit">
+                    <option value="pcs">pcs</option>
+                    <option value="mm">mm</option>
+                    <option value="cm">cm</option>
+                    <option value="m">m</option>
+                    <option value="mg">mg</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="ml">ml</option>
+                    <option value="l">L</option>
+                    <option value="mm2">mm²</option>
+                    <option value="cm2">cm²</option>
+                    <option value="m2">m²</option>
+                </select>
+            </div>
+
+            <div id="productAreaFields" class="full" style="display:none;">
+                <div class="product-form">
+                    <div>
+                        <label for="productLength">↔️ Length</label>
+                        <input id="productLength" type="number" min="0.000001" step="0.000001" value="0">
+                    </div>
+
+                    <div>
+                        <label for="productWidth">↕️ Width</label>
+                        <input id="productWidth" type="number" min="0.000001" step="0.000001" value="0">
+                    </div>
+
+                    <div>
+                        <label for="productDimensionUnit">📐 Length / Width Unit</label>
+                        <select id="productDimensionUnit">
+                            <option value="mm">mm</option>
+                            <option value="cm" selected>cm</option>
+                            <option value="m">m</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="productThickness">📏 Thickness</label>
+                        <input id="productThickness" type="number" min="0" step="0.000001" value="">
+                    </div>
+
+                    <div>
+                        <label for="productThicknessUnit">📏 Thickness Unit</label>
+                        <select id="productThicknessUnit">
+                            <option value="">—</option>
+                            <option value="mm">mm</option>
+                            <option value="cm">cm</option>
+                            <option value="m">m</option>
+                        </select>
+                    </div>
+
+                    <div class="calculation-box">
+                        <strong>📐 Area</strong>
+                        <div>
+                            የተሰላ ስፋት:
+                            <strong id="productArea">0</strong>
+                        </div>
+                        <div>
+                            Area Unit:
+                            <strong id="productAreaUnit">m²</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
                 <label for="productQuantity">
                     🔢 የተመረተ ብዛት
                 </label>
@@ -691,7 +761,7 @@
         <div class="calculator-header">
           <span>🧮</span>
           <div>
-            <h2>Universal Calculator</h2>
+            <h2>ሁለንተናዊ ካልኩሌተር</h2>
             <p>የንግድ ፈጣን ስሌት ማዕከል</p>
           </div>
         </div>
@@ -702,7 +772,7 @@
           type="text"
           value="0"
           readonly
-          aria-label="የCalculator ውጤት"
+          aria-label="የካልኩሌተር ውጤት"
         >
 
         <div class="calculator-buttons">
@@ -775,7 +845,7 @@
     <div class="cost-profit-header">
         <span>💰</span>
         <div>
-            <h2>Cost & Profit</h2>
+            <h2>ወጪ እና ትርፍ</h2>
             <p>የምርት ወጪ፣ ትርፍ እና ኪሳራ ስሌት</p>
         </div>
     </div>
@@ -855,7 +925,7 @@
             id="costProfitCalculateButton"
             class="cost-profit-calculate-button"
         >
-            🧮 Cost & Profit አስላ
+            🧮 ወጪ እና ትርፍ አስላ
         </button>
     </div>
 
@@ -870,7 +940,7 @@
         class="cost-profit-result"
         hidden
     >
-        <h3>📊 Cost & Profit Result</h3>
+        <h3>📊 የወጪ እና ትርፍ ውጤት</h3>
 
         <div class="cost-profit-result-grid">
 
@@ -971,11 +1041,13 @@
                     🔢 የተሸጠው ብዛት
                 </label>
 
+                <small id="salesModalQuantityUnit">pcs</small>
+
                 <input
                     id="salesModalQuantity"
                     type="number"
                     min="1"
-                    step="1"
+                    step="any"
                     value="1"
                 >
             </div>

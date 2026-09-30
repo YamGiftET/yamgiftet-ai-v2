@@ -13,9 +13,6 @@
     const to =
         document.getElementById("unitsTo");
 
-    const button =
-        document.getElementById("unitsConvertButton");
-
     const result =
         document.getElementById("unitsResult");
 
@@ -30,7 +27,6 @@
         !value ||
         !from ||
         !to ||
-        !button ||
         !result ||
         !resultText ||
         !error
@@ -45,14 +41,25 @@
         ],
 
         weight: [
+            ["mg", "mg"],
             ["g", "g"],
             ["kg", "kg"]
         ],
 
         length: [
+            ["mm", "mm"],
             ["cm", "cm"],
-            ["m", "m"],
-            ["inch", "inch"]
+            ["m", "m"]
+        ],
+
+        area: [
+            ["mm2", "mm²"],
+            ["cm2", "cm²"],
+            ["m2", "m²"]
+        ],
+
+        count: [
+            ["pcs", "pcs / ቁጥር"]
         ]
     };
 
@@ -162,11 +169,24 @@
 
     category.addEventListener(
         "change",
-        populateUnits
+        () => {
+            populateUnits();
+            convertUnits();
+        }
     );
 
-    button.addEventListener(
-        "click",
+    value.addEventListener(
+        "input",
+        convertUnits
+    );
+
+    from.addEventListener(
+        "change",
+        convertUnits
+    );
+
+    to.addEventListener(
+        "change",
         convertUnits
     );
 

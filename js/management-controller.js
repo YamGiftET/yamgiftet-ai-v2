@@ -12,7 +12,9 @@
     const state = {
         orders: [],
         materials: [],
-        finance: null
+        finance: null,
+        productions: [],
+        recipes: []
     };
 
     const money = value => {
@@ -44,7 +46,9 @@
         const results = await Promise.allSettled([
             getJSON(`${API}/orders`),
             getJSON(`${API}/raw-materials`),
-            getJSON(`${API}/finance/summary`)
+            getJSON(`${API}/finance/summary`),
+            getJSON(`${API}/productions`),
+            getJSON(`${API}/recipes`)
         ]);
 
         if (results[0].status === "fulfilled") {
@@ -59,7 +63,90 @@
             state.finance = results[2].value;
         }
 
+        if (results[3].status === "fulfilled") {
+            state.productions = results[3].value.productions || [];
+        }
+
+        if (results[4].status === "fulfilled") {
+            state.recipes = results[4].value.recipes || [];
+        }
+
         analyzeManagement();
+    }
+
+    function buildManagementAISnapshot() {
+        const finance = state.finance || {};
+        const expenses = finance.expenses || {};
+        const profit = finance.profit || {};
+
+        return {
+            finance: {
+                sales: Number(finance.sales || 0),
+                received: Number(finance.received || 0),
+                receivable: Number(finance.receivable || 0),
+                expenses: {
+                    workCost: Number(expenses.workCost || 0),
+                    materialCost: Number(expenses.materialCost || 0),
+                    otherExpenses: Number(expenses.otherExpenses || 0),
+                    selfProductCost: Number(expenses.selfProductCost || 0),
+                    total: Number(expenses.total || 0)
+                },
+                profit: {
+                    net: Number(profit.net || 0),
+                    margin: Number(profit.margin || 0)
+                },
+                cashFlow: Number(finance.cashFlow || 0)
+            },
+            stock: state.materials.map(material => ({
+                materialId: material.id || material.materialId || "",
+                materialName: material.materialName || "",
+                unit: material.unit || "",
+                stock: Number(material.stock || 0),
+                unitCost: Number(material.unitCost || 0),
+                stockValue: Number(material.stockValue || 0),
+                minimumStock: Number(material.minimumStock || 0)
+            })),
+            orders: state.orders.map(order => ({
+                id: order.id || order.orderId || "",
+                status: order.status || "",
+                delivered: Boolean(order.delivered || order.isDelivered),
+                overdue: Boolean(order.overdue),
+                customerName: order.customerName || order.customer?.name || ""
+            })),
+            productions: state.productions.map(production => ({
+                id: production.id || production.productionId || "",
+                sourceType: production.sourceType || "",
+                productId: production.productId || "",
+                productName: production.productName || "",
+                quantity: Number(production.quantity || 0),
+                recipeId: production.recipeId || "",
+                recipeVersion: Number(production.recipeVersion || 0),
+                totalCost: Number(production.totalCost || 0),
+                unitCost: Number(production.unitCost || 0),
+                status: production.status || ""
+            })),
+            recipes: state.recipes.map(recipe => ({
+                id: recipe.id || recipe.recipeId || "",
+                productId: recipe.productId || "",
+                productName: recipe.productName || "",
+                recipeVersion: Number(recipe.recipeVersion || 0),
+                active: Boolean(recipe.active),
+                materialCount: Array.isArray(recipe.materials) ? recipe.materials.length : 0
+            })),
+            customers: {
+                count: new Set(
+                    state.orders
+                        .map(order => order.customerName || order.customer?.name || order.customer?.phone || "")
+                        .filter(Boolean)
+                ).size
+            },
+            generatedAt: new Date().toISOString(),
+            generatedAtEthiopian: new Intl.DateTimeFormat("am-ET-u-ca-ethiopic", {
+                dateStyle: "full",
+                timeStyle: "medium",
+                timeZone: "Africa/Addis_Ababa"
+            }).format(new Date())
+        };
     }
 
     function setStatus(text) {
@@ -464,6 +551,7 @@
     window.yamGiftManagement = {
         load: loadManagementData,
         refresh: loadManagementData,
+        getAISnapshot: buildManagementAISnapshot,
         state
     };
 

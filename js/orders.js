@@ -119,8 +119,17 @@
             const phone =
                 el("orderPhone")?.value.trim() || "";
 
-            const productName =
-                el("orderProductName")?.value.trim() || "";
+              const productSelect = el("orderProductId");
+              const productId =
+                  el("orderProductId")?.value.trim() || "";
+
+              const productNameInput = el("orderProductName");
+              const productName =
+                  productNameInput?.value.trim() ||
+                  productSelect?.selectedOptions?.[0]?.dataset?.productName?.trim() || "";
+
+        const orderQuantity =
+            Number(el("orderQuantity")?.value || 0);
 
             const orderInfo =
                 el("orderInfo")?.value.trim() || "";
@@ -134,7 +143,13 @@
                 );
             }
 
-            const money = calculateOrderAmounts();
+            if (!Number.isInteger(orderQuantity) || orderQuantity < 1) {
+            throw new Error(
+                "የትዕዛዝ ብዛት ከ1 ጀምሮ ሙሉ ቁጥር መሆን አለበት።"
+            );
+        }
+
+        const money = calculateOrderAmounts();
 
             const orderDate = getDate("orderDate");
             const pickupDate = getDate("pickupDate");
@@ -156,7 +171,8 @@
             formData.append("customerName", customerName);
             formData.append("phone", phone);
             formData.append("productName", productName);
-            formData.append("productId", "");
+            formData.append("productId", productId);
+        formData.append("quantity", String(orderQuantity));
             formData.append("orderInfo", orderInfo);
 
             formData.append(
@@ -230,7 +246,10 @@
                 data.orderId
             );
 
-            const form = el("orderForm");
+            loadOrderProducts();
+
+
+        const form = el("orderForm");
 
             if (form) {
                 form.reset();
@@ -278,13 +297,86 @@
     }
 
     // -------------------------------------------------
-    // 🚀 Initialize
+    async function loadOrderProducts() {
+    const productSelect = el("orderProductId");
+    if (!productSelect) return;
+
+    try {
+        const response = await fetch("/api/self-products");
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || "ምርቶችን መጫን አልተቻለም።");
+        }
+
+        const products = data.products || [];
+
+        productSelect.innerHTML =
+            '<option value="">-- ምርት ይምረጡ --</option>';
+
+        products.forEach(product => {
+            const option = document.createElement("option");
+            option.value = product.id;
+            option.textContent = product.productName || "-";
+            option.dataset.productName = product.productName || "";
+            option.dataset.unit = product.unit || "pcs";
+            productSelect.appendChild(option);
+        });
+
+        console.log("✅ Order Products Loaded:", products.length);
+    } catch (error) {
+        console.error("❌ Order Products Load Error:", error);
+        productSelect.innerHTML =
+            '<option value="">❌ ምርቶች አልተጫኑም</option>';
+    }
+}
+
+// 🚀 Initialize
     // -------------------------------------------------
     document.addEventListener(
         "DOMContentLoaded",
         function () {
 
-            const form = el("orderForm");
+            loadOrderProducts();
+            const productSelect = el("orderProductId");
+          const productNameInput = el("orderProductName");
+
+          if (productSelect && productNameInput) {
+              productSelect.addEventListener("change", function () {
+                  const selected = productSelect.selectedOptions?.[0];
+                  const selectedName =
+                      selected?.dataset?.productName?.trim() || "";
+                  const selectedUnit =
+                      selected?.dataset?.unit?.trim() || "pcs";
+
+                  const quantityUnitEl =
+                      el("orderQuantityUnit");
+
+                  if (quantityUnitEl) {
+                      quantityUnitEl.textContent =
+                          selectedUnit;
+                  }
+
+                  if (selectedName) {
+                      productNameInput.value = selectedName;
+                  }
+              });
+
+              productNameInput.addEventListener("input", function () {
+                  const selected = productSelect.selectedOptions?.[0];
+                  const selectedName =
+                      selected?.dataset?.productName?.trim() || "";
+
+                  if (
+                      productSelect.value &&
+                      productNameInput.value.trim() !== selectedName
+                  ) {
+                      productSelect.value = "";
+                  }
+              });
+          }
+
+          const form = el("orderForm");
 
             if (form) {
                 form.addEventListener(

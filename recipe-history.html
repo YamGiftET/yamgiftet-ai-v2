@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipe History Store | YamGiftET AI</title>
+<style>
+.history-card{
+  font-size:17px;
+  padding:22px;
+}
+
+.history-card h2{
+  font-size:24px;
+}
+
+.history-card h3{
+  font-size:20px;
+}
+
+.history-card .serial,
+.history-card .version,
+.history-card .meta{
+  font-size:17px;
+}
+
+.history-card .material{
+  font-size:17px;
+  line-height:1.8;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f7f6;
+  color:#18352b;
+}
+header{
+  background:#0f3d2e;
+  color:#fff;
+  padding:18px 16px;
+}
+header h1{margin:0 0 6px;font-size:22px}
+header p{margin:0;font-size:14px}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:16px;
+}
+#historyList{
+  max-height:70vh;
+  overflow-y:auto;
+  padding:10px;
+  border:1px solid #ddd;
+  border-radius:16px;
+  background:#f7f7f7;
+  overscroll-behavior:contain;
+}
+
+.history-card{
+  background:#fff;
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+.history-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.serial{
+  font-weight:bold;
+  font-size:18px;
+}
+.version{
+  background:#eef5f1;
+  padding:5px 9px;
+  border-radius:8px;
+  font-size:13px;
+}
+.meta{
+  color:#66756f;
+  font-size:13px;
+  margin:5px 0;
+}
+.material{
+  padding:7px 0;
+  border-bottom:1px solid #edf0ee;
+}
+.material:last-child{border-bottom:0}
+.empty,.error{
+  background:#fff;
+  border-radius:14px;
+  padding:25px;
+  text-align:center;
+}
+.error{color:#a33}
+.loading{text-align:center;padding:30px}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🧾 Recipe History Store</h1>
+  <p>የቀድሞ Recipes የማይቀየር ታሪክ</p>
+</header>
+
+<main class="container">
+  <div id="historyList" class="loading">⏳ ታሪክ በመጫን ላይ...</div>
+</main>
+
+<script>
+const API = "/api/recipe-history";
+const historyList = document.getElementById("historyList");
+
+function ethiopianDateTime(value){
+  if(!value) return "—";
+
+  let date;
+  if(typeof value === "string"){
+    date = new Date(value);
+  }else if(value && typeof value === "object" && value._seconds){
+    date = new Date(value._seconds * 1000);
+  }else{
+    date = new Date(value);
+  }
+
+  if(Number.isNaN(date.getTime())) return "—";
+
+  const dateText = new Intl.DateTimeFormat("am-ET-u-ca-ethiopic", {
+    year:"numeric",
+    month:"long",
+    day:"numeric"
+  }).format(date);
+
+  const timeText = new Intl.DateTimeFormat("am-ET", {
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit",
+    hour12:true
+  }).format(date);
+
+  return `${dateText} • ${timeText}`;
+}
+
+function ethiopianDate(value){
+  if(!value) return "—";
+
+  let date;
+  if(typeof value === "string"){
+    date = new Date(value);
+  }else if(value && typeof value === "object" && value._seconds){
+    date = new Date(value._seconds * 1000);
+  }else{
+    date = new Date(value);
+  }
+
+  if(Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat(
+    "am-ET-u-ca-ethiopic",
+    {
+      year:"numeric",
+      month:"long",
+      day:"numeric"
+    }
+  ).format(date);
+}
+
+function renderHistory(items){
+  if(!items.length){
+    historyList.innerHTML =
+      '<div class="empty">📭 እስካሁን Recipe History የለም።</div>';
+    return;
+  }
+
+  historyList.innerHTML = items.map(item => {
+    const materials = Array.isArray(item.materials)
+      ? item.materials
+      : [];
+
+    return `
+      <section class="history-card">
+        <div class="history-top">
+          <div class="serial">🔢 ${item.serialNumber || "—"}</div>
+          <div class="version">📌 Version ${item.recipeVersion || "—"}</div>
+        </div>
+
+        <h2>🎁 ${item.productName || "—"}</h2>
+
+        <div class="meta">
+          📅 የተቀመጠበት፦ ${ethiopianDateTime(item.storedAt)}
+        </div>
+
+        <div class="meta">
+          🕘 የመጀመሪያ ቀን፦ ${ethiopianDate(item.originalCreatedAt)}
+        </div>
+
+        <h3>🧪 ጥሬ እቃዎች</h3>
+
+        ${
+          materials.length
+          ? materials.map(material => `
+              <div class="material">
+                • ${material.materialName || "—"}
+                ${
+                  material.length &&
+                  material.width &&
+                  material.dimensionUnit &&
+                  material.areaUnit
+                    ? `— 📐 ${material.length} × ${material.width} ${material.dimensionUnit}
+                       → ${material.quantityPerUnit || 0} ${material.areaUnit}`
+                    : `— ${material.quantityPerUnit || 0} ${material.unit || ""}`
+                }
+              </div>
+            `).join("")
+          : '<div class="meta">ጥሬ እቃ መረጃ የለም።</div>'
+        }
+      </section>
+    `;
+  }).join("");
+}
+
+async function loadHistory(){
+  try{
+    const response = await fetch(API);
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(data.error || "History መጫን አልተቻለም");
+    }
+
+    renderHistory(data.history || []);
+  }catch(error){
+    console.error("Recipe History error:", error);
+    historyList.innerHTML =
+      `<div class="error">❌ ${error.message}</div>`;
+  }
+}
+
+loadHistory();
+</script>
+
+</body>
+</html>

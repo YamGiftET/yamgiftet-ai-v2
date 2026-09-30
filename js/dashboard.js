@@ -329,6 +329,38 @@ function formatBirr(
 
 
 // =====================================
+// Dashboard Ethiopian Date Formatter
+// =====================================
+
+function formatDashboardEthiopianDate(value) {
+    if (!value) return "-";
+
+    const parts = String(value).split("-");
+
+    if (parts.length !== 3) {
+        return String(value);
+    }
+
+    const year = Number(parts[0]);
+    const month = Number(parts[1]);
+    const day = Number(parts[2]);
+
+    if (
+        !Number.isInteger(year) ||
+        !Number.isInteger(month) ||
+        !Number.isInteger(day) ||
+        month < 1 ||
+        month > 13 ||
+        day < 1
+    ) {
+        return String(value);
+    }
+
+    return formatEthiopianDate(year, month, day);
+}
+
+
+// =====================================
 // Orders Table
 // =====================================
 
@@ -405,13 +437,19 @@ function renderOrdersTable(
 
                 <td>
                     ${escapeHTML(
-                        order.orderDate || ""
+                        String(order.quantity || 0)
+                    )} ${escapeHTML(order.unit || "pcs")}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        formatDashboardEthiopianDate(order.orderDate)
                     )}
                 </td>
 
                 <td>
                     ${escapeHTML(
-                        order.pickupDate || ""
+                        formatDashboardEthiopianDate(order.pickupDate)
                     )}
                 </td>
 
@@ -464,6 +502,9 @@ function renderOrdersTable(
                           '\')">'
                         : "—"}
                 </td>
+                  <td>
+                      ${order.id && order.productId && Number(order.quantity || 0) > 0 ? `<button type="button" class="production-order-btn" onclick="window.location.href='production.html?orderId=${encodeURIComponent(order.id)}'">⏳ ወደ Production ላክ</button>` : "—"}
+                  </td>
 
             `;
 
@@ -2066,6 +2107,12 @@ dashboard.update =
                                 ${escapeHTML(
                                     order.productName || ""
                                 )}
+                            </td>
+
+                            <td>
+                                ${escapeHTML(
+                                    String(order.quantity || 0)
+                                )} ${escapeHTML(order.unit || "pcs")}
                             </td>
 
                             <td>
@@ -4061,7 +4108,7 @@ async function loadYamSelfProductsDashboard() {
                         </h3>
 
                         <p>
-                            📦 Stock:
+                            📦 ክምችት:
                             <strong>
                                 ${Number(product.stock || 0)}
                             </strong>
@@ -4233,7 +4280,7 @@ document.addEventListener(
 
         button.id = "yamUniversalTrashButton";
         button.type = "button";
-        button.innerHTML = "🗑️ Universal Trash";
+        button.innerHTML = "🗑️ ሁለንተናዊ መጣያ";
         button.title = "ሁሉም የተሰረዙ መረጃዎች";
         button.addEventListener("click", loadYamUniversalTrash);
 
@@ -4252,17 +4299,17 @@ document.addEventListener(
         panel.innerHTML =
             '<div class="yam-universal-trash-header">' +
                 '<div>' +
-                    '<h3>🗑️ Universal Trash</h3>' +
+                    '<h3>🗑️ ሁለንተናዊ መጣያ</h3>' +
                     '<p>የተሰረዙ ሁሉም መረጃዎች</p>' +
                 '</div>' +
                 '<div class="yam-universal-trash-top-actions">' +
-                    '<button type="button" id="yamUniversalTrashRefresh">🔄 Refresh</button>' +
-                    '<button type="button" id="yamUniversalTrashEmpty">🧹 Empty Trash</button>' +
+                    '<button type="button" id="yamUniversalTrashRefresh">🔄 አድስ</button>' +
+                    '<button type="button" id="yamUniversalTrashEmpty">🧹 መጣያውን ባዶ አድርግ</button>' +
                     '<button type="button" id="yamUniversalTrashClose" title="ዝጋ">✖️</button>' +
                 '</div>' +
             '</div>' +
             '<div id="yamUniversalTrashBody">' +
-                '<p class="yam-universal-trash-empty">Trash እየተጫነ ነው...</p>' +
+                '<p class="yam-universal-trash-empty">መጣያ እየተጫነ ነው...</p>' +
             '</div>';
 
         ordersSection.insertAdjacentElement("afterend", panel);
@@ -4460,7 +4507,7 @@ document.addEventListener(
 
         body.innerHTML =
             '<p class="yam-universal-trash-empty">' +
-            '🗑️ Universal Trash እየተጫነ ነው...' +
+            '🗑️ ሁለንተናዊ መጣያ እየተጫነ ነው...' +
             '</p>';
 
         try {
@@ -4477,7 +4524,7 @@ document.addEventListener(
 
             if (!response.ok || !data.success) {
                 throw new Error(
-                    data.error || "Universal Trash load failed"
+                    data.error || "ሁለንተናዊ መጣያ መጫን አልተሳካም።"
                 );
             }
 
@@ -4489,7 +4536,7 @@ document.addEventListener(
             if (!items.length) {
                 body.innerHTML =
                     '<p class="yam-universal-trash-empty">' +
-                    '♻️ Universal Trash ባዶ ነው።' +
+                    '♻️ ሁለንተናዊ መጣያ ባዶ ነው።' +
                     '</p>';
 
                 return;
@@ -4579,13 +4626,13 @@ document.addEventListener(
 
         } catch (error) {
             console.error(
-                "YamGiftET Universal Trash Load Error:",
+                "YamGiftET ሁለንተናዊ መጣያ Load Error:",
                 error
             );
 
             body.innerHTML =
                 '<p class="yam-universal-trash-empty">' +
-                '❌ Universal Trash መጫን አልተቻለም።<br>' +
+                '❌ ሁለንተናዊ መጣያ መጫን አልተቻለም።<br>' +
                 yamUniversalEscape(
                     error.message || error
                 ) +
@@ -4629,7 +4676,7 @@ document.addEventListener(
             if (!response.ok || !result.success) {
                 throw new Error(
                     result.error ||
-                    "Universal Trash restore failed"
+                    "ሁለንተናዊ መጣያ መመለስ አልተሳካም።"
                 );
             }
 
@@ -4648,7 +4695,7 @@ document.addEventListener(
 
         } catch (error) {
             console.error(
-                "Universal Trash Restore Error:",
+                "ሁለንተናዊ መጣያ Restore Error:",
                 error
             );
 
@@ -4710,7 +4757,7 @@ document.addEventListener(
 
         } catch (error) {
             console.error(
-                "Universal Trash Permanent Delete Error:",
+                "ሁለንተናዊ መጣያ Permanent Delete Error:",
                 error
             );
 
@@ -4724,9 +4771,9 @@ document.addEventListener(
     async function emptyYamUniversalTrash() {
         const confirmed = window.confirm(
             "⚠️ በጣም ጠንቃቃ!\n\n" +
-            "🧹 Universal Trash ውስጥ ያሉ ሁሉም መረጃዎች\n" +
+            "🧹 ሁለንተናዊ መጣያ ውስጥ ያሉ ሁሉም መረጃዎች\n" +
             "በቋሚነት ይሰረዛሉ።\n\n" +
-            "♻️ Restore ማድረግ አይቻልም።\n\n" +
+            "♻️ መልስ ማድረግ አይቻልም።\n\n" +
             "ሁሉንም መሰረዝ ይፈልጋሉ?"
         );
 
@@ -4751,12 +4798,12 @@ document.addEventListener(
             if (!response.ok || !result.success) {
                 throw new Error(
                     result.error ||
-                    "Empty Universal Trash failed"
+                    "ሁለንተናዊ መጣያውን ባዶ ማድረግ አልተሳካም።"
                 );
             }
 
             alert(
-                "🧹 Universal Trash በትክክል ተጠርጓል።\n\n" +
+                "🧹 ሁለንተናዊ መጣያ በትክክል ተጠርጓል።\n\n" +
                 "የተሰረዙ መረጃዎች: " +
                 String(result.deletedCount || 0)
             );
@@ -4765,12 +4812,12 @@ document.addEventListener(
 
         } catch (error) {
             console.error(
-                "Universal Trash Clear Error:",
+                "ሁለንተናዊ መጣያ Clear Error:",
                 error
             );
 
             alert(
-                "❌ Universal Trash መጥረግ አልተቻለም።\n\n" +
+                "❌ ሁለንተናዊ መጣያ መጥረግ አልተቻለም።\n\n" +
                 (error.message || error)
             );
         }

@@ -8,6 +8,10 @@ const { db } = require("./firebase");
 const { moveToUniversalTrash } = require("./trash-helper");
 const { ensureContact } = require("./contacts-routes");
 const calculator = require("./universal-calculator");
+const {
+    normalizeUnit,
+    getUnitFamily
+} = require("./units-converter-engine");
 
 /* =========================================================
    YamGiftET AI — MASTER ORDERS ROUTES
@@ -73,6 +77,38 @@ function number(value) {
 
 function clean(value) {
     return String(value ?? "").trim();
+}
+
+async function getOrderProductUnit(productId) {
+    const id = clean(productId);
+
+    if (!id) {
+        return "pcs";
+    }
+
+    const productDoc = await db
+        .collection("selfProducts")
+        .doc(id)
+        .get();
+
+    if (!productDoc.exists) {
+        const error = new Error("የተመረጠው Product Master አልተገኘም።");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const product = productDoc.data() || {};
+    const unit = normalizeUnit(product.unit || "pcs");
+
+    if (getUnitFamily(unit) !== "count") {
+        const error = new Error(
+            "የOrder Product Unit ብቻ Count / pcs መሆን አለበት።"
+        );
+        error.statusCode = 400;
+        throw error;
+    }
+
+    return unit;
 }
 
 function normalizeStatus(value) {
@@ -154,6 +190,7 @@ router.post(
                 orderInfo,
                 productId,
                 productName,
+                quantity,
                 totalAmount,
                 deposit,
                 orderDate,
@@ -176,11 +213,23 @@ router.post(
                 });
             }
 
+            const orderQuantity = Number(quantity);
+
+            if (!Number.isInteger(orderQuantity) || orderQuantity < 1) {
+                return res.status(400).json({
+                    success: false,
+                    error: "የትዕዛዝ ብዛት ከ1 ጀምሮ ሙሉ ቁጥር መሆን አለበት።"
+                });
+            }
+
             const money = calculateOrder(
                 totalAmount,
                 deposit,
                 workCost
             );
+
+            const orderProductUnit =
+                await getOrderProductUnit(productId);
 
             const finalStatus =
                 clean(status) || "አዲስ";
@@ -197,6 +246,8 @@ router.post(
                 orderInfo: clean(orderInfo),
                 productId: clean(productId),
                 productName: clean(productName),
+                quantity: orderQuantity,
+                unit: orderProductUnit,
 
                 ...money,
 
@@ -456,6 +507,21 @@ router.patch(
                 ...oldOrder,
                 ...body
             };
+
+            const requestedProductId =
+                clean(merged.productId);
+
+            if (requestedProductId) {
+                merged.unit =
+                    await getOrderProductUnit(
+                        requestedProductId
+                    );
+            } else if (oldOrder.unit) {
+                merged.unit =
+                    normalizeUnit(oldOrder.unit);
+            } else {
+                delete merged.unit;
+            }
 
             const money = calculateOrder(
                 merged.totalAmount,

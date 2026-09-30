@@ -1,8 +1,17 @@
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 const { db } = require("./firebase");
+const { FieldValue } = require("firebase-admin/firestore");
 const { moveToUniversalTrash } = require("./trash-helper");
 const calculator = require("./universal-calculator");
+const {
+  normalizeUnit,
+  getUnitFamily
+} = require("./units-converter-engine");
+const {
+  calculateArea
+} = require("./area-costing-engine");
 
 /* =========================================================
    YamGiftET AI — SELF-MADE PRODUCTS API
@@ -17,11 +26,86 @@ function number(value) {
     return Number.isFinite(n) ? n : 0;
 }
 
+function normalizeFinishedProductUnit(value) {
+    const unit = normalizeUnit(value || "pcs");
+    if (!unit || !getUnitFamily(unit)) {
+        throw new Error("የFinished Product Unit ልክ አይደለም።");
+    }
+    return unit;
+}
+
+
+function stockIdempotencyHash(data) {
+    return crypto
+        .createHash("sha256")
+        .update(JSON.stringify(data))
+        .digest("hex");
+}
+
+function stockIdempotencyRef(requestId) {
+    const cleanRequestId = clean(requestId);
+    if (!cleanRequestId) return null;
+
+    const safeId = crypto
+        .createHash("sha256")
+        .update(cleanRequestId)
+        .digest("hex");
+
+    return db.collection("stockIdempotency").doc(safeId);
+}
+
 function calculateProduct(data = {}) {
-    const quantity = Math.max(0, number(data.quantity));
-    const stock = Math.max(0, number(data.stock));
+    const rawUnit = normalizeUnit(data.unit || "pcs");
+    const unitFamily = getUnitFamily(rawUnit);
+    const isAreaProduct = unitFamily === "area";
+
+    let quantity = Math.max(0, number(data.quantity));
+    let stock = Math.max(0, number(data.stock));
     const sellPrice = Math.max(0, number(data.sellPrice));
-    const unitCost = Math.max(0, number(data.unitCost));
+    let unitCost = Math.max(0, number(data.unitCost));
+
+    let areaSnapshot = {};
+
+    if (isAreaProduct) {
+        const dimensionUnit = normalizeUnit(data.dimensionUnit || "cm");
+
+        const areaResult = calculateArea({
+            length: data.length,
+            width: data.width,
+            dimensionUnit
+        });
+
+        const area = number(
+            rawUnit === "mm2"
+                ? areaResult.areaMm2
+                : rawUnit === "cm2"
+                    ? areaResult.areaCm2
+                    : areaResult.areaM2
+        );
+
+        const areaUnit = rawUnit;
+
+        if (area <= 0) {
+            throw new Error("Area ከ0 በላይ መሆን አለበት።");
+        }
+
+        quantity = area;
+        stock = Math.max(0, number(data.stock));
+
+        areaSnapshot = {
+            length: number(data.length),
+            width: number(data.width),
+            dimensionUnit,
+            area,
+            areaUnit,
+            thickness: data.thickness === undefined || data.thickness === ""
+                ? null
+                : number(data.thickness),
+            thicknessUnit: clean(data.thicknessUnit)
+                ? normalizeUnit(data.thicknessUnit)
+                : null
+        };
+    }
 
     const unitProfit = calculator.subtract(sellPrice, unitCost);
     const totalSales = calculator.multiply(sellPrice, quantity);
@@ -36,7 +120,8 @@ function calculateProduct(data = {}) {
         unitProfit,
         totalSales,
         totalCost,
-        totalProfit
+        totalProfit,
+        ...areaSnapshot
     };
 }
 /* =========================================================
@@ -139,7 +224,13 @@ router.post("/self-products", async (req, res) => {
             sellPrice,
             unitCost,
             productionDate,
-            photoUrl
+            photoUrl,
+            unit,
+            length,
+            width,
+            dimensionUnit,
+            thickness,
+            thicknessUnit
         } = req.body || {};
 
         if (!clean(productName)) {
@@ -149,11 +240,27 @@ router.post("/self-products", async (req, res) => {
             });
         }
 
+        let normalizedUnit;
+        try {
+            normalizedUnit = normalizeFinishedProductUnit(unit);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: error.message
+            });
+        }
+
         const money = calculateProduct({
             quantity,
             stock,
             sellPrice,
-            unitCost
+            unitCost,
+            unit: normalizedUnit,
+            length,
+            width,
+            dimensionUnit,
+            thickness,
+            thicknessUnit
         });
 
         const now = new Date().toISOString();
@@ -162,6 +269,7 @@ router.post("/self-products", async (req, res) => {
             productName: clean(productName),
             productType: clean(productType),
             productDescription: clean(productDescription),
+            unit: normalizedUnit,
 
             ...money,
 
@@ -188,9 +296,20 @@ router.post("/self-products", async (req, res) => {
     } catch (error) {
         console.error("Self Product CREATE Error:", error);
 
-        res.status(500).json({
+        const validationMessages = [
+            "ከ 0 በላይ መሆን አለበት።",
+            "Length/Width Unit የLength Unit መሆን አለበት።"
+        ];
+
+        const isValidationError = validationMessages.some(message =>
+            String(error?.message || "").includes(message)
+        );
+
+        res.status(isValidationError ? 400 : 500).json({
             success: false,
-            error: "ምርቱን ማስቀመጥ አልተቻለም።"
+            error: isValidationError
+                ? error.message
+                : "ምርቱን ማስቀመጥ አልተቻለም።"
         });
     }
 });
@@ -226,9 +345,37 @@ router.patch("/self-products/:id", async (req, res) => {
         const old = existing.data() || {};
         const body = req.body || {};
 
+        const requestedUnit = Object.prototype.hasOwnProperty.call(body, "unit")
+            ? body.unit
+            : (old.unit || "pcs");
+
+        let normalizedUnit;
+        try {
+            normalizedUnit = normalizeFinishedProductUnit(requestedUnit);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: error.message
+            });
+        }
+
+        const oldUnit = old.unit
+            ? normalizeFinishedProductUnit(old.unit)
+            : "pcs";
+
+        const currentStock = Math.max(0, number(old.stock));
+
+        if (currentStock > 0 && normalizedUnit !== oldUnit) {
+            return res.status(409).json({
+                success: false,
+                error: "Stock እያለ የFinished Product Unit መቀየር አይቻልም።"
+            });
+        }
+
         const merged = {
             ...old,
-            ...body
+            ...body,
+            unit: normalizedUnit
         };
 
         const money = calculateProduct(merged);
@@ -237,6 +384,7 @@ router.patch("/self-products/:id", async (req, res) => {
             productName: clean(merged.productName),
             productType: clean(merged.productType),
             productDescription: clean(merged.productDescription),
+            unit: normalizedUnit,
 
             ...money,
 
@@ -245,6 +393,19 @@ router.patch("/self-products/:id", async (req, res) => {
 
             updatedAt: new Date().toISOString()
         };
+
+        const oldUnitFamily = getUnitFamily(oldUnit);
+        const newUnitFamily = getUnitFamily(normalizedUnit);
+
+        if (oldUnitFamily === "area" && newUnitFamily !== "area") {
+            updated.length = FieldValue.delete();
+            updated.width = FieldValue.delete();
+            updated.dimensionUnit = FieldValue.delete();
+            updated.area = FieldValue.delete();
+            updated.areaUnit = FieldValue.delete();
+            updated.thickness = FieldValue.delete();
+            updated.thicknessUnit = FieldValue.delete();
+        }
 
         await ref.set(updated, {
             merge: true
@@ -263,9 +424,20 @@ router.patch("/self-products/:id", async (req, res) => {
     } catch (error) {
         console.error("Self Product UPDATE Error:", error);
 
-        res.status(500).json({
+        const validationMessages = [
+            "ከ 0 በላይ መሆን አለበት።",
+            "Length/Width Unit የLength Unit መሆን አለበት።"
+        ];
+
+        const isValidationError = validationMessages.some(message =>
+            String(error?.message || "").includes(message)
+        );
+
+        res.status(isValidationError ? 400 : 500).json({
             success: false,
-            error: "ምርቱን ማስተካከል አልተቻለም።"
+            error: isValidationError
+                ? error.message
+                : "ምርቱን ማስተካከል አልተቻለም።"
         });
     }
 });
@@ -292,16 +464,6 @@ router.post("/self-products/:id/sales", async (req, res) => {
             .collection("selfProducts")
             .doc(productId);
 
-        const productSnap = await productRef.get();
-
-        if (!productSnap.exists) {
-            return res.status(404).json({
-                success: false,
-                error: "ምርቱ አልተገኘም።"
-            });
-        }
-
-        const product = productSnap.data() || {};
         const body = req.body || {};
 
         const quantity = Math.max(
@@ -311,139 +473,301 @@ router.post("/self-products/:id/sales", async (req, res) => {
 
         const salePrice = Math.max(
             0,
-            number(body.salePrice ?? product.sellPrice)
+            number(body.salePrice)
         );
-
-        const unitCost = Math.max(
-            0,
-            number(body.unitCost ?? product.unitCost)
-        );
-
-        const currentStock = Math.max(
-            0,
-            number(product.stock)
-        );
-
-        if (quantity <= 0) {
-            return res.status(400).json({
-                success: false,
-                error: "የተሸጠው ብዛት ከ 0 በላይ መሆን አለበት።"
-            });
-        }
-
-        if (quantity > currentStock) {
-            return res.status(400).json({
-                success: false,
-                error:
-                    "በStock ላይ " +
-                    currentStock +
-                    " ብቻ አለ።"
-            });
-        }
 
         const saleDate =
             clean(body.saleDate) ||
             new Date().toISOString().slice(0, 10);
 
-        const totalSales = calculator.multiply(salePrice, quantity);
-        const totalCost = calculator.multiply(unitCost, quantity);
-        const totalProfit = calculator.subtract(totalSales, totalCost);
+        const now = new Date().toISOString();
 
-        const received = Math.max(
-            0,
-            number(body.received ?? body.paidAmount ?? totalSales)
-        );
+        const requestId = clean(body.requestId);
 
-        if (received > totalSales) {
-            return res.status(400).json({
-                success: false,
-                error: "የተቀበለው ክፍያ ከጠቅላላ ሽያጭ መብለጥ አይችልም።"
-            });
-        }
-
-        const receivable = calculator.subtract(
-            totalSales,
-            received
-        );
-
-    const now = new Date().toISOString();
-
-        const sale = {
+        const idempotencyPayload = {
+            operation: "SELF_PRODUCT_SALE",
             productId,
-            productName: clean(product.productName),
-            productType: clean(product.productType),
-
             quantity,
             salePrice,
-            unitCost,
-
-            totalSales,
-            totalCost,
-            totalProfit,
-
-            received,
-            receivable,
-
+            unitCost: body.unitCost ?? null,
             saleDate,
-
-            createdAt: now,
-            updatedAt: now
+            received: body.received ?? body.paidAmount ?? null
         };
 
-        const saleRef = await productRef
-            .collection("sales")
-            .add(sale);
+        const idempotencyHash =
+            stockIdempotencyHash(idempotencyPayload);
 
-        const newStock = currentStock - quantity;
+        const idempotencyRef =
+            stockIdempotencyRef(requestId);
 
-        await productRef.set({
-            stock: newStock,
-            updatedAt: now
-        }, {
-            merge: true
-        });
+        const result = await db.runTransaction(async transaction => {
+            let idempotencySnap = null;
 
-        await recordStockMovement({
-            itemType: "selfProduct",
-            itemId: productId,
-            itemName: product.productName,
-            movementType: "SALE",
-            quantity,
-            unit: "ቁጥር",
-            previousStock: currentStock,
-            remainingStock: newStock,
-            unitCost,
-            totalValue: totalCost,
-            referenceId: saleRef.id,
-            movementDate: saleDate,
-            createdAt: now
-        });
+            if (idempotencyRef) {
+                idempotencySnap =
+                    await transaction.get(idempotencyRef);
+            }
 
-        res.status(201).json({
-            success: true,
-            message: "ሽያጩ በFirebase ተመዝግቧል።",
+            const productSnap =
+                await transaction.get(productRef);
 
-            sale: {
-                id: saleRef.id,
-                ...sale
-            },
+            if (idempotencySnap && idempotencySnap.exists) {
+                const previous =
+                    idempotencySnap.data() || {};
 
-            stock: {
-                previous: currentStock,
+                if (previous.payloadHash !== idempotencyHash) {
+                    const error = new Error(
+                        "ይህ requestId ቀድሞ በተለየ የሽያጭ መረጃ ተጠቅሟል።"
+                    );
+                    error.statusCode = 409;
+                    throw error;
+                }
+
+                if (!previous.result) {
+                    const error = new Error(
+                        "የቀድሞው idempotency result አልተገኘም።"
+                    );
+                    error.statusCode = 409;
+                    throw error;
+                }
+
+                return previous.result;
+            }
+
+            if (!productSnap.exists) {
+                const error = new Error("ምርቱ አልተገኘም።");
+                error.statusCode = 404;
+                throw error;
+            }
+
+            const product = productSnap.data() || {};
+
+            let productUnit;
+            try {
+                productUnit = normalizeFinishedProductUnit(
+                    product.unit || "pcs"
+                );
+            } catch (error) {
+                const unitError = new Error(
+                    "የFinished Product Unit ልክ አይደለም።"
+                );
+                unitError.statusCode = 400;
+                throw unitError;
+            }
+
+            const unitCost = Math.max(
+                0,
+                number(body.unitCost ?? product.unitCost)
+            );
+
+            const currentStock = Math.max(
+                0,
+                number(product.stock)
+            );
+
+            if (quantity <= 0) {
+                const error = new Error(
+                    "የተሸጠው ብዛት ከ 0 በላይ መሆን አለበት።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (salePrice <= 0) {
+                const error = new Error(
+                    "የሽያጭ ዋጋ ከ 0 በላይ መሆን አለበት።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (unitCost <= 0) {
+                const error = new Error(
+                    "የምርቱ የአንድ እቃ ወጪ ከ 0 በላይ መሆን አለበት።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (quantity > currentStock) {
+                const error = new Error(
+                    "በStock ላይ " +
+                    currentStock +
+                    " ብቻ አለ።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const totalSales =
+                calculator.multiply(salePrice, quantity);
+
+            const totalCost =
+                calculator.multiply(unitCost, quantity);
+
+            const totalProfit =
+                calculator.subtract(totalSales, totalCost);
+
+            const received = Math.max(
+                0,
+                number(
+                    body.received ??
+                    body.paidAmount ??
+                    totalSales
+                )
+            );
+
+            if (received > totalSales) {
+                const error = new Error(
+                    "የተቀበለው ክፍያ ከጠቅላላ ሽያጭ መብለጥ አይችልም።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const receivable =
+                calculator.subtract(
+                    totalSales,
+                    received
+                );
+
+            const saleRef = productRef
+                .collection("sales")
+                .doc();
+
+            const areaSaleSnapshot =
+                getUnitFamily(productUnit) === "area"
+                    ? {
+                        length: number(product.length),
+                        width: number(product.width),
+                        dimensionUnit: clean(product.dimensionUnit)
+                            ? normalizeUnit(product.dimensionUnit)
+                            : null,
+                        area: number(product.area),
+                        areaUnit: productUnit,
+                        thickness:
+                            product.thickness === undefined ||
+                            product.thickness === ""
+                                ? null
+                                : number(product.thickness),
+                        thicknessUnit:
+                            clean(product.thicknessUnit)
+                                ? normalizeUnit(product.thicknessUnit)
+                                : null
+                    }
+                    : {};
+
+            const sale = {
+                productId,
+                productName: clean(product.productName),
+                productType: clean(product.productType),
+                quantity,
+                unit: productUnit,
+                salePrice,
+                unitCost,
+                totalSales,
+                totalCost,
+                totalProfit,
+                received,
+                receivable,
+                saleDate,
+                ...areaSaleSnapshot,
+                createdAt: now,
+                updatedAt: now
+            };
+
+            const newStock =
+                currentStock - quantity;
+
+            transaction.set(
+                saleRef,
+                sale
+            );
+
+            transaction.set(
+                productRef,
+                {
+                    stock: newStock,
+                    updatedAt: now
+                },
+                { merge: true }
+            );
+
+            const movementRef = db
+                .collection("stockMovements")
+                .doc();
+
+            const movement = {
+                itemType: "selfProduct",
+                itemId: productId,
+                itemName: clean(product.productName),
+                movementType: "SALE",
+                quantity,
+                unit: productUnit,
+                previousStock: currentStock,
+                remainingStock: newStock,
+                unitCost,
+                totalValue: totalCost,
+                referenceId: saleRef.id,
+                movementDate: saleDate,
+                ...areaSaleSnapshot,
+                createdAt: now
+            };
+
+            transaction.set(
+                movementRef,
+                movement
+            );
+
+            const transactionResult = {
+                saleId: saleRef.id,
+                movementId: movementRef.id,
+                sale,
+                previousStock: currentStock,
                 sold: quantity,
-                remaining: newStock
+                remainingStock: newStock
+            };
+
+            if (idempotencyRef) {
+                transaction.set(idempotencyRef, {
+                    operation: "SELF_PRODUCT_SALE",
+                    requestId,
+                    payloadHash: idempotencyHash,
+                    result: transactionResult,
+                    createdAt: now,
+                    updatedAt: now
+                });
+            }
+
+            return transactionResult;
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "ሽያጩ በAtomic Transaction ተመዝግቦ Stock ቀንሷል።",
+            sale: {
+                id: result.saleId,
+                ...result.sale
+            },
+            stock: {
+                previous: result.previousStock,
+                sold: result.sold,
+                remaining: result.remainingStock
             }
         });
-
     } catch (error) {
         console.error(
             "Self Product SALE Error:",
             error
         );
 
-        res.status(500).json({
+        return res.status(
+            error.statusCode || 500
+        ).json({
             success: false,
-            error: "ሽያጩን መመዝገብ አልተቻለም።"
+            error:
+                error.message ||
+                "ሽያጩን መመዝገብ አልተቻለም።"
         });
     }
 });
@@ -683,7 +1007,7 @@ router.get("/self-products-finance/summary", async (req, res) => {
 // STOCK MOVEMENT LEDGER — PHASE 1
 // Backend-only transaction audit
 // =========================================================
-async function recordStockMovement(data) {
+async function recordStockMovement(data, transaction = null) {
     const movement = {
         itemType: data.itemType,
         itemId: data.itemId,
@@ -707,6 +1031,13 @@ async function recordStockMovement(data) {
         movement.quantity <= 0
     ) {
         throw new Error("Invalid stock movement");
+    }
+
+    const movementRef = db.collection("stockMovements").doc();
+
+    if (transaction) {
+        transaction.set(movementRef, movement);
+        return movementRef;
     }
 
     return db.collection("stockMovements").add(movement);

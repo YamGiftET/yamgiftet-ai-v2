@@ -24,7 +24,7 @@
     <form id="orderForm" class="order-form">
 
         <div class="form-group">
-            <label>የደንበኛ ስም</label>
+            <label>👤 የደንበኛ ስም</label>
             <input
                 type="text"
                 id="orderCustomerName"
@@ -34,7 +34,7 @@
         </div>
 
         <div class="form-group">
-            <label>ስልክ ቁጥር</label>
+            <label>📞 ስልክ ቁጥር</label>
             <input
                 type="tel"
                 id="orderPhone"
@@ -44,24 +44,100 @@
         </div>
 
         <div class="form-group">
-            <label>የታዘዘው ምርት</label>
-            <input
-                type="text"
-                id="orderProductName"
-                required
-                placeholder="ለምሳሌ ኢፖክሲ ፍሬም"
-            >
-        </div>
+                <label for="orderProductName">🎁 የታዘዘው ምርት</label>
+                <input
+                    type="text"
+                    id="orderProductName"
+                    required
+                    placeholder="✍️ የምርት ስም ይጻፉ"
+                >
 
-        <div class="form-group">
-            <label>የትዕዛዝ መረጃ</label>
+                <label for="orderProductId" style="margin-top:12px;">
+                    📋 ወይም ከራስ ምርቶች ይምረጡ
+                </label>
+                <select id="orderProductId">
+                    <option value="">-- ከራስ ምርቶች ይምረጡ --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="orderQuantity">🔢 የትዕዛዝ ብዛት</label>
+                <input
+                    type="number"
+                    id="orderQuantity"
+                    min="1"
+                    step="1"
+                    value="1"
+                    required
+                    placeholder="1"
+                >
+                <small id="orderQuantityUnit">pcs</small>
+            </div>
+
+            <!-- 📐 Area Order Dimensions -->
+            <div id="orderAreaSection" class="form-group" style="display:none;">
+                <label>📐 የArea ትዕዛዝ መጠን</label>
+
+                <label for="orderLength">↔️ Length</label>
+                <input
+                    type="number"
+                    id="orderLength"
+                    min="0"
+                    step="0.01"
+                    placeholder="Length"
+                >
+
+                <label for="orderWidth">↕️ Width</label>
+                <input
+                    type="number"
+                    id="orderWidth"
+                    min="0"
+                    step="0.01"
+                    placeholder="Width"
+                >
+
+                <label for="orderDimensionUnit">📏 Length / Width Unit</label>
+                <select id="orderDimensionUnit">
+                    <option value="cm">cm</option>
+                    <option value="mm">mm</option>
+                    <option value="m">m</option>
+                </select>
+
+                <label for="orderThickness">↕️ Thickness (Optional)</label>
+                <input
+                    type="number"
+                    id="orderThickness"
+                    min="0"
+                    step="0.01"
+                    placeholder="Thickness"
+                >
+
+                <label for="orderThicknessUnit">📏 Thickness Unit</label>
+                <select id="orderThicknessUnit">
+                    <option value="mm">mm</option>
+                    <option value="cm">cm</option>
+                    <option value="m">m</option>
+                </select>
+
+                <label for="orderArea">📐 Calculated Area</label>
+                <input
+                    type="number"
+                    id="orderArea"
+                    readonly
+                    value="0"
+                >
+                <small id="orderAreaUnit">m2</small>
+            </div>
+
+            <div class="form-group">
+            <label>📝 የትዕዛዝ መረጃ</label>
             <textarea
                 id="orderInfo"
                 placeholder="የደንበኛው ልዩ ፍላጎት..."
             ></textarea>
         </div>
 
-        
+
         <div class="form-group">
 
             <label>📅 የታዘዘበት ቀን 🇪🇹</label>
@@ -81,15 +157,147 @@
         </div>
 
 <div class="form-group">
-            <label>የተስማማንበት ዋጋ</label>
+            <label>💰 የተስማማንበት ዋጋ</label>
                     <!-- 🧮 YamGiftET Universal Calculator -->
-        <section id="universalCalculator" class="universal-calculator-section">
+
+
+<input
+                type="number"
+                id="orderTotalAmount"
+                min="0"
+                required
+                placeholder="0"
+                oninput="calculateOrderAmounts()"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>💵 የተከፈለ ቀብድ</label>
+            <input
+                type="number"
+                id="orderDeposit"
+                min="0"
+                value="0"
+                oninput="calculateOrderAmounts()"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>🪙 ቀሪ ክፍያ</label>
+            <input
+                type="number"
+                id="orderRemaining"
+                readonly
+                value="0"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>🛠️ የሥራ ወጪ</label>
+            <input
+                type="number"
+                id="orderWorkCost"
+                min="0"
+                value="0"
+                oninput="calculateOrderAmounts()"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>📈 ትርፍ</label>
+            <input
+                type="number"
+                id="orderProfit"
+                readonly
+                value="0"
+            >
+        </div>
+
+
+        <div class="form-group">
+
+            <label>📦 የመውሰጃ ቀን 🇪🇹</label>
+
+            <div class="ethiopian-date">
+
+                <select id="pickupDateYear"></select>
+
+                <select id="pickupDateMonth"></select>
+
+                <select id="pickupDateDay"></select>
+
+            </div>
+
+            <small>በኢትዮጵያ አቆጣጠር</small>
+
+        </div>
+
+        <div class="form-group">
+            <label>🚦 የትዕዛዝ ሁኔታ</label>
+            <select id="orderStatus">
+
+                <option value="አዲስ">አዲስ</option>
+
+                <option value="በሥራ ላይ">
+                    በሥራ ላይ
+                </option>
+
+                <option value="ተጠናቋል">
+                    ተጠናቋል
+                </option>
+
+                <option value="ተሰጥቷል">
+                    ተሰጥቷል
+                </option>
+
+                <option value="ተሰርዟል">
+                    ተሰርዟል
+                </option>
+
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>📝 ማስታወሻ</label>
+
+            <textarea
+                id="orderNotes"
+                placeholder="ተጨማሪ መረጃ..."
+            ></textarea>
+
+        </div>
+
+        <div class="form-group">
+            <label>📸 የደንበኛ ፎቶ / የትዕዛዝ ፎቶ</label>
+            <input
+                type="file"
+                id="orderPhoto"
+                accept="image/*"
+            >
+            <small>ፎቶ ከGallery ይምረጡ</small>
+            <img
+                id="orderPhotoPreview"
+                alt="የፎቶ Preview"
+                style="display:none; max-width:100%; margin-top:10px; border-radius:10px;"
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="order-submit"
+        >
+            💾 ትዕዛዙን አስቀምጥ
+        </button>
+
+    </form>
+
+<section id="universalCalculator" class="universal-calculator-section">
           <div class="universal-calculator">
 
             <div class="calculator-header">
               <span>🧮</span>
               <div>
-                <h2>Universal Calculator</h2>
+                <h2>🧮 ሁለንተናዊ ካልኩሌተር</h2>
                 <p>የንግድ ፈጣን ስሌት ማዕከል</p>
               </div>
             </div>
@@ -100,7 +308,7 @@
               type="text"
               value="0"
               readonly
-              aria-label="የCalculator ውጤት"
+              aria-label="የካልኩሌተር ውጤት"
             >
 
             <div class="calculator-buttons">
@@ -143,146 +351,7 @@
           </div>
         </section>
 
-    
-    <!-- 💰 YamGiftET Cost & Profit -->
-    <section id="costProfitCalculator" class="cost-profit-section">
-        <div class="cost-profit-header">
-            <span>💰</span>
-            <div>
-                <h2>Cost & Profit</h2>
-                <p>የወጪ፣ ትርፍ እና ኪሳራ ስሌት</p>
-            </div>
-        </div>
-
-        <div class="cost-profit-form">
-            <div class="form-group">
-                <label for="costProfitQuantity">ብዛት</label>
-                <input
-                    type="number"
-                    id="costProfitQuantity"
-                    min="0"
-                    step="any"
-                    value="1"
-                    placeholder="1"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="costProfitMaterialUnitCost">
-                    የአንድ እቃ ወጪ
-                </label>
-                <input
-                    type="number"
-                    id="costProfitMaterialUnitCost"
-                    min="0"
-                    step="any"
-                    value="0"
-                    placeholder="0"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="costProfitWorkCost">የሥራ ወጪ</label>
-                <input
-                    type="number"
-                    id="costProfitWorkCost"
-                    min="0"
-                    step="any"
-                    value="0"
-                    placeholder="0"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="costProfitOtherCost">ሌላ ወጪ</label>
-                <input
-                    type="number"
-                    id="costProfitOtherCost"
-                    min="0"
-                    step="any"
-                    value="0"
-                    placeholder="0"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="costProfitSellingPrice">መሸጫ ዋጋ</label>
-                <input
-                    type="number"
-                    id="costProfitSellingPrice"
-                    min="0"
-                    step="any"
-                    value="0"
-                    placeholder="0"
-                >
-            </div>
-
-            <button
-                type="button"
-                id="costProfitCalculateButton"
-                class="cost-profit-calculate-button"
-            >
-                🧮 Cost & Profit አስላ
-            </button>
-        </div>
-
-        <div
-            id="costProfitError"
-            class="cost-profit-error"
-            role="alert"
-        ></div>
-
-        <div
-            id="costProfitResult"
-            class="cost-profit-result"
-            hidden
-        >
-            <h3>📊 Cost & Profit Result</h3>
-
-            <div class="cost-profit-result-grid">
-                <div>
-                    <span>የቁሳቁስ ጠቅላላ ወጪ</span>
-                    <strong id="costProfitResultMaterialCost">0</strong>
-                </div>
-
-                <div>
-                    <span>ጠቅላላ ወጪ</span>
-                    <strong id="costProfitResultTotalCost">0</strong>
-                </div>
-
-                <div>
-                    <span>መሸጫ ዋጋ</span>
-                    <strong id="costProfitResultSellingPrice">0</strong>
-                </div>
-
-                <div>
-                    <span>ትርፍ / ኪሳራ</span>
-                    <strong id="costProfitResultProfit">0</strong>
-                </div>
-
-                <div>
-                    <span>Profit %</span>
-                    <strong id="costProfitResultProfitPercent">0%</strong>
-                </div>
-
-                <div>
-                    <span>Margin %</span>
-                    <strong id="costProfitResultMarginPercent">0%</strong>
-                </div>
-            </div>
-
-            <div class="cost-profit-actions">
-                <button
-                    type="button"
-                    data-cost-profit-destination="order"
-                >
-                    📤 ወደ Order ላክ
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <div class="order-calculator-integration">
+<div class="order-calculator-integration">
             <p>🧮 የCalculator ውጤት ወደ Order ላክ</p>
 
             <div class="order-calculator-actions">
@@ -300,135 +369,6 @@
             </div>
         </div>
 
-<input
-                type="number"
-                id="orderTotalAmount"
-                min="0"
-                required
-                placeholder="0"
-                oninput="calculateOrderAmounts()"
-            >
-        </div>
-
-        <div class="form-group">
-            <label>የተከፈለ ቀብድ</label>
-            <input
-                type="number"
-                id="orderDeposit"
-                min="0"
-                value="0"
-                oninput="calculateOrderAmounts()"
-            >
-        </div>
-
-        <div class="form-group">
-            <label>ቀሪ ክፍያ</label>
-            <input
-                type="number"
-                id="orderRemaining"
-                readonly
-                value="0"
-            >
-        </div>
-
-        <div class="form-group">
-            <label>የሥራ ወጪ</label>
-            <input
-                type="number"
-                id="orderWorkCost"
-                min="0"
-                value="0"
-                oninput="calculateOrderAmounts()"
-            >
-        </div>
-
-        <div class="form-group">
-            <label>ትርፍ</label>
-            <input
-                type="number"
-                id="orderProfit"
-                readonly
-                value="0"
-            >
-        </div>
-
-        
-        <div class="form-group">
-
-            <label>📦 የመውሰጃ ቀን 🇪🇹</label>
-
-            <div class="ethiopian-date">
-
-                <select id="pickupDateYear"></select>
-
-                <select id="pickupDateMonth"></select>
-
-                <select id="pickupDateDay"></select>
-
-            </div>
-
-            <small>በኢትዮጵያ አቆጣጠር</small>
-
-        </div>
-
-        <div class="form-group">
-            <label>የትዕዛዝ ሁኔታ</label>
-            <select id="orderStatus">
-
-                <option value="አዲስ">አዲስ</option>
-
-                <option value="በሥራ ላይ">
-                    በሥራ ላይ
-                </option>
-
-                <option value="ተጠናቋል">
-                    ተጠናቋል
-                </option>
-
-                <option value="ተሰጥቷል">
-                    ተሰጥቷል
-                </option>
-
-                <option value="ተሰርዟል">
-                    ተሰርዟል
-                </option>
-
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>ማስታወሻ</label>
-
-            <textarea
-                id="orderNotes"
-                placeholder="ተጨማሪ መረጃ..."
-            ></textarea>
-
-        </div>
-
-        <div class="form-group">
-            <label>📸 የደንበኛ ፎቶ / የትዕዛዝ ፎቶ</label>
-            <input
-                type="file"
-                id="orderPhoto"
-                accept="image/*"
-            >
-            <small>ፎቶ ከGallery ይምረጡ</small>
-            <img
-                id="orderPhotoPreview"
-                alt="የፎቶ Preview"
-                style="display:none; max-width:100%; margin-top:10px; border-radius:10px;"
-            >
-        </div>
-
-        <button
-            type="submit"
-            class="order-submit"
-        >
-            💾 ትዕዛዙን አስቀምጥ
-        </button>
-
-    </form>
 
 </section>
 

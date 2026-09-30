@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yam Gift | Production</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="orders-section">
+
+    <header class="orders-header">
+      <div>
+        <h1>🏭 ምርት</h1>
+        <p>የምርት አስተዳደር • Recipe • Stock • Production</p>
+      </div>
+    </header>
+
+    <!-- Production Dashboard -->
+    <section class="production-dashboard">
+
+      <div class="production-stat">
+        <span>📦 ዛሬ የተመረተ</span>
+        <strong id="todayProductionCount">0</strong>
+      </div>
+
+      <div class="production-stat">
+        <span>🏭 ጠቅላላ ምርት</span>
+        <strong id="totalProductionCount">0</strong>
+      </div>
+
+      <div class="production-stat">
+        <span>✅ የተጠናቀቀ</span>
+        <strong id="completedProductionCount">0</strong>
+      </div>
+
+      <div class="production-stat">
+        <span>⚠️ የሚጠብቅ</span>
+        <strong id="pendingProductionCount">0</strong>
+      </div>
+
+    </section>
+
+    <!-- New Production -->
+    <section class="order-form-section">
+
+      <div class="section-title">
+        <h2>🏭 አዲስ ምርት</h2>
+        <p>Recipe እና Stock በመጠቀም ምርት ይመዝግቡ</p>
+      </div>
+
+      <form id="productionForm">
+
+      <div class="form-group">
+        <label for="productionSourceType">
+          🏭 የምርት ምንጭ
+        </label>
+
+        <select id="productionSourceType" required>
+          <option value="customer_order">📋 Customer Order</option>
+          <option value="self_production">📦 Self Production</option>
+        </select>
+
+        <small>
+          ለCustomer Order ወይም ለStock ምርት ምንጩን ይምረጡ።
+        </small>
+      </div>
+
+        <div class="form-group">
+          <label for="productionOrder">
+            📋 የCustomer Order
+          </label>
+
+          <select id="productionOrder" required>
+            <option value="">Order ይምረጡ...</option>
+          </select>
+
+          <small id="productionOrderInfo">
+            Order ከተመረጠ በኋላ Product እና Remaining Quantity ይታያሉ።
+          </small>
+        </div>
+
+        <div id="productionOrderSummary" class="production-order-summary" hidden>
+          <div>
+            <span>👤 Customer</span>
+            <strong id="productionOrderCustomer">—</strong>
+          </div>
+
+          <div>
+            <span>📦 Ordered</span>
+            <strong id="productionOrderQuantity">—</strong>
+            <small id="productionOrderQuantityUnit">pcs</small>
+          </div>
+
+          <div>
+            <span>🏭 Produced</span>
+            <strong id="productionOrderProduced">—</strong>
+            <small id="productionOrderProducedUnit">pcs</small>
+          </div>
+
+          <div>
+            <span>⏳ Remaining</span>
+            <strong id="productionOrderRemaining">—</strong>
+            <small id="productionOrderRemainingUnit">pcs</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="productionProduct">
+            የምርት ዕቃ
+          </label>
+
+          <select id="productionProduct" required>
+            <option value="">ምርት ይምረጡ...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="productionRecipe">
+            📋 Recipe / BOM
+          </label>
+
+          <select id="productionRecipe" required>
+            <option value="">Recipe ይምረጡ...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="productionQuantity">
+            የሚመረተው ብዛት
+          </label>
+
+          <input
+            type="number"
+            id="productionQuantity"
+            min="1"
+            step="1"
+            placeholder="ለምሳሌ 10"
+            required
+          >
+          <small id="productionQuantityUnit">pcs</small>
+        </div>
+
+        <div class="form-group">
+          <label for="productionDate">
+            📅 የምርት ቀን
+          </label>
+
+          <input
+            type="date"
+            id="productionDate"
+            required
+          >
+
+          <small id="ethiopianProductionDate">
+            የኢትዮጵያ ቀን፦ —
+          </small>
+        </div>
+
+        <!-- Production Capacity -->
+        <div id="productionCapacityBox">
+          <h3>🔎 ማምረት እችላለሁ?</h3>
+
+          <div id="productionMaterialsPreview">
+            <p>ምርት እና Recipe ከተመረጡ በኋላ የሚፈለጉ ጥሬ ዕቃዎች እዚህ ይታያሉ።</p>
+          </div>
+
+          <div id="productionCapacityResult">
+            <strong id="productionCapacityStatus">
+              ⏳ እባክዎ ምርት ይምረጡ
+            </strong>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          id="produceBtn"
+          class="primary-btn"
+        >
+          🏭 ምርት አምርት
+        </button>
+
+      </form>
+
+    </section>
+
+    <!-- Production History -->
+    <section class="production-history-section">
+  <details class="production-history-box">
+    <summary class="production-history-box-summary">
+      <div class="section-title">
+        <h2>📋 የምርት ታሪክ</h2>
+        <p>ሁሉንም የተመዘገቡ ምርቶች ይመልከቱ</p>
+      </div>
+      <span aria-hidden="true">▼</span>
+    </summary>
+
+      <div class="production-filters">
+
+        <input
+          type="search"
+          id="productionSearch"
+          placeholder="🔍 ምርት ፈልግ..."
+        >
+
+        <select id="productionStatusFilter">
+          <option value="">ሁሉም Status</option>
+          <option value="completed">የተጠናቀቀ</option>
+          <option value="cancelled">የተሰረዘ</option>
+          <option value="voided">Void</option>
+        </select>
+
+      </div>
+
+      <div id="productionHistory">
+        <p>የምርት ታሪክ በኋላ እዚህ ይጫናል።</p>
+      </div>
+
+  </details>
+    </section>
+
+  </main>
+
+  <script src="js/ethiopian-calendar.js"></script>
+  <script src="js/units-converter-browser.js"></script>
+  <script src="js/production.js"></script>
+</body>
+</html>

@@ -10,6 +10,15 @@
     const description = document.getElementById("productDescription");
     const quantity = document.getElementById("productQuantity");
     const stock = document.getElementById("productStock");
+    const productUnit = document.getElementById("productUnit");
+    const productAreaFields = document.getElementById("productAreaFields");
+    const productLength = document.getElementById("productLength");
+    const productWidth = document.getElementById("productWidth");
+    const productDimensionUnit = document.getElementById("productDimensionUnit");
+    const productThickness = document.getElementById("productThickness");
+    const productThicknessUnit = document.getElementById("productThicknessUnit");
+    const productArea = document.getElementById("productArea");
+    const productAreaUnit = document.getElementById("productAreaUnit");
     const sellPrice = document.getElementById("productSellPrice");
     const unitCost = document.getElementById("productUnitCost");
     const date = document.getElementById("productDate");
@@ -102,7 +111,54 @@
             .replace(/'/g, "&#039;");
     }
 
+    function isAreaUnit(unit) {
+        return ["mm2", "cm2", "m2"].includes(String(unit || "").toLowerCase());
+    }
+
+    function updateAreaUI() {
+        const selectedUnit = String(productUnit?.value || "pcs").toLowerCase();
+        const areaMode = isAreaUnit(selectedUnit);
+
+        if (productAreaFields) {
+            productAreaFields.style.display = areaMode ? "" : "none";
+        }
+
+        if (!areaMode) {
+            if (productArea) productArea.textContent = "0";
+            if (productAreaUnit) productAreaUnit.textContent = selectedUnit || "pcs";
+            return;
+        }
+
+        const length = Math.max(0, number(productLength?.value));
+        const width = Math.max(0, number(productWidth?.value));
+        const dimensionUnit = String(productDimensionUnit?.value || "cm");
+
+        const toMm = {
+            mm: 1,
+            cm: 10,
+            m: 1000
+        };
+
+        const factor = toMm[dimensionUnit] || 10;
+        const areaMm2 = length * factor * width * factor;
+
+        let area = areaMm2;
+        if (selectedUnit === "cm2") area = areaMm2 / 100;
+        if (selectedUnit === "m2") area = areaMm2 / 1000000;
+
+        if (productArea) {
+            productArea.textContent = Number.isFinite(area)
+                ? area.toLocaleString("en-US", { maximumFractionDigits: 6 })
+                : "0";
+        }
+
+        if (productAreaUnit) {
+            productAreaUnit.textContent = selectedUnit;
+        }
+    }
+
     function calculate() {
+        updateAreaUI();
         const q = Math.max(0, number(quantity?.value));
         const price = Math.max(0, number(sellPrice?.value));
         const cost = Math.max(0, number(unitCost?.value));
@@ -119,7 +175,13 @@
         quantity,
         stock,
         sellPrice,
-        unitCost
+        unitCost,
+        productUnit,
+        productLength,
+        productWidth,
+        productDimensionUnit,
+        productThickness,
+        productThicknessUnit
     ].forEach(input => {
         if (input) {
             input.addEventListener("input", calculate);
@@ -291,13 +353,38 @@
 
                         <p>
                             <strong>ብዛት:</strong>
-                            ${product.quantity || 0}
+                            ${product.quantity || 0} ${product.unit || "pcs"}
                         </p>
 
                         <p>
-                            <strong>Stock:</strong>
-                            ${product.stock || 0}
+                            <strong>ክምችት:</strong>
+                            ${product.stock || 0} ${product.unit || "pcs"}
                         </p>
+                        ${isAreaUnit(product.unit) ? `
+                        <div style="
+                            margin:10px 0;
+                            padding:10px;
+                            border-radius:10px;
+                            background:#f7f9fc;
+                            border:1px solid #e6eaf0;
+                        ">
+                            <p style="margin:4px 0;">
+                                <strong>📐 መጠን:</strong>
+                                ${product.length ?? "—"} × ${product.width ?? "—"}
+                                ${escapeHtml(product.dimensionUnit || "")}
+                            </p>
+                            <p style="margin:4px 0;">
+                                <strong>⬛ ስፋት:</strong>
+                                ${product.area ?? "—"} ${escapeHtml(product.areaUnit || product.unit || "")}
+                            </p>
+                            <p style="margin:4px 0;">
+                                <strong>📏 Thickness:</strong>
+                                ${product.thickness === null || product.thickness === undefined || product.thickness === ""
+                                    ? "—"
+                                    : `${product.thickness} ${escapeHtml(product.thicknessUnit || "")}`}
+                            </p>
+                        </div>
+                        ` : ""}
 
                         <p>
                             <strong>የመሸጫ ዋጋ:</strong>
@@ -466,8 +553,12 @@
                     product.productName || "-";
             }
 
+            const productUnit =
+                product.unit || "pcs";
+
             if (stockEl) {
-                stockEl.textContent = currentStock;
+                stockEl.textContent =
+                    currentStock + " " + productUnit;
             }
 
             if (dateEl) {
@@ -478,6 +569,14 @@
             if (dateEthEl) {
                 dateEthEl.textContent =
                     formatEthiopianDate(dateEl?.value);
+            }
+
+            const quantityUnitEl =
+                document.getElementById("salesModalQuantityUnit");
+
+            if (quantityUnitEl) {
+                quantityUnitEl.textContent =
+                    productUnit;
             }
 
             if (quantityEl) {
@@ -571,6 +670,8 @@
                 Number(product.unitCost || 0)
             );
 
+
+
         const totalSales =
             salePrice * quantity;
 
@@ -621,8 +722,15 @@
         }
 
         if (remainingStockEl) {
+            const productUnit =
+                product.unit || "pcs";
+
             remainingStockEl.textContent =
-                Math.max(0, remainingStock);
+                Math.max(0, remainingStock).toLocaleString("en-US", {
+                    maximumFractionDigits: 6
+                }) +
+                " " +
+                productUnit;
         }
     }
 
@@ -671,6 +779,12 @@
 
             const product =
                 window.currentSellingProduct;
+
+            const requestId =
+                typeof crypto !== "undefined" &&
+                typeof crypto.randomUUID === "function"
+                    ? crypto.randomUUID()
+                    : `sale-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
             if (!id || !product) {
                 alert("❌ የሚሸጠው ምርት አልተመረጠም።");
@@ -781,7 +895,8 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        saleDate,
+                        requestId,
+saleDate,
                         quantity,
                         salePrice,
                         unitCost,
@@ -828,8 +943,10 @@
                 "💳 ቀሪ: " +
                 money(receivable) +
                 "\\n" +
-                "📦 የቀረ Stock: " +
-                data.stock.remaining
+                "📦 የቀረ ክምችት: " +
+                data.stock.remaining +
+                " " +
+                (product.unit || "pcs")
             );
 
             await loadProducts();
@@ -988,9 +1105,14 @@
         const listEl =
             document.getElementById("salesHistoryList");
 
+        let historyProductUnit = "pcs";
+
         if (productNameEl) {
             try {
                 const product = await getProduct(id);
+
+                historyProductUnit =
+                    product.unit || "pcs";
 
                 productNameEl.textContent =
                     "🎁 " + (product.productName || "ምርት");
@@ -1013,7 +1135,7 @@
 
                     <div class="history-summary-item">
                         <span>🔢 ብዛት</span>
-                        <strong>${summary.quantity || 0}</strong>
+                        <strong>${summary.quantity || 0} ${historyProductUnit}</strong>
                     </div>
 
                     <div class="history-summary-item">
@@ -1053,9 +1175,29 @@
 
                         <div>
                             <span>🔢 ብዛት</span>
-                            <strong>${sale.quantity || 0}</strong>
+                            <strong>${sale.quantity || 0} ${sale.unit || historyProductUnit}</strong>
                         </div>
 
+                        ${isAreaUnit(sale.unit) ? `
+                        <div style="
+                            grid-column:1/-1;
+                            margin:8px 0;
+                            padding:8px;
+                            border-radius:8px;
+                            background:#f7f9fc;
+                            border:1px solid #e6eaf0;
+                        ">
+                            <div>📐 መጠን: ${sale.length ?? "—"} × ${sale.width ?? "—"} ${escapeHtml(sale.dimensionUnit || "")}</div>
+                            <div>⬛ ስፋት: ${sale.area ?? "—"} ${escapeHtml(sale.areaUnit || sale.unit || "")}</div>
+                            <div>📏 Thickness: ${
+                                sale.thickness === null ||
+                                sale.thickness === undefined ||
+                                sale.thickness === ""
+                                    ? "—"
+                                    : `${sale.thickness} ${escapeHtml(sale.thicknessUnit || "")}`
+                            }</div>
+                        </div>
+                        ` : ""}
                         <div>
                             <span>💰 ሽያጭ</span>
                             <strong>${money(sale.totalSales || 0)}</strong>
@@ -1132,6 +1274,12 @@ async function getProduct(id) {
                     product.productDescription || "";
             }
 
+            if (productUnit) productUnit.value = product.unit || "pcs";
+            if (productLength) productLength.value = product.length ?? 0;
+            if (productWidth) productWidth.value = product.width ?? 0;
+            if (productDimensionUnit) productDimensionUnit.value = product.dimensionUnit || "cm";
+            if (productThickness) productThickness.value = product.thickness ?? "";
+            if (productThicknessUnit) productThicknessUnit.value = product.thicknessUnit || "";
             if (quantity) quantity.value = product.quantity ?? 0;
             if (stock) stock.value = product.stock ?? 0;
             if (sellPrice) sellPrice.value = product.sellPrice ?? 0;
@@ -1211,6 +1359,12 @@ async function getProduct(id) {
                 stock: number(stock?.value),
                 sellPrice: number(sellPrice?.value),
                 unitCost: number(unitCost?.value),
+                unit: productUnit?.value || "pcs",
+                length: number(productLength?.value),
+                width: number(productWidth?.value),
+                dimensionUnit: productDimensionUnit?.value || "cm",
+                thickness: productThickness?.value === "" ? undefined : number(productThickness?.value),
+                thicknessUnit: productThickness?.value === "" ? "" : (productThicknessUnit?.value || ""),
                 productionDate: date?.value || "",
                 photoUrl: ""
             };

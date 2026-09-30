@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YamGiftET AI | Stock Management</title>
+  <title>YamGiftET AI | የክምችት አስተዳደር</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .yam-stock-page {
@@ -200,17 +200,17 @@
 <body>
   <main class="yam-stock-page">
 
-    <a class="yam-stock-back" href="dashboard.html">← ወደ Dashboard</a>
+    <a class="yam-stock-back" href="dashboard.html">← ወደ ዳሽቦርድ</a>
 
     <section class="yam-stock-header">
-      <h1>📦 Module 15 — Stock Management</h1>
+      <h1>📦 Module 15 — የክምችት አስተዳደር</h1>
       <p>የጥሬ እቃና የራስ ምርት ክምችት ማዕከል</p>
     </section>
 
     <section class="yam-stock-summary">
       <div class="yam-stock-card">
         <span class="icon">📦</span>
-        <span class="label">ጠቅላላ Items</span>
+        <span class="label">ጠቅላላ እቃዎች</span>
         <span class="value" id="stockTotalItems">0</span>
       </div>
 
@@ -228,37 +228,37 @@
 
       <div class="yam-stock-card">
         <span class="icon">💰</span>
-        <span class="label">ጠቅላላ Stock Value</span>
+        <span class="label">ጠቅላላ የክምችት ዋጋ</span>
         <span class="value" id="stockTotalValue">0 ብር</span>
       </div>
 
       <div class="yam-stock-card">
         <span class="icon">📥</span>
-        <span class="label">Stock IN</span>
+        <span class="label">ክምችት ገቢ</span>
         <span class="value" id="stockInQuantity">0</span>
       </div>
 
       <div class="yam-stock-card">
         <span class="icon">📤</span>
-        <span class="label">Stock OUT</span>
+        <span class="label">ክምችት ወጪ</span>
         <span class="value" id="stockOutQuantity">0</span>
       </div>
 
       <div class="yam-stock-card">
         <span class="icon">⚠️</span>
-        <span class="label">Low Stock</span>
+        <span class="label">ዝቅተኛ ክምችት</span>
         <span class="value" id="stockLowCount">0</span>
       </div>
 
       <div class="yam-stock-card">
         <span class="icon">🔴</span>
-        <span class="label">Out of Stock</span>
+        <span class="label">ክምችት የጨረሰ</span>
         <span class="value" id="stockEmptyCount">0</span>
       </div>
     </section>
 
     <section class="yam-stock-panel">
-      <h2>📊 Stock Overview</h2>
+      <h2>📊 የክምችት አጠቃላይ እይታ</h2>
 
       <div class="yam-stock-controls">
         <input
@@ -274,28 +274,29 @@
         </select>
 
         <select id="stockStatusFilter">
-          <option value="all">ሁሉም Status</option>
-          <option value="ok">OK</option>
-          <option value="low">Low Stock</option>
-          <option value="empty">Out of Stock</option>
+          <option value="all">ሁሉም ሁኔታ</option>
+          <option value="ok">ጥሩ</option>
+          <option value="low">ዝቅተኛ ክምችት</option>
+          <option value="empty">ክምችት የጨረሰ</option>
         </select>
       </div>
 
       <div id="stockOverview">
-        <div class="yam-stock-loading">⏳ Stock መረጃ እየተጫነ ነው...</div>
+        <div class="yam-stock-loading">⏳ የክምችት መረጃ እየተጫነ ነው...</div>
       </div>
     </section>
 
     <section class="yam-stock-panel">
-      <h2>📒 Stock Movement Ledger</h2>
+      <h2>📒 የክምችት እንቅስቃሴ መዝገብ</h2>
 
       <div id="stockLedger">
-        <div class="yam-stock-loading">⏳ Movement መረጃ እየተጫነ ነው...</div>
+        <div class="yam-stock-loading">⏳ የእንቅስቃሴ መረጃ እየተጫነ ነው...</div>
       </div>
     </section>
 
   </main>
 
+  <script src="js/ethiopian-calendar.js"></script>
   <script src="js/stock.js"></script>
 <script src="js/auth-guard.js"></script>
 </body>

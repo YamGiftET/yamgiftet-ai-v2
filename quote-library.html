@@ -18,32 +18,51 @@
         </div>
 
         <div class="quote-library-generator-options">
-            <label>
-                ምድብ
-                <select id="quoteCategory">
-                    <option value="Love">❤️ Love</option>
-                    <option value="Birthday">🎂 Birthday</option>
-                    <option value="Gift">🎁 Gift</option>
-                    <option value="Thanks">🙏 Thanks</option>
-                    <option value="Family">👨‍👩‍👧 Family</option>
-                    <option value="Friendship">🤝 Friendship</option>
-                    <option value="Memories">💭 Memories</option>
-                    <option value="Happiness">😊 Happiness</option>
-                    <option value="Bible">📖 Bible</option>
-                    <option value="Spiritual">🕊️ Spiritual</option>
-                </select>
-            </label>
+    <label>
+        የጥቅስ ምንጭ
+        <select id="quoteSource">
+            <option value="user">✍️ እኔ የምጽፈውን ተጠቀም</option>
+            <option value="ai">🤖 AI እንዲመርጥ ፍቀድ</option>
+        </select>
+    </label>
 
-            <label>
-                ብዛት
-                <select id="quoteCount">
-                    <option value="10">10 ጥቅሶች</option>
-                    <option value="15">15 ጥቅሶች</option>
-                    <option value="20">20 ጥቅሶች</option>
-                </select>
-            </label>
-        </div>
-        <button id="generateQuoteButton" type="button"
+    <label id="aiQuoteCategoryLabel" style="display:none;">
+        የAI ጥቅስ ምድብ
+        <select id="quoteCategory">
+            <option value="Love">❤️ ፍቅር</option>
+            <option value="Birthday">🎂 ልደት</option>
+            <option value="Gift">🎁 ስጦታ</option>
+            <option value="Thanks">🙏 ምስጋና</option>
+            <option value="Family">👨‍👩‍👧 ቤተሰብ</option>
+            <option value="Friendship">🤝 ወዳጅነት</option>
+            <option value="Memories">🕊️ ትዝታ</option>
+            <option value="Happiness">😊 ደስታ</option>
+            <option value="Bible">📖 መጽሐፍ ቅዱስ</option>
+            <option value="Spiritual">✨ መንፈሳዊ</option>
+        </select>
+    </label>
+
+    <label id="customQuoteCategoryLabel">
+        የራስዎ ምድብ
+        <input
+            id="customQuoteCategory"
+            type="text"
+            placeholder="ለምሳሌ፦ እናት ፍቅር"
+            maxlength="60"
+        >
+    </label>
+
+    <label>
+        ብዛት
+        <select id="quoteCount">
+            <option value="10">10 ጥቅሶች</option>
+            <option value="15">15 ጥቅሶች</option>
+            <option value="20">20 ጥቅሶች</option>
+        </select>
+    </label>
+</div>
+
+<button id="generateQuoteButton" type="button"
                 onclick="quoteLibrary.generate()">
             ✨ አዲስ ምርጥ ጥቅስ
         </button>
@@ -65,14 +84,37 @@
 
         <div class="quote-library-stat">
             <span>⭐</span>
+            <strong id="quoteLibraryFavorites">0</strong>
+            <small>Favorites</small>
+        </div>
+
+        <div class="quote-library-stat">
+            <span>🎁</span>
+            <strong id="quoteLibraryUsed">0</strong>
+            <small>ተጠቀምኩበት</small>
+        </div>
+
+        <div class="quote-library-stat">
+            <span>🔢</span>
+            <strong id="quoteLibraryTotalUsage">0</strong>
+            <small>ጠቅላላ አጠቃቀም</small>
+        </div>
+
+        <div class="quote-library-stat">
+            <span>🗑️</span>
+            <strong id="quoteLibraryTrash">0</strong>
+            <small>Trash</small>
+        </div>
+
+        <div class="quote-library-stat">
+            <span>⭐</span>
             <strong id="quoteLibraryBestScore">—</strong>
             <small>ከፍተኛ ውጤት</small>
         </div>
 
     </div>
 
-    
-        <div id="quoteLibraryTabs" class="quote-library-tabs">
+    <div id="quoteLibraryTabs" class="quote-library-tabs">
             <button type="button" class="quote-library-tab active" data-tab="all">
                 📚 ሁሉም
             </button>

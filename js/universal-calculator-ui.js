@@ -43,6 +43,11 @@
     function showExpression() {
         expressionDisplay.textContent =
             expression || " ";
+
+        requestAnimationFrame(() => {
+            expressionDisplay.scrollLeft =
+                expressionDisplay.scrollWidth;
+        });
     }
 
     function showResult(value) {
@@ -127,6 +132,44 @@
                 ethiopian.month,
                 ethiopian.day
             );
+        } catch (error) {
+            return "";
+        }
+    }
+
+    function getHistoryTime(createdAt) {
+        try {
+            const date = new Date(createdAt);
+
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+
+            const parts = new Intl.DateTimeFormat("am-ET", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+                timeZone: "Africa/Addis_Ababa"
+            }).formatToParts(date);
+
+            const hourPart = parts.find(part => part.type === "hour");
+            const minutePart = parts.find(part => part.type === "minute");
+
+            const hour = Number(hourPart?.value);
+            const minute = minutePart?.value || "00";
+
+            let period = "ማታ";
+
+            if (hour < 6) {
+                period = "ሌሊት";
+            } else if (hour < 12) {
+                period = "ጥዋት";
+            } else if (hour < 18) {
+                period = "ከሰዓት";
+            }
+
+            const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minute} ${period}`;
         } catch (error) {
             return "";
         }
@@ -322,10 +365,9 @@
                 item.expression ||
                 "የCalculator ስሌት";
 
-            const type = item.calculationType ||
-                "arithmetic";
 
             const ethiopianDate = item.ethiopianDate || "";
+            const historyTime = getHistoryTime(item.createdAt);
 
             const versionText =
                 Number(item.version) > 1
@@ -399,9 +441,11 @@
                     </strong>
 
                     <span class="calculator-history-meta">
-                        ${escapeHtml(type)}
                         ${ethiopianDate
-                            ? ` • ${escapeHtml(ethiopianDate)}`
+                            ? ` • 📅 ${escapeHtml(ethiopianDate)}`
+                            : ""}
+                        ${historyTime
+                            ? ` • 🕒 ${escapeHtml(historyTime)}`
                             : ""}
                         ${versionText
                             ? ` • ${escapeHtml(versionText)}`

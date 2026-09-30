@@ -1,11 +1,18 @@
 const express = require("express");
+const crypto = require("crypto");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const router = express.Router();
 const { db } = require("./firebase");
+const { generateBatchId } = require("./batch-id-engine");
+const { calculateArea, calculateAreaCost, calculateAreaPurchaseCost } = require("./area-costing-engine");
 const { moveToUniversalTrash } = require("./trash-helper");
 const calculator = require("./universal-calculator");
+const {
+    normalizeUnit,
+    getUnitFamily
+} = require("./units-converter-engine");
 
 /* =========================================================
    RAW_MATERIAL_PHOTO_UPLOAD_ADDED
@@ -81,6 +88,26 @@ function number(value) {
 
 function positiveNumber(value) {
     return Math.max(0, number(value));
+}
+
+
+function stockIdempotencyHash(data) {
+    return crypto
+        .createHash("sha256")
+        .update(JSON.stringify(data))
+        .digest("hex");
+}
+
+function stockIdempotencyRef(requestId) {
+    const cleanRequestId = clean(requestId);
+    if (!cleanRequestId) return null;
+
+    const safeId = crypto
+        .createHash("sha256")
+        .update(cleanRequestId)
+        .digest("hex");
+
+    return db.collection("stockIdempotency").doc(safeId);
 }
 
 function nowISO() {
@@ -256,7 +283,16 @@ router.post("/raw-materials", async (req, res) => {
 
         const materialName = clean(body.materialName);
         const category = clean(body.category);
-        const unit = clean(body.unit) || "ቁጥር";
+
+        const rawUnit = clean(body.unit) || "pcs";
+        const unit = normalizeUnit(rawUnit);
+
+        if (!unit || !getUnitFamily(unit)) {
+            return res.status(400).json({
+                success: false,
+                error: "የጥሬ እቃ Unit ልክ አይደለም።"
+            });
+        }
 
         if (!materialName) {
             return res.status(400).json({
@@ -266,8 +302,8 @@ router.post("/raw-materials", async (req, res) => {
         }
 
         const money = calculateMaterial({
-            quantity: body.quantity,
-            stock: body.stock,
+            quantity: 0,
+            stock: 0,
             unitCost: body.unitCost
         });
 
@@ -341,9 +377,44 @@ router.patch("/raw-materials/:id", async (req, res) => {
         }
 
         const old = existing.data() || {};
+        const updateBody = {
+            ...(req.body || {})
+        };
+
+        delete updateBody.stock;
+
+        const requestedUnit = normalizeUnit(
+            clean(updateBody.unit) || clean(old.unit) || "pcs"
+        );
+
+        if (!requestedUnit || !getUnitFamily(requestedUnit)) {
+            return res.status(400).json({
+                success: false,
+                error: "የጥሬ እቃ Unit ልክ አይደለም።"
+            });
+        }
+
+        const oldUnit = normalizeUnit(
+            clean(old.unit) || "pcs"
+        );
+
+        const currentStock = positiveNumber(old.stock);
+
+        if (
+            currentStock > 0 &&
+            requestedUnit !== oldUnit
+        ) {
+            return res.status(409).json({
+                success: false,
+                error: "ክምችት እያለ የጥሬ እቃ Unit መቀየር አይፈቀድም።"
+            });
+        }
+
+        updateBody.unit = requestedUnit;
+
         const merged = {
             ...old,
-            ...(req.body || {})
+            ...updateBody
         };
 
         const money = calculateMaterial(merged);
@@ -351,7 +422,7 @@ router.patch("/raw-materials/:id", async (req, res) => {
         const updated = {
             materialName: clean(merged.materialName),
             category: clean(merged.category),
-            unit: clean(merged.unit) || "ቁጥር",
+            unit: requestedUnit,
 
             ...money,
 
@@ -470,115 +541,315 @@ router.post("/raw-materials/:id/purchases", async (req, res) => {
             .collection("rawMaterials")
             .doc(materialId);
 
-        const materialSnap = await materialRef.get();
-
-        if (!materialSnap.exists) {
-            return res.status(404).json({
-                success: false,
-                error: "ጥሬ እቃው አልተገኘም።"
-            });
-        }
-
-        const material = materialSnap.data() || {};
         const body = req.body || {};
 
-        const quantity = positiveNumber(body.quantity);
-        const unitCost = positiveNumber(
-            body.unitCost ?? material.unitCost
-        );
-
-        if (quantity <= 0) {
-            return res.status(400).json({
-                success: false,
-                error: "የግዢ ብዛት ከ 0 በላይ መሆን አለበት።"
-            });
-        }
-
-        if (unitCost <= 0) {
-            return res.status(400).json({
-                success: false,
-                error: "የአንድ እቃ ዋጋ ከ 0 በላይ መሆን አለበት።"
-            });
-        }
-
-        const purchaseTotal = calculator.multiply(quantity, unitCost);
-        const oldStock = positiveNumber(material.stock);
-        const newStock = oldStock + quantity;
+        let quantity = positiveNumber(body.quantity);
+        let purchaseUnit = normalizeUnit(clean(body.unit) || "pcs");
+        let unitCost = positiveNumber(body.unitCost);
 
         const purchaseDate =
             clean(body.purchaseDate) ||
             new Date().toISOString().slice(0, 10);
-
         const now = nowISO();
 
-        const purchase = {
+        const requestId = clean(body.requestId);
+
+        const idempotencyPayload = {
+            operation: "RAW_MATERIAL_PURCHASE",
             materialId,
-            materialName: clean(material.materialName),
-            category: clean(material.category),
-            unit: clean(material.unit),
-
             quantity,
+            unit: purchaseUnit,
             unitCost,
-            totalCost: purchaseTotal,
-
-            supplier: clean(body.supplier),
             purchaseDate,
+            supplier: clean(body.supplier),
             notes: clean(body.notes),
-
-            createdAt: now,
-            updatedAt: now
+            length: positiveNumber(body.length),
+            width: positiveNumber(body.width),
+            thickness: positiveNumber(body.thickness),
+            dimensionUnit: normalizeUnit(clean(body.dimensionUnit) || ""),
+            areaUnit: normalizeUnit(clean(body.areaUnit) || ""),
+            purchasePrice: positiveNumber(body.purchasePrice)
         };
+        const idempotencyHash = stockIdempotencyHash(idempotencyPayload);
+        const idempotencyRef = stockIdempotencyRef(requestId);
 
-        const purchaseRef = await db
-            .collection("materialPurchases")
-            .add(purchase);
+        const result = await db.runTransaction(async transaction => {
+            let idempotencySnap = null;
 
-        await materialRef.set({
-            stock: newStock,
-            unitCost,
-            updatedAt: now
-        }, {
-            merge: true
-        });
+            if (idempotencyRef) {
+                idempotencySnap = await transaction.get(idempotencyRef);
+            }
 
-        await recordStockMovement({
-            itemType: "rawMaterial",
-            itemId: materialId,
-            itemName: material.materialName,
-            movementType: "PURCHASE",
-            quantity,
-            unit: material.unit,
-            previousStock: oldStock,
-            remainingStock: newStock,
-            unitCost,
-            totalValue: purchaseTotal,
-            referenceId: purchaseRef.id,
-            movementDate: purchaseDate,
-            createdAt: now
-        });
+            const materialSnap = await transaction.get(materialRef);
 
-        res.status(201).json({
-            success: true,
-            message: "ግዢው ተመዝግቦ Stock ተጨምሯል።",
+            if (idempotencySnap && idempotencySnap.exists) {
+                const previous = idempotencySnap.data() || {};
 
-            purchase: {
-                id: purchaseRef.id,
-                ...purchase
-            },
+                if (previous.payloadHash !== idempotencyHash) {
+                    const error = new Error(
+                        "ይህ requestId ቀድሞ በተለየ የግዢ መረጃ ተጠቅሟል።"
+                    );
+                    error.statusCode = 409;
+                    throw error;
+                }
 
-            stock: {
-                previous: oldStock,
+                if (!previous.result) {
+                    const error = new Error(
+                        "የቀድሞው idempotency result አልተገኘም።"
+                    );
+                    error.statusCode = 409;
+                    throw error;
+                }
+
+                return previous.result;
+            }
+
+            if (!materialSnap.exists) {
+                const error = new Error("ጥሬ እቃው አልተገኘም።");
+                error.statusCode = 404;
+                throw error;
+            }
+
+            const material = materialSnap.data() || {};
+
+            const materialUnit = normalizeUnit(
+                clean(material.unit) || "pcs"
+            );
+
+            if (!materialUnit || !getUnitFamily(materialUnit)) {
+                const error = new Error(
+                    "የMaterial Master Unit ልክ አይደለም።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (!purchaseUnit || !getUnitFamily(purchaseUnit)) {
+                const error = new Error(
+                    "የPurchase Unit ልክ አይደለም።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (purchaseUnit !== materialUnit) {
+                const error = new Error(
+                    `የግዢ Unit (${purchaseUnit}) ከ Material Master Unit (${materialUnit}) ጋር መመሳሰል አለበት።`
+                );
+                error.statusCode = 409;
+                throw error;
+            }
+
+            unitCost = positiveNumber(
+                body.unitCost ?? material.unitCost
+            );
+
+            const isAreaMaterial =
+                getUnitFamily(materialUnit) === "area";
+
+            let areaResult = null;
+
+            if (isAreaMaterial) {
+                areaResult = calculateAreaPurchaseCost({
+                    length: body.length,
+                    width: body.width,
+                    dimensionUnit: body.dimensionUnit,
+                    areaUnit: materialUnit,
+                    purchasePrice: body.purchasePrice
+                });
+
+                quantity = areaResult.area;
+                purchaseUnit = areaResult.areaUnit;
+                unitCost = areaResult.areaUnitCost;
+            }
+
+            if (quantity <= 0) {
+                const error = new Error(
+                    "የግዢ ብዛት ከ 0 በላይ መሆን አለበት።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (unitCost <= 0) {
+                const error = new Error(
+                    "የአንድ እቃ ዋጋ ከ 0 በላይ መሆን አለበት።"
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const purchaseTotal =
+                isAreaMaterial
+                    ? areaResult.totalCost
+                    : calculator.multiply(quantity, unitCost);
+
+            const batchId = await generateBatchId(
+                transaction,
+                purchaseDate
+            );
+
+            const oldStock = positiveNumber(material.stock);
+            const newStock = oldStock + quantity;
+
+            const purchaseRef = db
+                .collection("materialPurchases")
+                .doc();
+
+            const purchase = {
+                batchId,
+                materialId,
+                materialName: clean(material.materialName),
+                category: clean(material.category),
+                unit: materialUnit,
+                quantity,
+                unitCost,
+                totalCost: purchaseTotal,
+                supplier: clean(body.supplier),
+                purchaseDate,
+                notes: clean(body.notes),
+                ...(isAreaMaterial
+                    ? {
+                        length: areaResult.length,
+                        width: areaResult.width,
+                        thickness: positiveNumber(body.thickness),
+                        dimensionUnit: areaResult.dimensionUnit,
+                        area: areaResult.area,
+                        areaUnit: areaResult.areaUnit,
+                        purchasePrice: areaResult.purchasePrice
+                    }
+                    : {}),
+                createdAt: now,
+                updatedAt: now
+            };
+
+            transaction.set(purchaseRef, purchase);
+
+            const batchStockRef = db
+                .collection("materialBatches")
+                .doc(batchId);
+
+            const batchStock = {
+                batchId,
+                purchaseId: purchaseRef.id,
+                materialId,
+                materialName: clean(material.materialName),
+                unit: materialUnit,
+                originalQuantity: quantity,
+                availableQuantity: quantity,
+                unitCost,
+                totalCost: purchaseTotal,
+                purchaseDate,
+                status: "available",
+                ...(isAreaMaterial
+                    ? {
+                        areaSnapshot: {
+                            length: areaResult.length,
+                            width: areaResult.width,
+                            thickness: positiveNumber(body.thickness),
+                            dimensionUnit: areaResult.dimensionUnit,
+                            area: areaResult.area,
+                            areaUnit: areaResult.areaUnit,
+                            purchasePrice: areaResult.purchasePrice
+                        }
+                    }
+                    : {}),
+                createdAt: now,
+                updatedAt: now
+            };
+
+            transaction.create(batchStockRef, batchStock);
+
+            transaction.set(
+                materialRef,
+                {
+                    stock: newStock,
+                    unitCost,
+                    updatedAt: now
+                },
+                { merge: true }
+            );
+
+            const movementRef = db
+                .collection("stockMovements")
+                .doc();
+
+            const movement = {
+                batchId,
+                itemType: "rawMaterial",
+                itemId: materialId,
+                itemName: clean(material.materialName),
+                movementType: "PURCHASE",
+                quantity,
+                unit: materialUnit,
+                previousStock: oldStock,
+                remainingStock: newStock,
+                unitCost,
+                totalValue: purchaseTotal,
+                referenceId: purchaseRef.id,
+                movementDate: purchaseDate,
+                ...(isAreaMaterial
+                    ? {
+                        length: areaResult.length,
+                        width: areaResult.width,
+                        thickness: positiveNumber(body.thickness),
+                        dimensionUnit: areaResult.dimensionUnit,
+                        area: areaResult.area,
+                        areaUnit: areaResult.areaUnit,
+                        purchasePrice: areaResult.purchasePrice
+                    }
+                    : {}),
+                createdAt: now
+            };
+
+            transaction.set(movementRef, movement);
+
+            const transactionResult = {
+                batchId,
+                purchaseId: purchaseRef.id,
+                movementId: movementRef.id,
+                materialName: clean(material.materialName),
+                previousStock: oldStock,
                 added: quantity,
-                remaining: newStock
+                remainingStock: newStock,
+                purchase
+            };
+
+            if (idempotencyRef) {
+                transaction.set(idempotencyRef, {
+                    operation: "RAW_MATERIAL_PURCHASE",
+                    requestId,
+                    payloadHash: idempotencyHash,
+                    result: transactionResult,
+                    createdAt: now,
+                    updatedAt: now
+                });
+            }
+
+            return transactionResult;
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "ግዢው በAtomic Transaction ተመዝግቦ Stock ተጨምሯል።",
+            purchase: {
+                id: result.purchaseId,
+                ...result.purchase
+            },
+            stock: {
+                previous: result.previousStock,
+                added: result.added,
+                remaining: result.remainingStock
             }
         });
-
     } catch (error) {
         console.error("Material Purchase Error:", error);
 
-        res.status(500).json({
+        return res.status(error.statusCode || 500).json({
             success: false,
-            error: "የጥሬ እቃ ግዢን መመዝገብ አልተቻለም።"
+            error:
+                error.message ||
+                "የጥሬ እቃ ግዢን መመዝገብ አልተቻለም።"
         });
     }
 });
@@ -604,15 +875,34 @@ router.get("/raw-materials/:id/purchases", async (req, res) => {
 
         const summary = purchases.reduce(
             (acc, item) => {
-                acc.quantity += number(item.quantity);
+                const unit = normalizeUnit(
+                    clean(item.unit) || "pcs"
+                );
+
+                acc.quantityByUnit[unit] =
+                    number(acc.quantityByUnit[unit]) +
+                    number(item.quantity);
+
                 acc.totalCost += number(item.totalCost);
+
                 return acc;
             },
             {
-                quantity: 0,
+                quantity: null,
+                unit: null,
+                quantityByUnit: {},
                 totalCost: 0
             }
         );
+
+        const summaryUnits =
+            Object.keys(summary.quantityByUnit);
+
+        if (summaryUnits.length === 1) {
+            summary.unit = summaryUnits[0];
+            summary.quantity =
+                summary.quantityByUnit[summary.unit];
+        }
 
         res.json({
             success: true,
@@ -993,7 +1283,7 @@ router.get("/financial-summary", async (req, res) => {
 // STOCK MOVEMENT LEDGER — PHASE 1
 // Backend-only transaction audit
 // =========================================================
-async function recordStockMovement(data) {
+async function recordStockMovement(data, transaction = null) {
     const movement = {
         itemType: data.itemType,
         itemId: data.itemId,
@@ -1017,6 +1307,13 @@ async function recordStockMovement(data) {
         movement.quantity <= 0
     ) {
         throw new Error("Invalid stock movement");
+    }
+
+    const movementRef = db.collection("stockMovements").doc();
+
+    if (transaction) {
+        transaction.set(movementRef, movement);
+        return movementRef;
     }
 
     return db.collection("stockMovements").add(movement);

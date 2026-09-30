@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cron = require("node-cron");
 
 const express = require("express");
 const cors = require("cors");
@@ -13,6 +14,10 @@ const notesRoutes = require("./notes-routes");
 const quoteAssistantRoutes = require("./quote-assistant-routes");
 const appointmentsRoutes = require("./appointments-routes");
 const contactsRoutes = require("./contacts-routes");
+const recipesRoutes = require("./recipes-routes");
+const productionsRoutes = require("./productions-routes");
+const managementAIRoutesV2 = require("./management-ai-v2-routes");
+const planningEvaluationRoutes = require("./planning-evaluation-routes");
 
 const app = express();
 
@@ -30,6 +35,10 @@ app.use("/api", contactsRoutes.router);
 app.use("/api", financeRoutes);
 app.use("/api", rawMaterialExpenseRoutes);
 app.use("/api", trashRoutes);
+app.use("/api", recipesRoutes);
+app.use("/api", productionsRoutes);
+app.use("/api", managementAIRoutesV2);
+app.use("/api", planningEvaluationRoutes);
 
 const PORT = process.env.PORT || 3000;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -113,8 +122,7 @@ app.post("/api/chat", async (req, res) => {
 
                 body: JSON.stringify({
 
-                    model:
-                        "openrouter/free",
+          models: ["nvidia/nemotron-3-ultra-550b-a55b:free", "google/gemma-4-31b-it:free", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"],
 
                     messages: [
 
@@ -130,13 +138,13 @@ app.post("/api/chat", async (req, res) => {
                                                       "ተጠቃሚው በሚጠይቀው ቋንቋ ግልጽ፣ ተፈጥሯዊ እና ትክክለኛ መልስ ስጥ። " +
                                                       "አማርኛ ከሆነ በጥሩ እና በተፈጥሯዊ አማርኛ መልስ። " +
                                                       "ጥያቄው ሂሳብ ከሆነ ስሌቱን በትክክል አድርግ። " +
-                                                      "የማታውቀውን ነገር እንደምታውቀው አትናገር።"
+                                                      "የማታውቀውን ነገር እንደምታውቀው አትናገር።" + "አማርኛ መልስ ስትሰጥ ከሌላ ቋንቋ ቃላትን በዘፈቀደ አትቀላቅል። የአማርኛ ፊደል፣ ሰዋሰው እና ቃላት በትክክል ተጠቀም። የውጭ ቃል በእርግጥ ካስፈለገ ብቻ በቅንፍ ውስጥ አስገባ። ጥያቄውን ከመልሱ ጋር አትቀላቅል። መልሱ ከጥያቄው ጋር በቀጥታ የሚዛመድ፣ ግልጽ እና ትክክለኛ ይሁን። " + "ቀላል እና ግልጽ ጥያቄን አትተርጉም፣ አትገምት እና አትቀይር፤ ተጠይቀውን በቀጥታ መልስ። " + "ተጠቃሚው ቃላትን ወይም ዝርዝርን ብቻ እንዲሰጥ ከጠየቀ ማብራሪያ፣ ጥያቄ ወይም ተጨማሪ ጽሑፍ አትጨምር።"
 
                         },
 
                         {
                             role: "user",
-                            content: message
+                            content: "የYamGiftET Management AI ትንታኔ እንደገና አዘጋጅ።\n\n" + JSON.stringify(body, null, 2)
                         }
 
                     ]
@@ -160,6 +168,13 @@ app.post("/api/chat", async (req, res) => {
                 JSON.stringify(data, null, 2)
             );
 
+            if (response.status === 429) {
+                return res.status(429).json({
+                    success: false,
+                    error: "የነፃ AI ሞዴሎች የዕለት ጥያቄ ገደብ ላይ ደርሰዋል። እባክዎ ቆይተው እንደገና ይሞክሩ።"
+                });
+            }
+
             return res.status(response.status).json({
                 success: false,
                 error:
@@ -168,15 +183,28 @@ app.post("/api/chat", async (req, res) => {
             });
         }
 
+        console.log(
+            "OpenRouter selected model:",
+            data?.model || "unknown"
+        );
+
         const reply =
             data?.choices?.[0]?.message?.content;
 
+        if (!reply) console.error("OpenRouter response shape:", JSON.stringify({model: data?.model, choices: data?.choices?.map(c => ({index: c?.index, finish_reason: c?.finish_reason, message_keys: c?.message ? Object.keys(c.message) : []}))}, null, 2));
         if (!reply) {
-
-            return res.status(500).json({
-                success: false,
-                error: "AI returned no response"
+            console.warn("OpenRouter returned no usable content. Retrying General Chat once...");
+            const retryResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json", "HTTP-Referer": "http://localhost:3000", "X-Title": "YamGiftET AI" },
+                body: JSON.stringify({ models: ["nvidia/nemotron-3-ultra-550b-a55b:free", "google/gemma-4-31b-it:free", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"], messages: [{ role: "system", content: "አንተ YamGiftET AI ነህ። ተጠቃሚው በሚጠይቀው ቋንቋ ግልጽ፣ ተፈጥሯዊ እና ትክክለኛ መልስ ስጥ። አማርኛ ከሆነ በጥሩ እና በተፈጥሯዊ አማርኛ መልስ።" }, { role: "user", content: "የYamGiftET Management AI ትንታኔ እንደገና አዘጋጅ።\n\n" + JSON.stringify(body, null, 2) }] })
             });
+            const retryData = await retryResponse.json();
+            console.log("OpenRouter General Chat retry status:", retryResponse.status);
+            console.log("OpenRouter General Chat retry selected model:", retryData?.model || "unknown");
+            const retryReply = retryData?.choices?.[0]?.message?.content;
+            if (retryReply) return res.json({ success: true, reply: retryReply });
+            return res.status(500).json({ success: false, error: "AI returned no response" });
         }
 
         res.json({
@@ -233,7 +261,7 @@ app.post("/api/notes-ai", async (req, res) => {
           "X-Title": "YamGiftET Notes AI"
         },
         body: JSON.stringify({
-          model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+          model: "nvidia/nemotron-3-super-120b-a12b:free",
           messages: [
             {
               role: "system",
@@ -269,6 +297,7 @@ app.post("/api/notes-ai", async (req, res) => {
 
     const reply = data?.choices?.[0]?.message?.content;
 
+        if (!reply) console.error("OpenRouter response shape:", JSON.stringify({model: data?.model, choices: data?.choices?.map(c => ({index: c?.index, finish_reason: c?.finish_reason, message_keys: c?.message ? Object.keys(c.message) : []}))}, null, 2));
     if (!reply) {
       return res.status(500).json({
         success: false,
@@ -317,64 +346,86 @@ app.post("/api/management-ai", async (req, res) => {
                     "X-Title": "YamGiftET Management AI"
                 },
                 body: JSON.stringify({
-                    model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+                    model: "nvidia/nemotron-3-super-120b-a12b:free",
+                    stream: true,
+                    max_tokens: 3000,
                     messages: [
                         {
                             role: "system",
                             content:
                                 "አንተ YamGiftET AI የንግድ አስተዳደር ረዳት ነህ። " +
-                                "የተሰጠህን የንግድ መረጃ በጥንቃቄ ተንትን። " +
-                                "የፋይናንስ፣ የትዕዛዝ፣ የምርት፣ የጥሬ እቃ፣ የወጪ እና የNotes መረጃን አገናኝ። " +
-                                "በተፈጥሯዊ እና ግልጽ አማርኛ መልስ። " +
-                                "ችግሮችን፣ እድሎችን እና ቀጣይ እርምጃዎችን ለይ። " +
-                                "ያልተሰጠ መረጃ እንዳለ አትገምት።"
+                                "የUSER መልዕክቱ ውስጥ የተላከው DATA ብቻ የእውነታ ምንጭ ነው። " +
+                                "በDATA ውስጥ ያለውን ቁጥር ወይም መረጃ ወደ 0 አትቀይር፤ በትክክል ተጠቀም። " +
+                                "DATA ውስጥ የሌለ ወይም ያልተረጋገጠ መረጃ አትፍጠር፣ አትገምት፣ እንደ እውነታም አትጻፍ። " +
+                                "ከDATA ውስጥ በቀጥታ የሚሰላ ውጤት ብቻ አስላ። " +
+                                "መረጃ ካልበቃ 'በተሰጠው DATA ውስጥ ይህን ለመወሰን በቂ መረጃ የለም' ብለህ ግልጽ አድርግ። " +
+                                "የፋይናንስ፣ የትዕዛዝ፣ የምርት፣ የጥሬ እቃ፣ የወጪ እና የCustomers መረጃን አገናኝ። " +
+                                "በተፈጥሯዊ፣ ግልጽ እና ትክክለኛ አማርኛ መልስ። " +
+                                "ችግሮችን፣ የሚታዩ እድሎችን እና ቀጣይ እርምጃዎችን ከDATA ማስረጃ ጋር ለይ። " +
+                                "የሪፖርቱን ቀንና ሰዓት በኢትዮጵያ ሰዓት (Africa/Addis_Ababa) አሳይ።"
                         },
                         {
                             role: "user",
                             content:
                                 "የYamGiftET የንግድ መረጃ እነሆ፣ ተንትነው የአስተዳደር ምክር ስጠኝ።\n\n" +
-                                JSON.stringify(body, null, 2)
+                                JSON.stringify(body.snapshot || {}, null, 2)
                         }
-                    ]
+                    ],
+                    temperature: 0,
+                    top_p: 1,
+                    reasoning: { effort: "none" }
                 })
             }
         );
 
-        const data = await response.json();
-
         if (!response.ok) {
-            console.error(
-                "Management AI OpenRouter Error:",
-                JSON.stringify(data, null, 2)
-            );
-
+            const errorText = await response.text();
+            console.error("Management AI OpenRouter Error:", errorText);
             return res.status(response.status).json({
                 success: false,
-                error: data?.error?.message || "Management AI request failed"
+                error: "Management AI request failed"
             });
         }
 
-        const reply = data?.choices?.[0]?.message?.content;
-
-        if (!reply) {
-            return res.status(500).json({
+        if (!response.body) {
+            return res.status(502).json({
                 success: false,
-                error: "AI returned no response"
+                error: "Management AI stream unavailable"
             });
         }
 
-        res.json({
-            success: true,
-            reply
-        });
+        res.status(200);
+        res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+        res.setHeader("Cache-Control", "no-cache, no-transform");
+        res.setHeader("Connection", "keep-alive");
+        res.setHeader("X-Accel-Buffering", "no");
+        res.flushHeaders?.();
 
+        const reader = response.body.getReader();
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+
+                if (done) break;
+
+                res.write(Buffer.from(value));
+            }
+        } finally {
+            reader.releaseLock();
+            res.end();
+        }
     } catch (error) {
         console.error("Management AI Error:", error);
 
-        res.status(500).json({
-            success: false,
-            error: "Management AI request failed"
-        });
+        if (!res.headersSent) {
+            return res.status(500).json({
+                success: false,
+                error: "Management AI request failed"
+            });
+        }
+
+        res.end();
     }
 });
 

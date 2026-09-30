@@ -37,6 +37,27 @@
     return formatNumber(value) + " ብር";
   }
 
+  function formatDisplayEthiopianDate(value) {
+    const raw = text(value);
+    if (!raw) return "—";
+
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return raw;
+
+    if (typeof gregorianToEthiopian !== "function" ||
+        typeof formatEthiopianDate !== "function") {
+      return raw;
+    }
+
+    const ethiopian = gregorianToEthiopian(date);
+
+    return formatEthiopianDate(
+      ethiopian.year,
+      ethiopian.month,
+      ethiopian.day
+    );
+  }
+
   function getStockStatus(stock) {
     const value = number(stock);
 
@@ -46,9 +67,9 @@
   }
 
   function getStatusLabel(status) {
-    if (status === "empty") return "🔴 Out of Stock";
-    if (status === "low") return "⚠️ Low Stock";
-    return "✅ OK";
+    if (status === "empty") return "🔴 ክምችት የጨረሰ";
+    if (status === "low") return "⚠️ ዝቅተኛ ክምችት";
+    return "✅ ጥሩ";
   }
 
   async function fetchJson(url) {
@@ -154,7 +175,9 @@
       if (
         type === "PURCHASE" ||
         type === "STOCK_IN" ||
-        type === "IN"
+        type === "IN" ||
+        type === "PRODUCTION" ||
+        type === "VOID_REVERSAL_IN"
       ) {
         stockIn += quantity;
       }
@@ -163,7 +186,9 @@
         type === "SALE" ||
         type === "STOCK_OUT" ||
         type === "OUT" ||
-        type === "LOSS"
+        type === "LOSS" ||
+        type === "CONSUMPTION" ||
+        type === "VOID_REVERSAL_OUT"
       ) {
         stockOut += quantity;
       }
@@ -205,7 +230,7 @@
 
     if (!filtered.length) {
       container.innerHTML =
-        '<div class="yam-stock-empty">📦 የሚያሳይ Stock መረጃ የለም።</div>';
+        '<div class="yam-stock-empty">📦 የሚያሳይ የክምችት መረጃ የለም።</div>';
       return;
     }
 
@@ -242,12 +267,12 @@
             <tr>
               <th>ዓይነት</th>
               <th>ስም</th>
-              <th>Category</th>
-              <th>Stock</th>
-              <th>Unit</th>
-              <th>Unit Cost</th>
-              <th>Stock Value</th>
-              <th>Status</th>
+              <th>ምድብ</th>
+              <th>ክምችት</th>
+              <th>መለኪያ</th>
+              <th>የአንድ እቃ ዋጋ</th>
+              <th>የክምችት ዋጋ</th>
+              <th>ሁኔታ</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -261,7 +286,7 @@
 
     if (!state.movements.length) {
       container.innerHTML =
-        '<div class="yam-stock-empty">📒 እስካሁን Stock Movement አልተመዘገበም።</div>';
+        '<div class="yam-stock-empty">📒 እስካሁን የክምችት እንቅስቃሴ አልተመዘገበም።</div>';
       return;
     }
 
@@ -271,20 +296,29 @@
       const direction =
         type === "PURCHASE" ||
         type === "STOCK_IN" ||
-        type === "IN"
-          ? "📥 IN"
-          : "📤 OUT";
+        type === "IN" ||
+        type === "PRODUCTION" ||
+        type === "VOID_REVERSAL_IN"
+          ? "📥 ገቢ"
+          : "📤 ወጪ";
 
       const date =
-        text(movement.movementDate) ||
-        text(movement.createdAt) ||
-        "—";
+        formatDisplayEthiopianDate(
+          text(movement.movementDate) ||
+          text(movement.createdAt)
+        );
 
       return `
         <tr>
           <td>${escapeHtml(date)}</td>
           <td>${escapeHtml(movement.itemName || "—")}</td>
-          <td>${escapeHtml(movement.itemType || "—")}</td>
+          <td>${escapeHtml(
+            movement.itemType === "rawMaterial"
+              ? "🧱 ጥሬ እቃ"
+              : movement.itemType === "selfProduct"
+                ? "🛍️ የራስ ምርት"
+                : movement.itemType || "—"
+          )}</td>
           <td>${escapeHtml(direction)}</td>
           <td>${formatNumber(movement.quantity)}</td>
           <td>${escapeHtml(movement.unit || "—")}</td>
@@ -300,13 +334,13 @@
           <thead>
             <tr>
               <th>ቀን</th>
-              <th>Item</th>
-              <th>Type</th>
-              <th>Movement</th>
-              <th>Quantity</th>
-              <th>Unit</th>
-              <th>Value</th>
-              <th>Remaining</th>
+              <th>እቃ</th>
+              <th>ዓይነት</th>
+              <th>እንቅስቃሴ</th>
+              <th>ብዛት</th>
+              <th>መለኪያ</th>
+              <th>ዋጋ</th>
+              <th>ቀሪ ክምችት</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -340,13 +374,13 @@
 
       $("stockOverview").innerHTML = `
         <div class="yam-stock-error">
-          ❌ Stock መረጃ ማምጣት አልተቻለም።<br>
+          ❌ የክምችት መረጃ ማምጣት አልተቻለም።<br>
           ${escapeHtml(error.message || error)}
         </div>
       `;
 
       $("stockLedger").innerHTML =
-        '<div class="yam-stock-error">❌ Stock Movement መረጃ ማምጣት አልተቻለም።</div>';
+        '<div class="yam-stock-error">❌ የክምችት እንቅስቃሴ መረጃ ማምጣት አልተቻለም።</div>';
     } finally {
       state.loading = false;
     }

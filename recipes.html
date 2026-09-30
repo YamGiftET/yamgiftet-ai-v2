@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yam Gift | Recipe / BOM</title>
+    <style>
+        body {
+            font-size: 18px;
+        }
+
+        h1 {
+            font-size: 30px;
+        }
+
+        h2 {
+            font-size: 24px;
+        }
+
+        p, label {
+            font-size: 20px;
+        }
+
+        select, input, button {
+            font-size: 18px;
+            min-height: 46px;
+        }
+    </style>
+</head>
+<body>
+
+<main>
+    <h1>🧾 የምርት Recipe / BOM</h1>
+    <p>አንድ ምርት ለመስራት የሚያስፈልጉ ጥሬ እቃዎችን ይመዝግቡ።</p>
+
+    <form id="recipeForm">
+        <label for="productId">🎁 ምርት</label>
+        <select id="productId" required>
+            <option value="">-- ምርት ይምረጡ --</option>
+        </select>
+
+        <section>
+            <h2>🧪 የሚያስፈልጉ ጥሬ እቃዎች</h2>
+
+            <div id="materialsContainer"></div>
+
+            <button type="button" id="addMaterialBtn">
+                ➕ ጥሬ እቃ ጨምር
+            </button>
+        </section>
+
+        <button type="submit" id="saveRecipeBtn">
+            💾 Recipe አስቀምጥ
+        </button>
+    </form>
+
+    <hr>
+
+    <section>
+        <h2>📋 የተመዘገቡ Recipes</h2>
+        <div id="recipesList" style="max-height:40vh;overflow-y:auto;padding:10px;border:1px solid #ddd;border-radius:16px;background:#f7f7f7;overscroll-behavior:contain;">
+            <p>⏳ በመጫን ላይ...</p>
+        </div>
+    </section>
+
+    <section id="recipeHistorySection" style="margin-top:24px;padding:18px;border:1px solid #ddd;border-radius:16px;background:#f7f7f7;">
+        <h2>📚 Recipe History</h2>
+        <p>የRecipe ለውጥና Version ታሪክ</p>
+        <a href="/recipe-history.html" style="display:inline-block;padding:10px 16px;border-radius:10px;background:#0f3d2e;color:#fff;text-decoration:none;">
+            📚 Recipe History ክፈት
+        </a>
+    </section>
+</main>
+
+<script src="js/recipes.js?v=20260905-173"></script>
+</body>
+</html>
