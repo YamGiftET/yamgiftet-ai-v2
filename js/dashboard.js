@@ -4257,6 +4257,9 @@ document.addEventListener(
     }
 
     function createUniversalTrashUI() {
+        // Trash UI belongs only on the standalone trash.html page.
+        return;
+
         if (document.getElementById("yamUniversalTrashButton")) {
             return;
         }
@@ -4823,14 +4826,8 @@ document.addEventListener(
         }
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener(
-            "DOMContentLoaded",
-            createUniversalTrashUI
-        );
-    } else {
-        createUniversalTrashUI();
-    }
+    // Universal Trash is managed on the standalone trash.html page.
+    // Do not inject a duplicate Trash panel into the Dashboard.
 })();
 
 
